@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/** 今日单词 */
+/** 学习批次（原"今日单词"，改为手动刷新，不再按日期自动轮换） */
 @RestController
 @RequestMapping("/api/today")
 @RequiredArgsConstructor
@@ -18,15 +18,15 @@ public class TodayController {
 
     private final ExtractService extractService;
 
-    /** 获取今日抽取的单词列表（当天无记录时自动抽取） */
+    /** 获取当前批次（不自动抽取；从未刷新过则返回空批次） */
     @GetMapping
     public ApiResponse<Map<String, Object>> today() {
-        return ApiResponse.ok(extractService.getToday());
+        return ApiResponse.ok(extractService.getCurrent());
     }
 
-    /** 手动触发今日抽取（幂等：当天已有记录则返回现有列表） */
+    /** 换一批：上一批未完成的词保留进新批次，其余名额重新抽取 */
     @PostMapping("/extract")
     public ApiResponse<Map<String, Object>> extract() {
-        return ApiResponse.ok(extractService.manualExtract());
+        return ApiResponse.ok(extractService.refresh());
     }
 }

@@ -1,11 +1,11 @@
 <template>
   <div>
-    <!-- 今日进度 -->
+    <!-- 批次进度 -->
     <div class="today-header">
       <div class="today-info">
         <h2 class="page-title today-title">
-          今日单词
-          <span class="date">{{ store.date }}</span>
+          学习批次
+          <span class="date">抽取于 {{ store.date }}</span>
         </h2>
         <div class="progress-line">
           <el-progress
@@ -14,13 +14,15 @@
             :stroke-width="18"
             :format="() => `${store.completed} / ${store.total}`"
           />
-          <span class="progress-hint">今日已学 / 今日总数</span>
+          <span class="progress-hint">已学 / 总数（未完成的词会一直保留到学完为止）</span>
         </div>
       </div>
-      <el-button round :loading="store.loading" @click="store.load()">刷新</el-button>
+      <el-button type="primary" round :loading="store.loading" @click="onRefreshBatch">换一批</el-button>
     </div>
 
-    <el-empty v-if="!store.loading && store.words.length === 0" description="今日暂无单词，可点击刷新自动抽取" />
+    <el-empty v-if="!store.loading && store.words.length === 0" description="还没有学习批次">
+      <el-button type="primary" round :loading="store.loading" @click="store.refreshBatch()">抽取第一批单词</el-button>
+    </el-empty>
 
     <!-- 单词卡片 -->
     <div v-loading="store.loading" class="card-grid">
@@ -57,6 +59,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTodayStore } from '../stores/today'
 import { posTagType } from '../utils/pos'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
@@ -68,6 +71,24 @@ const activeId = ref(null)
 function openDetail(id) {
   activeId.value = id
   dialogVisible.value = true
+}
+
+/** 换一批：还有未完成的词时先确认（未完成的会保留进新批次） */
+async function onRefreshBatch() {
+  const unfinished = store.total - store.completed
+  if (unfinished > 0) {
+    try {
+      await ElMessageBox.confirm(
+        `还有 ${unfinished} 个单词未完成，它们会保留到新批次继续学习。确定换一批吗？`,
+        '换一批',
+        { confirmButtonText: '换一批', cancelButtonText: '再学学', type: 'info' }
+      )
+    } catch {
+      return
+    }
+  }
+  await store.refreshBatch()
+  ElMessage.success('已换一批')
 }
 
 onMounted(() => store.load())

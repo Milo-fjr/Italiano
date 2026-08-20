@@ -18,7 +18,7 @@
       </el-card>
       <el-card class="stat-card">
         <div class="stat-value">{{ store.stats.todayCompleted }}/{{ store.stats.todayTotal }}</div>
-        <div class="stat-label">今日已学</div>
+        <div class="stat-label">本批已学</div>
       </el-card>
       <el-card class="stat-card">
         <div class="stat-value">{{ store.stats.totalExtractCount }}</div>

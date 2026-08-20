@@ -23,7 +23,7 @@ http.interceptors.response.use(
 )
 
 export default {
-  // 今日单词
+  // 学习批次（手动刷新）
   getToday: () => http.get('/today'),
   extractToday: () => http.post('/today/extract'),
   // 单词库

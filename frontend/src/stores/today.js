@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '../api'
 
-/** 今日单词 */
+/** 学习批次（手动刷新，不按日期自动轮换） */
 export const useTodayStore = defineStore('today', {
   state: () => ({
     date: '',
@@ -15,6 +15,19 @@ export const useTodayStore = defineStore('today', {
       this.loading = true
       try {
         const data = await api.getToday()
+        this.date = data.date
+        this.total = data.total
+        this.completed = data.completed
+        this.words = data.words
+      } finally {
+        this.loading = false
+      }
+    },
+    /** 换一批：未完成的词保留进新批次，其余名额重新抽取 */
+    async refreshBatch() {
+      this.loading = true
+      try {
+        const data = await api.extractToday()
         this.date = data.date
         this.total = data.total
         this.completed = data.completed

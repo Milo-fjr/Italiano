@@ -26,11 +26,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 每日抽取算法（核心业务）：
- * 1. 第一优先抽「从未抽取过」的词（无 progress 记录），按 id 升序（沿用词库分类顺序，稳定可预期）
- * 2. 第二优先抽「累计完成次数少」的词：extract_count 升序 → 最近抽取时间升序 → id 升序
- * 3. 冷却期内（最近 cooldown_days 天抽取过）的词不参与，避免连续重复
- * 4. 候选不足时放宽冷却限制，仍按完成次数最少补足
+ * 学习批次（核心业务）：
+ * 1. 批次只在用户手动「换一批」时生成，不按日期自动轮换——没背完的批次一直保留，学完为止
+ * 2. 换一批时：上一批未完成的单词保留进入新批次，剩余名额按算法补新词
+ * 3. 新词第一优先抽「从未抽取过」的词（随机抽取）；第二优先「累计完成次数少」的词
+ *    （extract_count 升序 → 最近抽取时间升序 → id 升序）
+ * 4. 冷却期内（最近 cooldown_days 天抽取过）的词不参与新词候选，候选不足时放宽
  * <p>
  * 词库总量仅千级，进度表全量加载后内存筛选排序即可，无需复杂 SQL。
  */
@@ -44,38 +45,38 @@ public class ExtractService {
     private final DailyExtractMapper dailyExtractMapper;
     private final SettingService settingService;
 
-    /** 获取今日单词列表；当天无记录时自动抽取（幂等） */
-    public Map<String, Object> getToday() {
-        LocalDate today = LocalDate.now();
-        List<DailyExtract> records = selectToday(today);
-        if (records.isEmpty()) {
-            records = extract(today);
-        }
-        return assemble(today, records);
+    /** 获取当前批次（不自动抽取：从未刷新过则返回空批次，由用户手动抽第一批） */
+    public Map<String, Object> getCurrent() {
+        List<DailyExtract> records = dailyExtractMapper.selectList(
+                new LambdaQueryWrapper<DailyExtract>().orderByAsc(DailyExtract::getId));
+        return assemble(records);
     }
 
-    /** 手动触发今日抽取（幂等：当天已有记录则直接返回现有列表，不重复抽取） */
-    public Map<String, Object> manualExtract() {
+    /** 手动换一批：上一批未完成的词保留进新批次（学完为止），其余名额重新抽取 */
+    @Transactional
+    public Map<String, Object> refresh() {
         LocalDate today = LocalDate.now();
-        List<DailyExtract> records = selectToday(today);
-        if (records.isEmpty()) {
-            records = extract(today);
+        List<DailyExtract> current = dailyExtractMapper.selectList(null);
+        List<Long> carried = current.stream()
+                .filter(de -> de.getStatus() == null || de.getStatus() == 0)
+                .map(DailyExtract::getWordId)
+                .toList();
+        if (!current.isEmpty()) {
+            dailyExtractMapper.delete(new LambdaQueryWrapper<>());
         }
-        return assemble(today, records);
-    }
-
-    private List<DailyExtract> selectToday(LocalDate today) {
-        return dailyExtractMapper.selectList(new LambdaQueryWrapper<DailyExtract>()
-                .eq(DailyExtract::getExtractDate, today)
-                .orderByAsc(DailyExtract::getId));
+        List<DailyExtract> records = extract(today, carried);
+        log.info("换一批完成：保留未完成 {} 个，本批共 {} 个词（每日 {} / 冷却 {} 天）",
+                carried.size(), records.size(), settingService.getSetting().getDailyCount(),
+                settingService.getSetting().getCooldownDays());
+        return assemble(records);
     }
 
     /**
-     * 执行抽取：选出词 ID 并写入 daily_extract(status=0)，
-     * 同时为无进度的词创建 progress 记录（status=1 已抽取未完成），并刷新 last_extracted_at。
+     * 执行抽取：carried 为保留的未完成词（优先占位），再按算法补足名额。
+     * 写入 daily_extract(status=0)，同时为无进度的词创建 progress 记录
+     * （status=1 已抽取未完成），并刷新 last_extracted_at。
      */
-    @Transactional
-    public List<DailyExtract> extract(LocalDate today) {
+    private List<DailyExtract> extract(LocalDate today, List<Long> carried) {
         Setting setting = settingService.getSetting();
         int need = setting.getDailyCount();
         int cooldownDays = setting.getCooldownDays();
@@ -83,24 +84,26 @@ public class ExtractService {
         List<WordProgress> allProgress = progressMapper.selectList(null);
         Set<Long> progressedIds = allProgress.stream()
                 .map(WordProgress::getWordId).collect(Collectors.toSet());
-        Set<Long> picked = new LinkedHashSet<>();
+        Map<Long, WordProgress> progressById = allProgress.stream()
+                .collect(Collectors.toMap(WordProgress::getWordId, Function.identity(), (a, b) -> a));
+        Set<Long> picked = new LinkedHashSet<>(carried);
 
-        // ① 第一优先：从未抽取过的词（无 progress 记录），按 id 升序
+        // ① 新词：从未抽取过的词（无 progress 记录），随机抽取
         if (picked.size() < need) {
             LambdaQueryWrapper<Word> qw = new LambdaQueryWrapper<Word>()
-                    .orderByAsc(Word::getId)
-                    .last("LIMIT " + (need - picked.size()));
+                    .last("ORDER BY RAND() LIMIT " + (need - picked.size()));
             if (!progressedIds.isEmpty()) {
                 qw.notIn(Word::getId, progressedIds);
+            }
+            if (!picked.isEmpty()) {
+                qw.notIn(Word::getId, picked);
             }
             wordMapper.selectList(qw).forEach(w -> picked.add(w.getId()));
         }
 
         // ② 第二优先：已有进度且不在冷却期的词（last_extracted_at <= 今天-冷却天数）
-        //    冷却期自动排除了今天已抽过的词，满足"同一天不重复抽同一词"
+        //    冷却期自动排除了本批已保留/刚抽过的词，避免连续重复
         LocalDate cooldownBoundary = today.minusDays(cooldownDays);
-        Map<Long, WordProgress> progressById = allProgress.stream()
-                .collect(Collectors.toMap(WordProgress::getWordId, Function.identity(), (a, b) -> a));
         if (picked.size() < need) {
             allProgress.stream()
                     .filter(p -> !picked.contains(p.getWordId()))
@@ -120,7 +123,7 @@ public class ExtractService {
                     .forEach(p -> picked.add(p.getWordId()));
         }
 
-        // ④ 写入今日抽取记录 + 创建/刷新进度
+        // ④ 写入批次记录 + 创建/刷新进度
         List<DailyExtract> records = new ArrayList<>();
         for (Long wordId : picked) {
             DailyExtract de = new DailyExtract();
@@ -143,7 +146,6 @@ public class ExtractService {
                 progressMapper.updateById(p);
             }
         }
-        log.info("今日({})抽取完成：{} 个词（每日 {} / 冷却 {} 天）", today, records.size(), need, cooldownDays);
         return records;
     }
 
@@ -155,8 +157,8 @@ public class ExtractService {
                 .thenComparing(WordProgress::getWordId);
     }
 
-    /** 组装返回：日期 + 今日单词列表（含进度信息） */
-    private Map<String, Object> assemble(LocalDate today, List<DailyExtract> records) {
+    /** 组装返回：批次日期 + 批次单词列表（含进度信息）；空批次日期为今天 */
+    private Map<String, Object> assemble(List<DailyExtract> records) {
         List<Long> wordIds = records.stream().map(DailyExtract::getWordId).toList();
         Map<Long, Word> words = wordIds.isEmpty() ? Map.of()
                 : wordMapper.selectBatchIds(wordIds).stream()
@@ -192,7 +194,8 @@ public class ExtractService {
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("date", today.toString());
+        LocalDate date = records.isEmpty() ? LocalDate.now() : records.get(0).getExtractDate();
+        result.put("date", date.toString());
         result.put("total", list.size());
         result.put("completed", list.stream().filter(d -> d.getDailyStatus() != null && d.getDailyStatus() == 1).count());
         result.put("words", list);

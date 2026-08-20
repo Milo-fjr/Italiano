@@ -11,7 +11,6 @@ import com.italiano.vocab.mapper.WordProgressMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,11 +43,10 @@ public class StatsService {
         dto.setTotalExtractCount(progresses.stream()
                 .mapToLong(p -> p.getExtractCount() == null ? 0 : p.getExtractCount()).sum());
 
-        // 今日进度
-        List<DailyExtract> today = dailyExtractMapper.selectList(new LambdaQueryWrapper<DailyExtract>()
-                .eq(DailyExtract::getExtractDate, LocalDate.now()));
-        dto.setTodayTotal(today.size());
-        dto.setTodayCompleted((int) today.stream().filter(t -> t.getStatus() != null && t.getStatus() == 1).count());
+        // 当前批次进度（批次手动刷新、不按日期轮换，表内即当前批次）
+        List<DailyExtract> currentBatch = dailyExtractMapper.selectList(null);
+        dto.setTodayTotal(currentBatch.size());
+        dto.setTodayCompleted((int) currentBatch.stream().filter(t -> t.getStatus() != null && t.getStatus() == 1).count());
 
         // 分类分布：词数与已至少完成一次的词数
         Map<String, List<Word>> byCategory = words.stream()

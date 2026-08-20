@@ -216,7 +216,7 @@ public class WordService {
         return getDetail(id);
     }
 
-    /** 标记完成：抽取次数 +1、进度置已完成；今日抽取记录置已完成 */
+    /** 标记完成：抽取次数 +1、进度置已完成；当前批次记录置已完成 */
     @Transactional
     public WordDetailDTO complete(Long id) {
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
@@ -239,7 +239,7 @@ public class WordService {
         return getDetail(id);
     }
 
-    /** 撤销完成：抽取次数 -1（下限 0）、状态回退；今日抽取记录回退为未完成 */
+    /** 撤销完成：抽取次数 -1（下限 0）、状态回退；当前批次记录回退为未完成 */
     @Transactional
     public WordDetailDTO undo(Long id) {
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
@@ -258,11 +258,12 @@ public class WordService {
         return getDetail(id);
     }
 
-    /** 同步更新今日抽取记录的完成状态（若存在） */
+    /** 同步更新当前批次中该词的完成状态（若在批次中；批次可能非今日抽取，不限日期） */
     private void updateTodayRecord(Long wordId, int status) {
         DailyExtract de = dailyExtractMapper.selectOne(new LambdaQueryWrapper<DailyExtract>()
-                .eq(DailyExtract::getExtractDate, LocalDate.now())
-                .eq(DailyExtract::getWordId, wordId));
+                .eq(DailyExtract::getWordId, wordId)
+                .orderByDesc(DailyExtract::getId)
+                .last("LIMIT 1"));
         if (de != null) {
             de.setStatus(status);
             de.setCompletedAt(status == 1 ? LocalDateTime.now() : null);

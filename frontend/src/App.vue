@@ -7,7 +7,7 @@
           <span class="brand-text">意大利语 A2 词汇学习</span>
         </div>
         <el-menu mode="horizontal" router :default-active="activePath" class="menu" :ellipsis="false">
-          <el-menu-item index="/">今日单词</el-menu-item>
+          <el-menu-item index="/">学习批次</el-menu-item>
           <el-menu-item index="/library">单词库</el-menu-item>
           <el-menu-item index="/stats">统计</el-menu-item>
           <el-menu-item index="/settings">设置</el-menu-item>
@@ -64,19 +64,10 @@ body {
   height: 64px;
   padding: 0;
   background: #ffffff;
-  border-bottom: none;
-  box-shadow: 0 2px 12px rgba(0, 60, 30, 0.08);
+  border-bottom: 1px solid #e4e7ed;
   position: sticky;
   top: 0;
   z-index: 100;
-}
-
-/* 国旗三色底线 */
-.header::after {
-  content: '';
-  display: block;
-  height: 3px;
-  background: linear-gradient(90deg, #00934d 33.3%, #ffffff 33.3% 66.6%, #cd212a 66.6%);
 }
 
 .header-inner {
