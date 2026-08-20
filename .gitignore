@@ -1,0 +1,24 @@
+# IDE
+.idea/
+.vscode/
+.trae/
+
+# 构建产物
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# 本地敏感配置
+backend/application-local.yml
+*.local.yml
+
+# 环境与日志
+.env
+*.log
+
+# 开发调试临时文件
+check_data.js
+essere.json
+p1.json
+p2.json
+parlare.json

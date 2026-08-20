@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    # 本地密码等敏感配置放 backend/application-local.yml（不入库），也可用环境变量 MYSQL_PASSWORD
+    import: optional:file:./application-local.yml
+  datasource:
+    # createDatabaseIfNotExist=true：首次启动自动创建数据库 italian_vocab
+    url: jdbc:mysql://localhost:3306/italian_vocab?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      # 每次启动执行 schema.sql（内部均为 IF NOT EXISTS / ON DUPLICATE KEY，幂等）
+      mode: always
+      encoding: utf-8
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
