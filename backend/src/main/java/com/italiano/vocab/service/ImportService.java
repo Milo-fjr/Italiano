@@ -47,6 +47,8 @@ public class ImportService implements ApplicationRunner {
         // 变位结构升级（旧扁平 JSON → 四时态嵌套）+ 复数规则修正（含混合词性补齐），幂等
         migrateConjugationV2();
         fixPluralV2();
+        // 双助动词动词近过去时：单形式 → ho/sono 双形式，幂等
+        fixDualAuxV3();
 
         Long count = wordMapper.selectCount(null);
         if (count == null || count == 0) {
@@ -170,6 +172,37 @@ public class ImportService implements ApplicationRunner {
             return w.substring(0, w.length() - 1) + "e";
         }
         return null;
+    }
+
+    /**
+     * 双助动词动词（correre/vivere 等）近过去时升级：旧单助形式 → ho/sono 双形式。
+     * 仅当近过去时 io 形式不含 "/"（即机器生成的旧单形式）时重建，用户手动编辑过的不动（幂等）。
+     */
+    private void fixDualAuxV3() {
+        int fixed = 0;
+        for (String verb : List.of("correre", "vivere", "nuotare", "volare", "camminare")) {
+            Word w = wordMapper.selectOne(new LambdaQueryWrapper<Word>().eq(Word::getWord, verb));
+            if (w == null || w.getConjugation() == null) {
+                continue;
+            }
+            try {
+                JsonNode node = objectMapper.readTree(w.getConjugation());
+                String io = node.path("passatoProssimo").path("io").asText("");
+                if (io.contains("/")) {
+                    continue; // 已是双形式
+                }
+                Map<String, Map<String, String>> c = ItalianGrammarUtil.buildConjugation(w.getWord(), w.getPos());
+                if (c != null) {
+                    w.setConjugation(objectMapper.writeValueAsString(c));
+                    wordMapper.updateById(w);
+                    fixed++;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        if (fixed > 0) {
+            log.info("双助动词近过去时升级完成：{} 个（ho/sono 双形式）", fixed);
+        }
     }
 
     /**

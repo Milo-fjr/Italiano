@@ -97,6 +97,10 @@ public final class ItalianGrammarUtil {
             "nascere", "morire", "diventare", "succedere", "cadere", "piacere",
             "dispiacere", "sembrare", "apparire");
 
+    /** 双助动词动词（avere 及物 / essere 不及物，近过去时两种形式均合法）：显示为 ho/sono vissuto */
+    private static final Set<String> DUAL_AUX_VERBS = Set.of(
+            "correre", "vivere", "nuotare", "volare", "camminare");
+
     /** 不规则未完成过去时（规则：-are→avo / -ere→evo / -ire→ivo） */
     private static final Map<String, String[]> IRREGULAR_IMPERFETTO = new LinkedHashMap<>();
 
@@ -128,12 +132,13 @@ public final class ItalianGrammarUtil {
         IRREGULAR_FUTURO_STEM.put("rimanere", "rimarr");
     }
 
-    /** 不规则名词复数（重音在词尾音节的 -co/-go 等，规则推导会出错） */
+    /** 不规则名词复数（-co/-go 重音不可知无法推导、-a 型复数等，全部显式收录） */
     private static final Map<String, String> IRREGULAR_PLURAL = new LinkedHashMap<>();
 
     static {
         IRREGULAR_PLURAL.put("uomo", "uomini");
         IRREGULAR_PLURAL.put("dio", "dei");
+        // -co/-go 保留硬音加 h（重音在末音节组）
         IRREGULAR_PLURAL.put("cuoco", "cuochi");
         IRREGULAR_PLURAL.put("parco", "parchi");
         IRREGULAR_PLURAL.put("fungo", "funghi");
@@ -146,6 +151,21 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("videogioco", "videogiochi");
         IRREGULAR_PLURAL.put("pacco", "pacchi");
         IRREGULAR_PLURAL.put("bianco", "bianchi");
+        // -co/-go 不加 h（重音在前，软音 -ci/-gi）
+        IRREGULAR_PLURAL.put("amico", "amici");
+        IRREGULAR_PLURAL.put("medico", "medici");
+        IRREGULAR_PLURAL.put("stomaco", "stomaci");
+        IRREGULAR_PLURAL.put("farmaco", "farmaci");
+        IRREGULAR_PLURAL.put("succo", "succi");
+        IRREGULAR_PLURAL.put("traffico", "traffici");
+        IRREGULAR_PLURAL.put("meccanico", "meccanici");
+        IRREGULAR_PLURAL.put("idraulico", "idraulici");
+        // 强不规则（复数 -a 或交叉性别）
+        IRREGULAR_PLURAL.put("braccio", "braccia");
+        IRREGULAR_PLURAL.put("uovo", "uova");
+        IRREGULAR_PLURAL.put("paio", "paia");
+        IRREGULAR_PLURAL.put("dito", "dita");
+        IRREGULAR_PLURAL.put("mano", "mani");
     }
 
     /**
@@ -175,10 +195,10 @@ public final class ItalianGrammarUtil {
         return "aeiou".indexOf(w.charAt(0)) >= 0;
     }
 
-    /** 是否为需要 lo/gli 的特殊开头：s+辅音、z、gn、ps、x、y */
+    /** 是否为需要 lo/gli 的特殊开头：s+辅音、z、gn、pn、ps、x、y（双字符前缀优先匹配） */
     private static boolean startsWithSpecial(String w) {
-        if (w.startsWith("z") || w.startsWith("gn") || w.startsWith("ps")
-                || w.startsWith("x") || w.startsWith("y")) {
+        if (w.startsWith("z") || w.startsWith("gn") || w.startsWith("pn")
+                || w.startsWith("ps") || w.startsWith("x") || w.startsWith("y")) {
             return true;
         }
         // s+辅音（s impura）
@@ -276,11 +296,11 @@ public final class ItalianGrammarUtil {
 
     /**
      * 生成名词复数形式：
-     * - 不规则表优先（uomo→uomini、parco→parchi 等）
+     * - 不规则表优先（-co/-go 全部显式收录：加 h 与不加 h 取决于重音位置，纯文本无法判断）
      * - 重音结尾（città、caffè）→ 不变复数，返回原词
      * - -ca/-ga → -che/-ghe（amica→amiche）；-cia/-gia 按前一字母元音保留 i（camicia→camicie）或辅音去 i（arancia→arance）
      * - -o→-i、-a→-e、-e→-i
-     * - 复数名词（pl.）与其他词尾返回 null
+     * - 表外 -co/-go（重音不可知）与复数名词（pl.）及其他词尾返回 null，留空手动编辑
      */
     public static String buildPlural(String word, String pos) {
         if (word == null || word.isBlank() || !isNounPos(pos)) {
@@ -305,6 +325,10 @@ public final class ItalianGrammarUtil {
         if (w.endsWith("ca") || w.endsWith("ga")) {
             return w.substring(0, w.length() - 1) + "he";    // amica→amiche / riga→righe
         }
+        // -co/-go：复数是否加 h 依赖重音位置（书写无重音符号），表外无法推导
+        if (w.endsWith("co") || w.endsWith("go")) {
+            return null;
+        }
         if (w.endsWith("o")) {
             return w.substring(0, w.length() - 1) + "i";
         }
@@ -317,8 +341,14 @@ public final class ItalianGrammarUtil {
         return null; // 其他词尾（外来词等）留空手动编辑
     }
 
-    /** 由单数定冠词推导复数定冠词（详情展示用）；本身已是复数（i/gli/le）则原样返回 */
-    public static String pluralArticle(String article, String gender) {
+    /**
+     * 由单数定冠词推导复数定冠词（详情展示用）；本身已是复数（i/gli/le）则原样返回。
+     * 复数性别漂移：-o 阳性名词复数为 -a（braccio→braccia、uovo→uova）时冠词转阴性复数 le。
+     */
+    public static String pluralArticle(String article, String gender, String word, String plural) {
+        if (plural != null && word != null && word.endsWith("o") && plural.endsWith("a")) {
+            return "le";
+        }
         if (article == null) {
             return null;
         }
@@ -386,24 +416,31 @@ public final class ItalianGrammarUtil {
         return withPersons(forms, reflexive);
     }
 
-    /** 近过去时：avere/essere 助动词 + 过去分词（essere 类分词带性数配合标注） */
+    /**
+     * 近过去时：avere/essere 助动词 + 过去分词
+     * - 反身动词强制 essere（分词性数配合）
+     * - essere 类分词带性数配合标注（arrivato/a、arrivati/e）
+     * - 双助动词动词显示两种形式（ho/sono vissuto、abbiamo/siamo vissuti/e）
+     */
     private static Map<String, String> buildPassatoProssimo(String infinitive, boolean reflexive) {
         String pp = pastParticiple(infinitive);
         if (pp == null) {
             return null;
         }
         boolean withEssere = reflexive || ESSERE_VERBS.contains(infinitive);
+        boolean dual = !reflexive && DUAL_AUX_VERBS.contains(infinitive);
         String[] aux = withEssere
                 ? new String[]{"sono", "sei", "è", "siamo", "siete", "sono"}
                 : new String[]{"ho", "hai", "ha", "abbiamo", "avete", "hanno"};
+        String[] dualAux = {"ho/sono", "hai/sei", "ha/è", "abbiamo/siamo", "avete/siete", "hanno/sono"};
         Map<String, String> result = new LinkedHashMap<>();
         for (int i = 0; i < PERSONS.length; i++) {
             String participle = pp;
-            if (withEssere && pp.endsWith("o")) {
+            if ((withEssere || dual) && pp.endsWith("o")) {
                 // 与主语性数配合：单数 -o/-a，复数 -i/-e（如 arrivato/a、arrivati/e）
                 participle = i < 3 ? pp + "/a" : pp + "/i/e";
             }
-            String form = aux[i] + " " + participle;
+            String form = (dual ? dualAux[i] : aux[i]) + " " + participle;
             if (reflexive) {
                 form = REFLEXIVE_PRONOUNS[i] + " " + form;
             }
