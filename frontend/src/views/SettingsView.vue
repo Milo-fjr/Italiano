@@ -4,9 +4,9 @@
 
     <el-card class="settings-card">
       <el-form label-width="140px">
-        <el-form-item label="每日抽取数量">
+        <el-form-item label="每批抽取数量">
           <el-input-number v-model="store.dailyCount" :min="1" :max="200" />
-          <span class="tip">每天自动抽取供学习的单词数（默认 35）</span>
+          <span class="tip">每批抽取供学习的单词数（默认 35）</span>
         </el-form-item>
         <el-form-item label="冷却天数">
           <el-input-number v-model="store.cooldownDays" :min="0" :max="90" />
@@ -17,7 +17,7 @@
         </el-form-item>
       </el-form>
       <el-alert
-        title="设置对下一次抽取生效：当日已抽取的单词列表不受影响。"
+        title="设置对下一次换一批生效：当前批次不受影响。"
         type="info"
         :closable="false"
         show-icon
