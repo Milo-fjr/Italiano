@@ -117,7 +117,9 @@ public final class ItalianGrammarUtil {
 
     /** 双助动词动词（avere 及物 / essere 不及物，近过去时两种形式均合法）：显示为 ho/sono vissuto */
     private static final Set<String> DUAL_AUX_VERBS = Set.of(
-            "correre", "vivere", "nuotare", "volare", "camminare", "crescere", "dimagrire", "migliorare", "peggiorare");
+            "correre", "vivere", "nuotare", "volare", "camminare", "crescere",
+            "dimagrire", "migliorare", "peggiorare",
+            "passare", "cambiare", "finire", "iniziare", "continuare", "girare", "mancare");
 
     /** 不规则未完成过去时（规则：-are→avo / -ere→evo / -ire→ivo） */
     private static final Map<String, String[]> IRREGULAR_IMPERFETTO = new LinkedHashMap<>();
@@ -150,6 +152,8 @@ public final class ItalianGrammarUtil {
         IRREGULAR_FUTURO_STEM.put("rimanere", "rimarr");
         IRREGULAR_FUTURO_STEM.put("vivere", "vivr");
         IRREGULAR_FUTURO_STEM.put("tenere", "terr");
+        // -sciare 动词保留 i 维持 /ʃ/ 音（scierò），通用 -ciare 去音规则会错成 scerò
+        IRREGULAR_FUTURO_STEM.put("sciare", "scier");
     }
 
     /** 不规则名词复数（-co/-go 重音不可知无法推导、-a 型复数等，全部显式收录） */
@@ -192,6 +196,10 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("zio", "zii");
         // 双性别名词：阳/阴复数并列
         IRREGULAR_PLURAL.put("collega", "colleghi/colleghe");
+        // 全表排查补充
+        IRREGULAR_PLURAL.put("pigiama", "pigiami");
+        IRREGULAR_PLURAL.put("pilota", "piloti/pilote");
+        IRREGULAR_PLURAL.put("lenzuolo", "lenzuola");
     }
 
     /** 不变复数名词：月份与常用外来词（复数 = 原词） */
@@ -199,20 +207,27 @@ public final class ItalianGrammarUtil {
             "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
             "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
             "autobus", "bar", "computer", "email", "film", "hobby", "internet",
-            "menu", "password", "sport", "tram", "weekend", "yogurt");
+            "menu", "password", "sport", "tram", "weekend", "yogurt",
+            "cinema", "garage", "mouse", "video", "euro");
+
+    /** 不可数名词（按词库词义无复数形式）：fame/sete/sangue 等，复数留空 */
+    private static final Set<String> UNCOUNTABLE_NOUNS = Set.of(
+            "fame", "sete", "sangue", "nuoto", "tosse", "pasta", "gente", "neve",
+            "latte", "miele", "riso", "sale", "pepe", "burro", "grandine", "denaro",
+            "ginnastica", "musica", "benzina", "frutta", "salute", "calcio", "mezzogiorno");
 
     /** 复数加 h 的 -co/-go 形容词（硬音：antico→antichi/antiche） */
     private static final Set<String> ADJ_HARD = Set.of(
             "antico", "bianco", "fresco", "largo", "lungo", "ricco",
-            "secco", "sporco", "stanco");
+            "secco", "sporco", "stanco", "poco");
 
     /** 复数不加 h 的 -co/-go 形容词（软音：simpatico→simpatici/simpatiche） */
     private static final Set<String> ADJ_SOFT = Set.of(
             "antipatico", "economico", "simpatico");
 
-    /** 不变形容词（性数不变，无变化形式） */
+    /** 不变形容词（性数不变，无变化形式；qualche/nessuno 无复数形式） */
     private static final Set<String> ADJ_INVARIANT = Set.of(
-            "blu", "rosa", "viola", "gratis", "ogni");
+            "blu", "rosa", "viola", "gratis", "ogni", "qualche", "nessuno", "arancione");
 
     /**
      * 根据词性推断名词性别：含 s.m. → m；含 s.f. → f；
@@ -260,13 +275,15 @@ public final class ItalianGrammarUtil {
      * 推断名词定冠词（导入时预填，可手动编辑）：
      * - 复数名词（词性含 pl.）：阳性按开头给 i/gli，阴性给 le
      * - 元音开头 → l'；阳性特殊开头 → lo，其余 → il；阴性 → la
+     * - 双性别名词（s.m./s.f.，gender 为 null）：元音 → l'（l'autista），其余 il/la、lo/la 并列
      */
     public static String inferArticle(String word, String pos, String gender) {
-        if (word == null || word.isBlank() || gender == null) {
+        if (word == null || word.isBlank()) {
             return null;
         }
         String w = word.toLowerCase();
         boolean male = "m".equals(gender);
+        boolean mixed = gender == null && isNounPos(pos);
         boolean plural = pos != null && pos.contains("pl.");
         if (plural) {
             if (!male) {
@@ -277,8 +294,14 @@ public final class ItalianGrammarUtil {
         if (startsWithVowel(w)) {
             return "l'";
         }
+        if (mixed) {
+            return startsWithSpecial(w) ? "lo/la" : "il/la";
+        }
         if (male) {
             return startsWithSpecial(w) ? "lo" : "il";
+        }
+        if (gender == null) {
+            return null;
         }
         return "la";
     }
@@ -319,7 +342,14 @@ public final class ItalianGrammarUtil {
             return null; // 不变形容词（blu、rosa、viola 等性数不变）
         }
         Map<String, String> forms = new LinkedHashMap<>();
-        if (w.endsWith("o")) {
+        if (w.endsWith("io")) {
+            // -io 结尾：去 io 加词尾（doppio→doppi/doppie、vecchio→vecchi/vecchie，不加 h）
+            String stem = w.substring(0, w.length() - 2);
+            forms.put("ms", w);
+            forms.put("fs", stem + "ia");
+            forms.put("mp", stem + "i");
+            forms.put("fp", stem + "ie");
+        } else if (w.endsWith("o")) {
             String stem = w.substring(0, w.length() - 1);
             // -co/-go 形容词：硬音复数加 h（antichi/antiche），软音不加（simpatici/simpatiche）
             boolean hard = ADJ_HARD.contains(w);
@@ -363,6 +393,10 @@ public final class ItalianGrammarUtil {
         if (exception != null) {
             return exception;
         }
+        // 不可数名词（按词库词义）：无复数形式，留空
+        if (UNCOUNTABLE_NOUNS.contains(w)) {
+            return null;
+        }
         // 不变复数（月份、外来词）与重音结尾 → 复数 = 原词
         if (INVARIANT_NOUNS.contains(w) || "àèéìòù".indexOf(w.charAt(w.length() - 1)) >= 0) {
             return w;
@@ -390,6 +424,10 @@ public final class ItalianGrammarUtil {
         if (w.endsWith("ca") || w.endsWith("ga")) {
             return w.substring(0, w.length() - 1) + "he";    // amica→amiche / riga→righe
         }
+        // 希腊词源 -ma 阳性名词：-ma → -mi（problema→problemi、clima→climi、diploma→diplomi）
+        if (w.endsWith("ma")) {
+            return w.substring(0, w.length() - 1) + "i";
+        }
         // -co/-go：复数是否加 h 依赖重音位置（书写无重音符号），表外无法推导
         if (w.endsWith("co") || w.endsWith("go")) {
             return null;
@@ -408,14 +446,26 @@ public final class ItalianGrammarUtil {
 
     /**
      * 由单数定冠词推导复数定冠词（详情展示用）；本身已是复数（i/gli/le）则原样返回。
-     * 复数性别漂移：-o 阳性名词复数为 -a（braccio→braccia、uovo→uova）时冠词转阴性复数 le。
+     * 复数性别漂移：-o 阳性名词复数为 -a（braccio→braccia、uovo→uova）时冠词转阴性复数 le；
+     * 例外 paio→paia 仍为阳性（i paia）。
+     * 双性别名词：il/la → i/le、lo/la → gli/le、l' → gli/le。
      */
     public static String pluralArticle(String article, String gender, String word, String plural) {
-        if (plural != null && word != null && word.endsWith("o") && plural.endsWith("a")) {
+        if (plural != null && word != null && word.endsWith("o") && plural.endsWith("a")
+                && !"paio".equals(word.toLowerCase())) {
             return "le";
         }
         if (article == null) {
             return null;
+        }
+        if (gender == null && article.contains("/")) {
+            return switch (article) {
+                case "il/la" -> "i/le";
+                default -> "gli/le"; // lo/la
+            };
+        }
+        if (gender == null && "l'".equals(article)) {
+            return "gli/le"; // 双性别元音开头：l'autista → gli/le autisti/autiste
         }
         return switch (article) {
             case "il" -> "i";

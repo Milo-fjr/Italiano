@@ -52,6 +52,9 @@ public class ImportService implements ApplicationRunner {
         fixDualAuxV3();
         // 全表排查修正（V4）：系统性拼写错误一次性重建，触发后不再重复
         fixGrammarV4();
+        // 全表排查修正（V5）：二轮深查——不可数名词清空复数、-ma→-mi、-io 形容词、
+        // 不变形容词清空、sciare 将来时、双助动词扩充、双性别名词冠词，幂等
+        fixGrammarV5();
 
         Long count = wordMapper.selectCount(null);
         if (count == null || count == 0) {
@@ -224,6 +227,77 @@ public class ImportService implements ApplicationRunner {
             }
         }
         log.info("全表语法修正（V4）完成：重建 {} 个单词的语法字段", fixed);
+    }
+
+    /**
+     * 全表排查修正（V5）：二轮深查——
+     * - 不可数名词（fame/sete/sangue/latte 等按词库词义）清空错误复数
+     * - 希腊词源 -ma 名词：probleme→problemi、diplome→diplomi、clime→climi
+     * - 不变名词补充：cinema/garage/mouse/video/euro 复数=原词
+     * - 例外表补充：pigiama→pigiami、pilota→piloti/pilote、lenzuolo→lenzuola
+     * - 形容词 -io 复数：doppii→doppi、grigii→grigi、vecchii→vecchi 等 6 个
+     * - poco 硬音复数：poci→pochi；qualche/nessuno/arancione 清空（不变形容词）
+     * - sciare 将来时：scerò→scierò（保留 i 维持 /ʃ/ 音）
+     * - 双助动词扩充：passare/cambiare/finire 等 7 个近过去时 ho/sono 双形式
+     * - 双性别名词冠词补齐：il/la turista、l'autista（article 为空的记录）
+     * - 词性数据修正：infermiere/parrucchiere 实为阳性（阴性形式是另一个词）
+     * <p>
+     * 触发标记：vecchio 的形容词阳性复数仍为旧规则错误值 vecchii；修复后标记消失。
+     */
+    private void fixGrammarV5() {
+        Word vecchio = wordMapper.selectOne(new LambdaQueryWrapper<Word>().eq(Word::getWord, "vecchio"));
+        if (vecchio == null || vecchio.getAdjForms() == null
+                || !vecchio.getAdjForms().contains("\"mp\":\"vecchii\"")) {
+            return;
+        }
+        // 词性数据修正：infermiere/parrucchiere 为阳性名词（阴性形式 infermiera/parrucchiera 未收录）
+        for (String wn : List.of("infermiere", "parrucchiere")) {
+            Word t = wordMapper.selectOne(new LambdaQueryWrapper<Word>().eq(Word::getWord, wn));
+            if (t != null && t.getPos() != null && t.getPos().contains("/s.f.")) {
+                t.setPos(t.getPos().replace("/s.f.", ""));
+                wordMapper.updateById(t);
+            }
+        }
+        int fixed = 0;
+        for (Word w : wordMapper.selectList(null)) {
+            try {
+                // UpdateWrapper 显式 set（含 null），updateById 会跳过 null 字段导致无法清空
+                LambdaUpdateWrapper<Word> uw = new LambdaUpdateWrapper<Word>().eq(Word::getId, w.getId());
+                boolean changed = false;
+                String newPlural = ItalianGrammarUtil.buildPlural(w.getWord(), w.getPos());
+                if (!java.util.Objects.equals(newPlural, w.getPlural())) {
+                    uw.set(Word::getPlural, newPlural);
+                    changed = true;
+                }
+                Map<String, String> newAdj = ItalianGrammarUtil.buildAdjectiveForms(w.getWord(), w.getPos());
+                String newAdjJson = newAdj == null ? null : objectMapper.writeValueAsString(newAdj);
+                if (!java.util.Objects.equals(newAdjJson, w.getAdjForms())) {
+                    uw.set(Word::getAdjForms, newAdjJson);
+                    changed = true;
+                }
+                Map<String, Map<String, String>> newConj = ItalianGrammarUtil.buildConjugation(w.getWord(), w.getPos());
+                String newConjJson = newConj == null ? null : objectMapper.writeValueAsString(newConj);
+                if (!java.util.Objects.equals(newConjJson, w.getConjugation())) {
+                    uw.set(Word::getConjugation, newConjJson);
+                    changed = true;
+                }
+                // 冠词仅为空时补推导（双性别名词 il/la turista 等；非空的不覆盖）
+                if (w.getArticle() == null) {
+                    String article = ItalianGrammarUtil.inferArticle(w.getWord(), w.getPos(),
+                            ItalianGrammarUtil.inferGender(w.getPos()));
+                    if (article != null) {
+                        uw.set(Word::getArticle, article);
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    wordMapper.update(null, uw);
+                    fixed++;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        log.info("全表语法修正（V5）完成：重建 {} 个单词的语法字段", fixed);
     }
 
     /**
