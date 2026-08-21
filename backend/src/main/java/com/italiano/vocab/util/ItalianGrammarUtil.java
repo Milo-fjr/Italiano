@@ -46,6 +46,11 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PRESENT.put("morire", new String[]{"muoio", "muori", "muore", "moriamo", "morite", "muoiono"});
         IRREGULAR_PRESENT.put("salire", new String[]{"salgo", "sali", "sale", "saliamo", "salite", "salgono"});
         IRREGULAR_PRESENT.put("sedere", new String[]{"siedo", "siedi", "siede", "sediamo", "sedete", "siedono"});
+        IRREGULAR_PRESENT.put("tenere", new String[]{"tengo", "tieni", "tiene", "teniamo", "tenete", "tengono"});
+        IRREGULAR_PRESENT.put("raccogliere", new String[]{"raccolgo", "raccogli", "raccoglie", "raccogliamo", "raccogliete", "raccolgono"});
+        // -iare 重音在 i 上：tu 保留双 i（ringrazii/scii），通用规则会错误地去掉
+        IRREGULAR_PRESENT.put("ringraziare", new String[]{"ringrazio", "ringrazii", "ringrazia", "ringraziamo", "ringraziate", "ringraziano"});
+        IRREGULAR_PRESENT.put("sciare", new String[]{"scio", "scii", "scia", "sciamo", "sciate", "sciano"});
     }
 
     /** -isc 型 -ire 动词（第一人称 -isco：capire → capisco） */
@@ -88,6 +93,19 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PP.put("rompere", "rotto");
         IRREGULAR_PP.put("dare", "dato");
         IRREGULAR_PP.put("stare", "stato");
+        // 全表排查补充（词库实存动词）
+        IRREGULAR_PP.put("accendere", "acceso");
+        IRREGULAR_PP.put("correggere", "corretto");
+        IRREGULAR_PP.put("crescere", "cresciuto");
+        IRREGULAR_PP.put("decidere", "deciso");
+        IRREGULAR_PP.put("offrire", "offerto");
+        IRREGULAR_PP.put("permettere", "permesso");
+        IRREGULAR_PP.put("piacere", "piaciuto");
+        IRREGULAR_PP.put("piangere", "pianto");
+        IRREGULAR_PP.put("promettere", "promesso");
+        IRREGULAR_PP.put("raccogliere", "raccolto");
+        IRREGULAR_PP.put("smettere", "smesso");
+        IRREGULAR_PP.put("sorridere", "sorriso");
     }
 
     /** 用 essere 作助动词的不及物动词（其余用 avere；反身动词一律 essere） */
@@ -95,11 +113,11 @@ public final class ItalianGrammarUtil {
             "essere", "stare", "andare", "venire", "partire", "uscire", "entrare",
             "arrivare", "tornare", "restare", "rimanere", "salire", "scendere",
             "nascere", "morire", "diventare", "succedere", "cadere", "piacere",
-            "dispiacere", "sembrare", "apparire");
+            "dispiacere", "sembrare", "apparire", "riuscire", "bastare", "costare");
 
     /** 双助动词动词（avere 及物 / essere 不及物，近过去时两种形式均合法）：显示为 ho/sono vissuto */
     private static final Set<String> DUAL_AUX_VERBS = Set.of(
-            "correre", "vivere", "nuotare", "volare", "camminare");
+            "correre", "vivere", "nuotare", "volare", "camminare", "crescere", "dimagrire", "migliorare", "peggiorare");
 
     /** 不规则未完成过去时（规则：-are→avo / -ere→evo / -ire→ivo） */
     private static final Map<String, String[]> IRREGULAR_IMPERFETTO = new LinkedHashMap<>();
@@ -130,6 +148,8 @@ public final class ItalianGrammarUtil {
         IRREGULAR_FUTURO_STEM.put("dire", "dir");
         IRREGULAR_FUTURO_STEM.put("bere", "berr");
         IRREGULAR_FUTURO_STEM.put("rimanere", "rimarr");
+        IRREGULAR_FUTURO_STEM.put("vivere", "vivr");
+        IRREGULAR_FUTURO_STEM.put("tenere", "terr");
     }
 
     /** 不规则名词复数（-co/-go 重音不可知无法推导、-a 型复数等，全部显式收录） */
@@ -166,7 +186,33 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("paio", "paia");
         IRREGULAR_PLURAL.put("dito", "dita");
         IRREGULAR_PLURAL.put("mano", "mani");
+        IRREGULAR_PLURAL.put("ginocchio", "ginocchia");
+        IRREGULAR_PLURAL.put("orecchio", "orecchie");
+        // 重音在 i 上的 -io：复数双 i（zio→zii）
+        IRREGULAR_PLURAL.put("zio", "zii");
+        // 双性别名词：阳/阴复数并列
+        IRREGULAR_PLURAL.put("collega", "colleghi/colleghe");
     }
+
+    /** 不变复数名词：月份与常用外来词（复数 = 原词） */
+    private static final Set<String> INVARIANT_NOUNS = Set.of(
+            "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+            "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
+            "autobus", "bar", "computer", "email", "film", "hobby", "internet",
+            "menu", "password", "sport", "tram", "weekend", "yogurt");
+
+    /** 复数加 h 的 -co/-go 形容词（硬音：antico→antichi/antiche） */
+    private static final Set<String> ADJ_HARD = Set.of(
+            "antico", "bianco", "fresco", "largo", "lungo", "ricco",
+            "secco", "sporco", "stanco");
+
+    /** 复数不加 h 的 -co/-go 形容词（软音：simpatico→simpatici/simpatiche） */
+    private static final Set<String> ADJ_SOFT = Set.of(
+            "antipatico", "economico", "simpatico");
+
+    /** 不变形容词（性数不变，无变化形式） */
+    private static final Set<String> ADJ_INVARIANT = Set.of(
+            "blu", "rosa", "viola", "gratis", "ogni");
 
     /**
      * 根据词性推断名词性别：含 s.m. → m；含 s.f. → f；
@@ -269,13 +315,19 @@ public final class ItalianGrammarUtil {
             return null;
         }
         String w = word.toLowerCase();
+        if (ADJ_INVARIANT.contains(w)) {
+            return null; // 不变形容词（blu、rosa、viola 等性数不变）
+        }
         Map<String, String> forms = new LinkedHashMap<>();
         if (w.endsWith("o")) {
             String stem = w.substring(0, w.length() - 1);
-            forms.put("ms", stem + "o");
+            // -co/-go 形容词：硬音复数加 h（antichi/antiche），软音不加（simpatici/simpatiche）
+            boolean hard = ADJ_HARD.contains(w);
+            boolean soft = ADJ_SOFT.contains(w);
+            forms.put("ms", w);
             forms.put("fs", stem + "a");
-            forms.put("mp", stem + "i");
-            forms.put("fp", stem + "e");
+            forms.put("mp", hard ? stem + "hi" : stem + "i");
+            forms.put("fp", (hard || soft) ? stem + "he" : stem + "e");
         } else if (w.endsWith("e")) {
             String stem = w.substring(0, w.length() - 1);
             forms.put("ms", w);
@@ -311,9 +363,22 @@ public final class ItalianGrammarUtil {
         if (exception != null) {
             return exception;
         }
-        // 重音结尾 → 不变复数
-        if ("àèéìòù".indexOf(w.charAt(w.length() - 1)) >= 0) {
+        // 不变复数（月份、外来词）与重音结尾 → 复数 = 原词
+        if (INVARIANT_NOUNS.contains(w) || "àèéìòù".indexOf(w.charAt(w.length() - 1)) >= 0) {
             return w;
+        }
+        // -ista 双性别职业名词：i turisti / le turiste（阴阳复数并列）
+        if (w.endsWith("ista") && pos.contains("s.m.") && pos.contains("s.f.")) {
+            String stem = w.substring(0, w.length() - 1);
+            return stem + "i/" + stem + "e";
+        }
+        // -ie 结尾去 e：moglie→mogli、serie→seri
+        if (w.endsWith("ie")) {
+            return w.substring(0, w.length() - 1);
+        }
+        // -io 结尾去 o：figlio→figli、ufficio→uffici（zio 等例外已在表中）
+        if (w.endsWith("io")) {
+            return w.substring(0, w.length() - 1);
         }
         // -cia/-gia：前一字母为元音保留 i，辅音去 i
         if (w.endsWith("cia") || w.endsWith("gia")) {
@@ -405,7 +470,20 @@ public final class ItalianGrammarUtil {
             String ending = infinitive.substring(infinitive.length() - 3);
             boolean isc = ending.equals("ire") && ISC_VERBS.contains(infinitive);
             forms = switch (ending) {
-                case "are" -> new String[]{stem + "o", stem + "i", stem + "a", stem + "iamo", stem + "ate", stem + "ano"};
+                // -are 按词干分三类：
+                // -care/-gare 保硬音加 h（cercare→cerchi/cerchiamo）；
+                // -iare 去 i（mangiare→mangi/mangiate、cambiare→cambi/cambiate）；
+                // 其余规则（parlare→parli/parlate）
+                case "are" -> {
+                    if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
+                        yield new String[]{stem + "o", stem + "hi", stem + "a", stem + "hiamo", stem + "ate", stem + "ano"};
+                    }
+                    if (infinitive.endsWith("iare")) {
+                        String s = stem.substring(0, stem.length() - 1);
+                        yield new String[]{s + "io", s + "i", s + "ia", s + "iamo", s + "iate", s + "iano"};
+                    }
+                    yield new String[]{stem + "o", stem + "i", stem + "a", stem + "iamo", stem + "ate", stem + "ano"};
+                }
                 case "ere" -> new String[]{stem + "o", stem + "i", stem + "e", stem + "iamo", stem + "ete", stem + "ono"};
                 // -ire 分 -isc 型（capire→capisco）与普通型（dormire→dormo）
                 default -> isc
@@ -476,7 +554,15 @@ public final class ItalianGrammarUtil {
             forms = conjugateFromStem(irregularStem);
         } else if (infinitive.endsWith("are") || infinitive.endsWith("ere") || infinitive.endsWith("ire")) {
             String stem = infinitive.substring(0, infinitive.length() - 3);
-            String link = infinitive.endsWith("ire") ? "ir" : "er";
+            String link;
+            if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
+                link = "her"; // 保硬音：giocare→giocherò、pagare→pagherò
+            } else if (infinitive.endsWith("ciare") || infinitive.endsWith("giare")) {
+                stem = stem.substring(0, stem.length() - 1); // 去 i：mangiare→mangerò、lasciare→lascerò
+                link = "er";
+            } else {
+                link = infinitive.endsWith("ire") ? "ir" : "er"; // 普通 -iare 保留 i：cambiare→cambierò
+            }
             forms = conjugateFromStem(stem + link);
         } else {
             return null;

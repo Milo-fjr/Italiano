@@ -1,6 +1,7 @@
 package com.italiano.vocab.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.italiano.vocab.entity.Word;
@@ -49,6 +50,8 @@ public class ImportService implements ApplicationRunner {
         fixPluralV2();
         // 双助动词动词近过去时：单形式 → ho/sono 双形式，幂等
         fixDualAuxV3();
+        // 全表排查修正（V4）：系统性拼写错误一次性重建，触发后不再重复
+        fixGrammarV4();
 
         Long count = wordMapper.selectCount(null);
         if (count == null || count == 0) {
@@ -172,6 +175,55 @@ public class ImportService implements ApplicationRunner {
             return w.substring(0, w.length() - 1) + "e";
         }
         return null;
+    }
+
+    /**
+     * 全表排查修正（V4）：旧规则引擎存在系统性拼写错误，一次性用新引擎重建全部语法字段——
+     * -io 名词复数（viaggii→viaggi）、-care/-gare/-iare 动词拼写（gioci→giochi、mangii→mangi、
+     * manciiamo→manchiamo）、将来时（cercerò→cercherò、mangierò→mangerò）、过去分词
+     * （pianguto→pianto、deciduto→deciso）、-co/-go 形容词（antici→antichi）、
+     * 月份/外来词不变复数、-ista 双性别复数（autisti/autiste）、不变形容词清空（rosa/viola）。
+     * <p>
+     * 触发标记：ferie 的复数仍为旧引擎错误值 ferii（updateById 无法置 null 的遗留）；
+     * 修复后标记消失，后续启动不再触发，用户手动编辑的值不会被覆盖。
+     */
+    private void fixGrammarV4() {
+        Long legacy = wordMapper.selectCount(new LambdaQueryWrapper<Word>()
+                .eq(Word::getWord, "ferie").eq(Word::getPlural, "ferii"));
+        if (legacy == null || legacy == 0) {
+            return;
+        }
+        int fixed = 0;
+        for (Word w : wordMapper.selectList(null)) {
+            try {
+                // 用 UpdateWrapper 显式 set（含 null），updateById 会跳过 null 字段导致无法清空
+                LambdaUpdateWrapper<Word> uw = new LambdaUpdateWrapper<Word>().eq(Word::getId, w.getId());
+                boolean changed = false;
+                String newPlural = ItalianGrammarUtil.buildPlural(w.getWord(), w.getPos());
+                if (!java.util.Objects.equals(newPlural, w.getPlural())) {
+                    uw.set(Word::getPlural, newPlural);
+                    changed = true;
+                }
+                Map<String, String> newAdj = ItalianGrammarUtil.buildAdjectiveForms(w.getWord(), w.getPos());
+                String newAdjJson = newAdj == null ? null : objectMapper.writeValueAsString(newAdj);
+                if (!java.util.Objects.equals(newAdjJson, w.getAdjForms())) {
+                    uw.set(Word::getAdjForms, newAdjJson);
+                    changed = true;
+                }
+                Map<String, Map<String, String>> newConj = ItalianGrammarUtil.buildConjugation(w.getWord(), w.getPos());
+                String newConjJson = newConj == null ? null : objectMapper.writeValueAsString(newConj);
+                if (!java.util.Objects.equals(newConjJson, w.getConjugation())) {
+                    uw.set(Word::getConjugation, newConjJson);
+                    changed = true;
+                }
+                if (changed) {
+                    wordMapper.update(null, uw);
+                    fixed++;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        log.info("全表语法修正（V4）完成：重建 {} 个单词的语法字段", fixed);
     }
 
     /**
