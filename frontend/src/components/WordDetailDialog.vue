@@ -23,6 +23,16 @@
             <span>累计完成：{{ detail.extractCount }} 次</span>
             <span v-if="detail.lastExtractedAt">最近抽取：{{ detail.lastExtractedAt }}</span>
             <span v-if="detail.completedAt">最近完成：{{ detail.completedAt.replace('T', ' ') }}</span>
+            <span v-if="detail.box > 0">复习盒子：Box {{ detail.box }}<template v-if="detail.nextReviewAt">（下次 {{ detail.nextReviewAt }}）</template></span>
+          </div>
+        </div>
+
+        <!-- 例句：意大利语例句 + 中文翻译 -->
+        <div v-if="detail.example && (detail.example.it || detail.example.zh)" class="section">
+          <h4>例句</h4>
+          <div class="example">
+            <div v-if="detail.example.it" class="example-it">{{ detail.example.it }}</div>
+            <div v-if="detail.example.zh" class="example-zh">{{ detail.example.zh }}</div>
           </div>
         </div>
 
@@ -101,6 +111,14 @@
           </el-form-item>
           <el-form-item label="分类">
             <el-input v-model="form.category" />
+          </el-form-item>
+
+          <el-divider content-position="left">例句（可空）</el-divider>
+          <el-form-item label="意大利语例句">
+            <el-input v-model="form.exampleIt" placeholder="如 Faccio una foto." />
+          </el-form-item>
+          <el-form-item label="中文翻译">
+            <el-input v-model="form.exampleZh" placeholder="如 我拍张照。" />
           </el-form-item>
 
           <template v-if="form.pos && form.pos.startsWith('s.')">
@@ -201,6 +219,8 @@ const form = reactive({
   gender: '',
   article: '',
   plural: '',
+  exampleIt: '',
+  exampleZh: '',
   conjugation: {},
   adjForms: {}
 })
@@ -253,6 +273,8 @@ function startEdit() {
   form.gender = d.gender || ''
   form.article = d.article || ''
   form.plural = d.plural || ''
+  form.exampleIt = d.example?.it || ''
+  form.exampleZh = d.example?.zh || ''
   form.conjugation = {}
   tenses.forEach((t) => {
     form.conjugation[t.key] = {}
@@ -274,7 +296,9 @@ async function saveEdit() {
     const body = {
       meaning: form.meaning,
       pos: form.pos,
-      category: form.category
+      category: form.category,
+      // 例句：全空则提交空对象（后端清空）
+      example: { it: form.exampleIt.trim(), zh: form.exampleZh.trim() }
     }
     // 按词性提交对应语法字段
     if (form.pos && form.pos.startsWith('s.')) {
@@ -424,6 +448,26 @@ defineExpose({ reload: load })
 
 .noun-meta b {
   color: #1e3a2b;
+}
+
+/* 例句展示 */
+.example {
+  background: #f4f9f6;
+  border-radius: 10px;
+  padding: 14px 20px;
+}
+
+.example-it {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a2b;
+  letter-spacing: 0.3px;
+}
+
+.example-zh {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #55606a;
 }
 
 .dialog-actions {

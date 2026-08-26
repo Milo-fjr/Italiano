@@ -20,4 +20,6 @@ public class WordUpdateDTO {
     private Map<String, Map<String, String>> conjugation;
     /** 形容词性数变化 {ms, fs, mp, fp} */
     private Map<String, String> adjForms;
+    /** 例句 {it 意语例句, zh 中文翻译}（全空则清空） */
+    private Map<String, String> example;
 }

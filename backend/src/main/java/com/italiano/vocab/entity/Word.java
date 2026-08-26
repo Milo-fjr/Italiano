@@ -1,6 +1,8 @@
 package com.italiano.vocab.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -27,10 +29,12 @@ public class Word {
     /** 主题分类 */
     private String category;
 
-    /** 名词性别 m/f（可空） */
+    /** 名词性别 m/f（可空；编辑时允许清空） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String gender;
 
-    /** 定冠词：il/lo/la/l'/i/gli/le（可空） */
+    /** 定冠词：il/lo/la/l'/i/gli/le（可空；编辑时允许清空） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String article;
 
     /** 动词变位 JSON（可空） */
@@ -39,8 +43,13 @@ public class Word {
     /** 形容词性数变化 JSON：{ms,fs,mp,fp}（可空） */
     private String adjForms;
 
-    /** 名词复数形式（可空） */
+    /** 名词复数形式（可空；编辑时允许清空） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String plural;
+
+    /** 例句 JSON：{"it": "意语例句", "zh": "中文翻译"}（可空，手动编辑填充；编辑时允许清空） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String example;
 
     /** 创建时间 */
     private LocalDateTime createdAt;

@@ -37,8 +37,17 @@ public class WordDetailDTO {
     /** 形容词性数变化：{ms 阳单, fs 阴单, mp 阳复, fp 阴复} */
     private Map<String, String> adjForms;
 
+    /** 例句：{it 意语例句, zh 中文翻译}（可空） */
+    private Map<String, String> example;
+
     private Integer extractCount;
     private LocalDate lastExtractedAt;
     private Integer progressStatus;
     private LocalDateTime completedAt;
+
+    /** SRS 盒子级别 0-5 */
+    private Integer box;
+
+    /** 下次复习日期 */
+    private LocalDate nextReviewAt;
 }

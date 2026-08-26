@@ -32,6 +32,8 @@ export default {
   updateWord: (id, data) => http.put(`/words/${id}`, data),
   completeWord: (id) => http.post(`/words/${id}/complete`),
   undoWord: (id) => http.post(`/words/${id}/undo`),
+  // 自测「不认识」：SRS 盒子归 0，明天再复习（词保留在本批次）
+  forgetWord: (id) => http.post(`/words/${id}/forget`),
   // 统计 / 设置 / 导入
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 /** 学习统计服务 */
@@ -42,6 +43,25 @@ public class StatsService {
         dto.setCoverageRate(words.isEmpty() ? 0 : Math.round(covered * 1000.0 / words.size()) / 10.0);
         dto.setTotalExtractCount(progresses.stream()
                 .mapToLong(p -> p.getExtractCount() == null ? 0 : p.getExtractCount()).sum());
+
+        // SRS：今日到期复习数（box > 0 且 next_review_at <= 今天）
+        LocalDate today = LocalDate.now();
+        dto.setDueReviewCount(progresses.stream()
+                .filter(p -> p.getBox() != null && p.getBox() > 0)
+                .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
+                .count());
+
+        // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
+        long inSrs = progresses.stream()
+                .filter(p -> p.getBox() != null && p.getBox() > 0).count();
+        List<StatsDTO.CountBucket> boxDist = new ArrayList<>();
+        boxDist.add(bucket("Box 0", words.size() - inSrs));
+        for (int b = 1; b <= 5; b++) {
+            final int box = b;
+            boxDist.add(bucket("Box " + b, progresses.stream()
+                    .filter(p -> p.getBox() != null && p.getBox() == box).count()));
+        }
+        dto.setBoxDistribution(boxDist);
 
         // 当前批次进度（批次手动刷新、不按日期轮换，表内即当前批次）
         List<DailyExtract> currentBatch = dailyExtractMapper.selectList(null);

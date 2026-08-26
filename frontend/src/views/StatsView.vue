@@ -24,7 +24,30 @@
         <div class="stat-value">{{ store.stats.totalExtractCount }}</div>
         <div class="stat-label">累计完成次数</div>
       </el-card>
+      <el-card class="stat-card">
+        <div class="stat-value">{{ store.stats.dueReviewCount }}</div>
+        <div class="stat-label">今日到期复习</div>
+      </el-card>
     </div>
+
+    <!-- SRS 盒子分布：简单数字 + 进度条 -->
+    <el-card v-if="store.stats && store.stats.boxDistribution" class="box-card">
+      <template #header>复习盒子分布（Leitner Box 0-5）</template>
+      <div
+        v-for="b in store.stats.boxDistribution"
+        :key="b.label"
+        class="box-row"
+      >
+        <span class="box-label">
+          {{ b.label }}<template v-if="b.label === 'Box 0'">（未进入复习）</template>
+        </span>
+        <el-progress
+          class="box-bar"
+          :percentage="boxPercentage(b.count)"
+          :format="() => `${b.count} 词`"
+        />
+      </div>
+    </el-card>
 
     <!-- 图表 -->
     <div class="charts">
@@ -50,6 +73,13 @@ const categoryChartRef = ref(null)
 const distChartRef = ref(null)
 let categoryChart = null
 let distChart = null
+
+/** 盒子词数占总词数的百分比（进度条宽度） */
+function boxPercentage(count) {
+  const total = store.stats?.totalWords || 0
+  if (!total) return 0
+  return Math.round((count * 1000) / total) / 10
+}
 
 function renderCharts() {
   const stats = store.stats
@@ -117,7 +147,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -155,5 +185,29 @@ onBeforeUnmount(() => {
 
 .chart {
   height: 420px;
+}
+
+/* SRS 盒子分布：每行标签 + 进度条 */
+.box-card {
+  margin-bottom: 20px;
+}
+
+.box-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0;
+}
+
+.box-label {
+  width: 160px;
+  font-size: 13px;
+  color: #55606a;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.box-bar {
+  flex: 1;
 }
 </style>

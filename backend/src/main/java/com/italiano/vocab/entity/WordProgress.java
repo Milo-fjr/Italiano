@@ -1,6 +1,8 @@
 package com.italiano.vocab.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -34,4 +36,11 @@ public class WordProgress {
 
     /** 最近完成时间 */
     private LocalDateTime completedAt;
+
+    /** SRS 盒子级别 0-5（0=未进入复习，越高越熟练） */
+    private Integer box;
+
+    /** 下次复习日期（Leitner：认识升级加长间隔，不认识归零明天再复习）；允许置空（撤销时作废） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate nextReviewAt;
 }

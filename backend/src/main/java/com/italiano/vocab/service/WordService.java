@@ -26,10 +26,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** 单词服务：词库查询、详情、编辑、完成/撤销 */
+/** 单词服务：词库查询、详情、编辑、完成/撤销、SRS 间隔复习 */
 @Service
 @RequiredArgsConstructor
 public class WordService {
+
+    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/2/4/8/16 天） */
+    private static final int[] REVIEW_INTERVALS = {1, 2, 4, 8, 16};
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
@@ -126,6 +129,7 @@ public class WordService {
         dto.setPlural(w.getPlural());
         dto.setConjugation(parseConjugation(w.getConjugation()));
         dto.setAdjForms(parseFlatMap(w.getAdjForms()));
+        dto.setExample(parseFlatMap(w.getExample()));
 
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
                 .eq(WordProgress::getWordId, id));
@@ -134,6 +138,8 @@ public class WordService {
             dto.setLastExtractedAt(p.getLastExtractedAt());
             dto.setProgressStatus(p.getStatus());
             dto.setCompletedAt(p.getCompletedAt());
+            dto.setBox(p.getBox());
+            dto.setNextReviewAt(p.getNextReviewAt());
         } else {
             dto.setExtractCount(0);
             dto.setProgressStatus(WordProgress.STATUS_NEVER);
@@ -212,11 +218,29 @@ public class WordService {
                 throw new IllegalArgumentException("形容词变化数据保存失败");
             }
         }
+        if (body.getExample() != null) {
+            // 例句仅保留非空字段，it/zh 全空则清空
+            Map<String, String> example = new LinkedHashMap<>();
+            body.getExample().forEach((k, v) -> {
+                if (v != null && !v.isBlank()) {
+                    example.put(k, v.trim());
+                }
+            });
+            if (example.isEmpty()) {
+                w.setExample(null);
+            } else {
+                try {
+                    w.setExample(objectMapper.writeValueAsString(example));
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("例句保存失败");
+                }
+            }
+        }
         wordMapper.updateById(w);
         return getDetail(id);
     }
 
-    /** 标记完成：抽取次数 +1、进度置已完成；当前批次记录置已完成 */
+    /** 标记完成（认识）：抽取次数 +1、进度置已完成、SRS 升盒并安排下次复习；当前批次记录置已完成 */
     @Transactional
     public WordDetailDTO complete(Long id) {
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
@@ -228,18 +252,20 @@ public class WordService {
             p.setStatus(WordProgress.STATUS_COMPLETED);
             p.setLastExtractedAt(LocalDate.now());
             p.setCompletedAt(LocalDateTime.now());
+            advanceReview(p, LocalDate.now());
             progressMapper.insert(p);
         } else {
             p.setExtractCount(p.getExtractCount() == null ? 1 : p.getExtractCount() + 1);
             p.setStatus(WordProgress.STATUS_COMPLETED);
             p.setCompletedAt(LocalDateTime.now());
+            advanceReview(p, LocalDate.now());
             progressMapper.updateById(p);
         }
         updateTodayRecord(id, 1);
         return getDetail(id);
     }
 
-    /** 撤销完成：抽取次数 -1（下限 0）、状态回退；当前批次记录回退为未完成 */
+    /** 撤销完成：抽取次数 -1（下限 0）、状态回退、SRS 盒子对称回退一格；当前批次记录回退为未完成 */
     @Transactional
     public WordDetailDTO undo(Long id) {
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
@@ -253,9 +279,46 @@ public class WordService {
             p.setStatus(WordProgress.STATUS_EXTRACTED);
             p.setCompletedAt(null);
         }
+        // SRS 对称回退：盒子 -1（下限 0），下次复习时间作废
+        int box = p.getBox() == null ? 0 : p.getBox();
+        p.setBox(Math.max(box - 1, 0));
+        p.setNextReviewAt(null);
         progressMapper.updateById(p);
         updateTodayRecord(id, 0);
         return getDetail(id);
+    }
+
+    /**
+     * 自测「不认识」：SRS 盒子归 0、明天再复习。
+     * 不改批次完成状态（daily_extract 保持未完成），词自然保留在本批次继续学。
+     */
+    @Transactional
+    public WordDetailDTO forget(Long id) {
+        WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getWordId, id));
+        if (p == null) {
+            p = new WordProgress();
+            p.setWordId(id);
+            p.setExtractCount(0);
+            p.setStatus(WordProgress.STATUS_EXTRACTED);
+            p.setLastExtractedAt(LocalDate.now());
+            p.setBox(0);
+            p.setNextReviewAt(LocalDate.now().plusDays(1));
+            progressMapper.insert(p);
+        } else {
+            p.setBox(0);
+            p.setNextReviewAt(LocalDate.now().plusDays(1));
+            progressMapper.updateById(p);
+        }
+        return getDetail(id);
+    }
+
+    /** SRS 推进（Leitner 简化版）：认识 → box+1（上限 5），下次复习 = 今天 + 对应间隔天数 */
+    private void advanceReview(WordProgress p, LocalDate today) {
+        int box = p.getBox() == null ? 0 : p.getBox();
+        int next = Math.min(box + 1, REVIEW_INTERVALS.length);
+        p.setBox(next);
+        p.setNextReviewAt(today.plusDays(REVIEW_INTERVALS[next - 1]));
     }
 
     /** 同步更新当前批次中该词的完成状态（若在批次中；批次可能非今日抽取，不限日期） */

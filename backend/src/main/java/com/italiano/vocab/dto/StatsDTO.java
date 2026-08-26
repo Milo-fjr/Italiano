@@ -26,6 +26,12 @@ public class StatsDTO {
     /** 累计完成总次数 */
     private long totalExtractCount;
 
+    /** 今日到期复习词数（SRS：box > 0 且 next_review_at <= 今天） */
+    private long dueReviewCount;
+
+    /** SRS 盒子分布（Box 0-5） */
+    private List<CountBucket> boxDistribution;
+
     /** 分类分布 */
     private List<CategoryStat> categoryStats;
 

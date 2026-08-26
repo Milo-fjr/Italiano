@@ -57,4 +57,10 @@ public class WordController {
     public ApiResponse<WordDetailDTO> undo(@PathVariable Long id) {
         return ApiResponse.ok(wordService.undo(id));
     }
+
+    /** 自测「不认识」：SRS 盒子归 0、明天再复习（词保留在本批次） */
+    @PostMapping("/{id}/forget")
+    public ApiResponse<WordDetailDTO> forget(@PathVariable Long id) {
+        return ApiResponse.ok(wordService.forget(id));
+    }
 }
