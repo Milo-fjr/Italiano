@@ -202,13 +202,14 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("lenzuolo", "lenzuola");
     }
 
-    /** 不变复数名词：月份与常用外来词（复数 = 原词） */
+    /** 不变复数名词：月份与常用外来词/缩写词（复数 = 原词） */
     private static final Set<String> INVARIANT_NOUNS = Set.of(
             "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
             "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
             "autobus", "bar", "computer", "email", "film", "hobby", "internet",
             "menu", "password", "sport", "tram", "weekend", "yogurt",
-            "cinema", "garage", "mouse", "video", "euro");
+            "cinema", "garage", "mouse", "video", "euro",
+            "foto", "bici", "auto");
 
     /** 不可数名词（按词库词义无复数形式）：fame/sete/sangue 等，复数留空 */
     private static final Set<String> UNCOUNTABLE_NOUNS = Set.of(

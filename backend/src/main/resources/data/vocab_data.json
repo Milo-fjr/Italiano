@@ -3203,7 +3203,7 @@
   },
   {
    "id": 450,
-   "word": "automobile",
+   "word": "auto",
    "pos": "s.f.",
    "meaning": "汽车",
    "category": "交通与旅行"
@@ -3217,7 +3217,7 @@
   },
   {
    "id": 452,
-   "word": "bicicletta",
+   "word": "bici",
    "pos": "s.f.",
    "meaning": "自行车",
    "category": "交通与旅行"
@@ -4400,9 +4400,9 @@
   },
   {
    "id": 621,
-   "word": "fotografia",
+   "word": "foto",
    "pos": "s.f.",
-   "meaning": "摄影；照片",
+   "meaning": "照片",
    "category": "爱好与休闲"
   },
   {
