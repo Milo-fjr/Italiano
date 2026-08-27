@@ -12,6 +12,7 @@
         <div class="basic">
           <div class="word-line">
             <span class="word">{{ detail.word }}</span>
+            <SoundButton :text="detail.word" />
             <el-tag size="small" :type="posTagType(detail.pos)">{{ detail.pos || '-' }}</el-tag>
             <el-tag size="small" type="info" effect="plain">{{ detail.category }}</el-tag>
             <el-tag v-if="detail.progressStatus === 2" size="small" type="success">已完成</el-tag>
@@ -182,6 +183,7 @@ import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import SoundButton from './SoundButton.vue'
 
 const props = defineProps({
   modelValue: Boolean,

@@ -46,7 +46,10 @@
         <!-- 浏览模式：与原来完全一致 -->
         <template v-if="mode === 'browse'">
           <div class="card-head">
-            <span class="word">{{ w.word }}</span>
+            <div class="word-line">
+              <span class="word">{{ w.word }}</span>
+              <SoundButton :text="w.word" />
+            </div>
             <span class="head-tags">
               <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
               <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
@@ -63,7 +66,10 @@
         <div v-else class="flip-inner" :class="{ flipped: flippedSet.has(w.wordId) }">
           <div class="flip-face flip-front">
             <div class="card-head">
-              <span class="word">{{ w.word }}</span>
+              <div class="word-line">
+                <span class="word">{{ w.word }}</span>
+                <SoundButton :text="w.word" />
+              </div>
               <span class="head-tags">
                 <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
                 <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
@@ -104,6 +110,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTodayStore } from '../stores/today'
 import { posTagType } from '../utils/pos'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
+import SoundButton from '../components/SoundButton.vue'
 
 const store = useTodayStore()
 const dialogVisible = ref(false)
@@ -274,6 +281,14 @@ onMounted(() => store.load())
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+/* 单词 + 朗读按钮的左簇 */
+.word-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 /* 词性/不规则标签组：空间不足时换行，避免遮挡单词 */
