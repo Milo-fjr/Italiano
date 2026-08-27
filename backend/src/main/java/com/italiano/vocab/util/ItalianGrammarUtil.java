@@ -1,6 +1,8 @@
 package com.italiano.vocab.util;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -275,10 +277,25 @@ public final class ItalianGrammarUtil {
         if (pos.startsWith("v.")) {
             boolean reflexive = w.endsWith("si");
             String infinitive = reflexive ? w.substring(0, w.length() - 2) + "e" : w;
-            if (IRREGULAR_PRESENT.containsKey(infinitive) || ISC_VERBS.contains(infinitive)
-                    || IRREGULAR_PP.containsKey(infinitive) || IRREGULAR_IMPERFETTO.containsKey(infinitive)
-                    || IRREGULAR_FUTURO_STEM.containsKey(infinitive)) {
-                return "不规则变位";
+            // 逐表判定，标注具体不规则的是哪个时态（多个坑用顿号拼接，与详情页时态名一致）
+            List<String> irregulars = new ArrayList<>();
+            if (IRREGULAR_PRESENT.containsKey(infinitive)) {
+                irregulars.add("现在时不规则");
+            }
+            if (ISC_VERBS.contains(infinitive)) {
+                irregulars.add("现在时不规则"); // -isc 型：capisco 而非 capo
+            }
+            if (IRREGULAR_PP.containsKey(infinitive)) {
+                irregulars.add("近过去时不规则");
+            }
+            if (IRREGULAR_IMPERFETTO.containsKey(infinitive)) {
+                irregulars.add("未完成时不规则");
+            }
+            if (IRREGULAR_FUTURO_STEM.containsKey(infinitive)) {
+                irregulars.add("将来时不规则");
+            }
+            if (!irregulars.isEmpty()) {
+                return String.join("、", irregulars.stream().distinct().toList());
             }
             // 音变类：拼写有规律陷阱但必须知道（加 h / 去 i / 避免双 i）
             if (infinitive.endsWith("care") || infinitive.endsWith("gare")
