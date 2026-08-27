@@ -261,9 +261,10 @@ public final class ItalianGrammarUtil {
      * - 名词：不规则复数表 →「不规则复数」；不变复数表 →「复数不变」；
      *   不可数名词无复数不标记；-ca/-ga/-cia/-gia 词尾复数音变 →「音变」
      *   （banca→banche、arancia→arance、camicia→camicie）；
-     *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」
+     *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」；
+     *   -e 结尾名词性别无法从词尾判断 →「性别需记」
      * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
-     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 音变 > 阴阳性特殊
+     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 音变 > 阴阳性特殊 > 性别需记
      */
     public static String irregularTag(String word, String pos, String gender) {
         if (word == null || word.isBlank() || pos == null) {
@@ -296,7 +297,8 @@ public final class ItalianGrammarUtil {
             }
             // 不可数名词无复数形式，无音变陷阱可言
             if (UNCOUNTABLE_NOUNS.contains(w)) {
-                return null;
+                // 但 -e 结尾者性别仍需记（il latte ♂ / la fame ♀），不可数只影响复数不影响性别
+                return w.endsWith("e") && gender != null ? "性别需记" : null;
             }
             // 音变类：-ca/-ga 复数加 h、-cia/-gia 复数去/留 i（取决于前一字母）
             if (w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia")) {
@@ -305,6 +307,10 @@ public final class ItalianGrammarUtil {
             if (gender != null && ((w.endsWith("o") && "f".equals(gender))
                     || (w.endsWith("a") && "m".equals(gender)))) {
                 return "阴阳性特殊";
+            }
+            // -e 结尾名词：阴阳性别无法从词尾判断（il fiore ♂ / la mano ♀），需连同冠词记忆
+            if (w.endsWith("e") && gender != null) {
+                return "性别需记";
             }
             return null;
         }
