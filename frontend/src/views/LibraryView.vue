@@ -28,7 +28,7 @@
       <el-table-column prop="word" label="单词" width="150">
         <template #default="{ row }">
           <span class="table-word">{{ row.word }}</span>
-          <el-tag v-if="row.irregular" size="small" type="warning" effect="plain" class="irr-tag">
+          <el-tag v-if="row.irregular" size="small" type="danger" class="irr-tag">
             {{ row.irregular }}
           </el-tag>
         </template>

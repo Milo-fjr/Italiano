@@ -48,7 +48,7 @@
           <div class="card-head">
             <span class="word">{{ w.word }}</span>
             <span class="head-tags">
-              <el-tag v-if="w.irregular" size="small" type="warning" effect="plain">{{ w.irregular }}</el-tag>
+              <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
               <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
             </span>
           </div>
@@ -65,7 +65,7 @@
             <div class="card-head">
               <span class="word">{{ w.word }}</span>
               <span class="head-tags">
-                <el-tag v-if="w.irregular" size="small" type="warning" effect="plain">{{ w.irregular }}</el-tag>
+                <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
                 <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
               </span>
             </div>
