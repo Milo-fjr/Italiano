@@ -255,11 +255,15 @@ public final class ItalianGrammarUtil {
     /**
      * 判定单词的语法形式是否不规则（供卡片加标记，常规词返回 null 不标记）：
      * - 动词（含反身动词，剥 -si 还原不定式）：命中任一例外表
-     *   （现在时 / -isc 型 / 过去分词 / 未完成过去时 / 将来时词干）→「不规则变位」
+     *   （现在时 / -isc 型 / 过去分词 / 未完成过去时 / 将来时词干）→「不规则变位」；
+     *   未命中例外表但属拼写音变类 →「音变」（-care/-gare 加 h、-ciare/-giare 去 i、
+     *   -iare 避免双 i：cercare→cerchi、mangiare→mangio、studiare→tu studi）
      * - 名词：不规则复数表 →「不规则复数」；不变复数表 →「复数不变」；
+     *   不可数名词无复数不标记；-ca/-ga/-cia/-gia 词尾复数音变 →「音变」
+     *   （banca→banche、arancia→arance、camicia→camicie）；
      *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」
      * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
-     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 阴阳性特殊
+     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 音变 > 阴阳性特殊
      */
     public static String irregularTag(String word, String pos, String gender) {
         if (word == null || word.isBlank() || pos == null) {
@@ -275,15 +279,28 @@ public final class ItalianGrammarUtil {
                     || IRREGULAR_FUTURO_STEM.containsKey(infinitive)) {
                 return "不规则变位";
             }
+            // 音变类：拼写有规律陷阱但必须知道（加 h / 去 i / 避免双 i）
+            if (infinitive.endsWith("care") || infinitive.endsWith("gare")
+                    || infinitive.endsWith("iare")) {
+                return "音变";
+            }
             return null;
         }
-        // 名词：按优先级 不规则复数 > 复数不变 > 阴阳性特殊
+        // 名词：按优先级 不规则复数 > 复数不变 > 音变 > 阴阳性特殊
         if (isNounPos(pos)) {
             if (IRREGULAR_PLURAL.containsKey(w)) {
                 return "不规则复数";
             }
             if (INVARIANT_NOUNS.contains(w)) {
                 return "复数不变";
+            }
+            // 不可数名词无复数形式，无音变陷阱可言
+            if (UNCOUNTABLE_NOUNS.contains(w)) {
+                return null;
+            }
+            // 音变类：-ca/-ga 复数加 h、-cia/-gia 复数去/留 i（取决于前一字母）
+            if (w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia")) {
+                return "音变";
             }
             if (gender != null && ((w.endsWith("o") && "f".equals(gender))
                     || (w.endsWith("a") && "m".equals(gender)))) {
