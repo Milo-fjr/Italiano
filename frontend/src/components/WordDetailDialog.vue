@@ -44,14 +44,16 @@
             <div class="noun-form">
               <div class="noun-label">单数（定冠词）</div>
               <div class="noun-value">
-                {{ detail.article ? detail.article + ' ' : '' }}{{ detail.word }}
+                <span>{{ nounSingular }}</span>
+                <SoundButton v-if="nounSingular" :text="nounSingular" small />
               </div>
             </div>
             <div class="noun-arrow">→</div>
             <div class="noun-form">
               <div class="noun-label">复数（定冠词）</div>
               <div class="noun-value">
-                {{ detail.articlePlural && detail.plural ? detail.articlePlural + ' ' + detail.plural : (detail.plural || detail.articlePlural || '—') }}
+                <span>{{ nounPlural || '—' }}</span>
+                <SoundButton v-if="nounPlural" :text="nounPlural" small />
               </div>
             </div>
           </div>
@@ -59,8 +61,9 @@
             <span v-if="detail.gender">
               性别：<b>{{ detail.gender === 'm' ? '阳性 (m)' : '阴性 (f)' }}</b>
             </span>
-            <span v-if="detail.articleIndefinite">
+            <span v-if="detail.articleIndefinite" class="noun-indef">
               不定冠词：<b>{{ detail.articleIndefinite + ' ' + detail.word }}</b>
+              <SoundButton :text="detail.articleIndefinite + ' ' + detail.word" small />
             </span>
           </div>
         </div>
@@ -70,7 +73,14 @@
           <h4>形容词变化</h4>
           <el-table :data="adjRows" size="small" border>
             <el-table-column prop="label" label="性 / 数" width="120" align="center" />
-            <el-table-column prop="form" label="形式" />
+            <el-table-column label="形式">
+              <template #default="{ row }">
+                <div class="form-cell">
+                  <span>{{ row.form }}</span>
+                  <SoundButton :text="row.form" small />
+                </div>
+              </template>
+            </el-table-column>
           </el-table>
         </div>
 
@@ -86,7 +96,15 @@
             >
               <el-table :data="conjugationRows(forms)" size="small" border>
                 <el-table-column prop="person" label="人称" width="120" />
-                <el-table-column prop="form" label="变位" />
+                <el-table-column label="变位">
+                  <template #default="{ row }">
+                    <div v-if="row.form !== '—'" class="form-cell">
+                      <span>{{ row.form }}</span>
+                      <SoundButton :text="row.form" small />
+                    </div>
+                    <span v-else>—</span>
+                  </template>
+                </el-table-column>
               </el-table>
             </el-tab-pane>
           </el-tabs>
@@ -232,6 +250,20 @@ const form = reactive({
 const isNoun = computed(() => {
   const d = detail.value
   return d && d.pos && d.pos.startsWith('s.') && (d.article || d.plural || d.articlePlural)
+})
+
+/** 名词朗读文本：带定冠词一起读，顺便练冠词连读 */
+const nounSingular = computed(() => {
+  const d = detail.value
+  if (!d) return ''
+  return d.article ? `${d.article} ${d.word}` : d.word
+})
+
+const nounPlural = computed(() => {
+  const d = detail.value
+  if (!d) return ''
+  if (d.articlePlural && d.plural) return `${d.articlePlural} ${d.plural}`
+  return d.plural || d.articlePlural || ''
 })
 
 const hasConjugation = computed(() => {
@@ -432,6 +464,23 @@ defineExpose({ reload: load })
   font-size: 20px;
   font-weight: 600;
   color: #1e3a2b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.noun-indef {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 表格单元格：形式 + 朗读按钮 */
+.form-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .noun-arrow {

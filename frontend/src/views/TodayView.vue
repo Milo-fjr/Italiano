@@ -276,11 +276,13 @@ onMounted(() => store.load())
   box-shadow: 0 3px 8px rgba(0, 118, 62, 0.35);
 }
 
+/* 空间不足时标签组整体换行到单词下方，避免长标签挤压遮挡朗读按钮 */
 .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* 单词 + 朗读按钮的左簇 */
