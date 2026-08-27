@@ -47,7 +47,10 @@
         <template v-if="mode === 'browse'">
           <div class="card-head">
             <span class="word">{{ w.word }}</span>
-            <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
+            <span class="head-tags">
+              <el-tag v-if="w.irregular" size="small" type="warning" effect="plain">{{ w.irregular }}</el-tag>
+              <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
+            </span>
           </div>
           <div class="meaning">{{ w.meaning }}</div>
           <div class="card-foot">
@@ -61,7 +64,10 @@
           <div class="flip-face flip-front">
             <div class="card-head">
               <span class="word">{{ w.word }}</span>
-              <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
+              <span class="head-tags">
+                <el-tag v-if="w.irregular" size="small" type="warning" effect="plain">{{ w.irregular }}</el-tag>
+                <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
+              </span>
             </div>
           </div>
           <div class="flip-face flip-back">
@@ -268,6 +274,16 @@ onMounted(() => store.load())
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+/* 词性/不规则标签组：空间不足时换行，避免遮挡单词 */
+.head-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .word {

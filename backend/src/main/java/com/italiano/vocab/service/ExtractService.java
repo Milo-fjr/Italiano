@@ -9,6 +9,7 @@ import com.italiano.vocab.entity.WordProgress;
 import com.italiano.vocab.mapper.DailyExtractMapper;
 import com.italiano.vocab.mapper.WordMapper;
 import com.italiano.vocab.mapper.WordProgressMapper;
+import com.italiano.vocab.util.ItalianGrammarUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -199,6 +200,7 @@ public class ExtractService {
             dto.setPos(w.getPos());
             dto.setMeaning(w.getMeaning());
             dto.setCategory(w.getCategory());
+            dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
             dto.setDailyStatus(de.getStatus());
             WordProgress p = progress.get(de.getWordId());
             if (p != null) {

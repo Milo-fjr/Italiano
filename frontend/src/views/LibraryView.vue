@@ -28,6 +28,9 @@
       <el-table-column prop="word" label="单词" width="150">
         <template #default="{ row }">
           <span class="table-word">{{ row.word }}</span>
+          <el-tag v-if="row.irregular" size="small" type="warning" effect="plain" class="irr-tag">
+            {{ row.irregular }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="pos" label="词性" width="90" />
@@ -119,6 +122,16 @@ onMounted(() => {
   font-weight: 600;
   color: #1e3a2b;
   font-size: 15px;
+}
+
+/* 不规则标记小标签：跟在单词后 */
+.irr-tag {
+  margin-left: 6px;
+  height: 20px;
+  padding: 0 6px;
+  line-height: 18px;
+  font-size: 11px;
+  vertical-align: middle;
 }
 
 /* 行 hover 提示可点击 */

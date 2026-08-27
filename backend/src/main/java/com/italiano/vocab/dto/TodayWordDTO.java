@@ -14,6 +14,9 @@ public class TodayWordDTO {
     private String meaning;
     private String category;
 
+    /** 语法形式不规则标记（不规则变位/不规则复数/复数不变/阴阳性特殊/不规则变化；null=常规不显示） */
+    private String irregular;
+
     /** 今日完成状态：0=未完成 1=已完成（来自 daily_extract） */
     private Integer dailyStatus;
 

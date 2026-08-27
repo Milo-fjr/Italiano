@@ -81,6 +81,7 @@ public class WordService {
             dto.setPos(w.getPos());
             dto.setMeaning(w.getMeaning());
             dto.setCategory(w.getCategory());
+            dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
             WordProgress p = progressMap.get(w.getId());
             if (p != null) {
                 dto.setExtractCount(p.getExtractCount());

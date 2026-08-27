@@ -252,6 +252,53 @@ public final class ItalianGrammarUtil {
         return null;
     }
 
+    /**
+     * 判定单词的语法形式是否不规则（供卡片加标记，常规词返回 null 不标记）：
+     * - 动词（含反身动词，剥 -si 还原不定式）：命中任一例外表
+     *   （现在时 / -isc 型 / 过去分词 / 未完成过去时 / 将来时词干）→「不规则变位」
+     * - 名词：不规则复数表 →「不规则复数」；不变复数表 →「复数不变」；
+     *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」
+     * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
+     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 阴阳性特殊
+     */
+    public static String irregularTag(String word, String pos, String gender) {
+        if (word == null || word.isBlank() || pos == null) {
+            return null;
+        }
+        String w = word.toLowerCase();
+        // 动词（v. / v.rifl.，反身词剥 -si 后查表，与 buildConjugation 的还原方式一致）
+        if (pos.startsWith("v.")) {
+            boolean reflexive = w.endsWith("si");
+            String infinitive = reflexive ? w.substring(0, w.length() - 2) + "e" : w;
+            if (IRREGULAR_PRESENT.containsKey(infinitive) || ISC_VERBS.contains(infinitive)
+                    || IRREGULAR_PP.containsKey(infinitive) || IRREGULAR_IMPERFETTO.containsKey(infinitive)
+                    || IRREGULAR_FUTURO_STEM.containsKey(infinitive)) {
+                return "不规则变位";
+            }
+            return null;
+        }
+        // 名词：按优先级 不规则复数 > 复数不变 > 阴阳性特殊
+        if (isNounPos(pos)) {
+            if (IRREGULAR_PLURAL.containsKey(w)) {
+                return "不规则复数";
+            }
+            if (INVARIANT_NOUNS.contains(w)) {
+                return "复数不变";
+            }
+            if (gender != null && ((w.endsWith("o") && "f".equals(gender))
+                    || (w.endsWith("a") && "m".equals(gender)))) {
+                return "阴阳性特殊";
+            }
+            return null;
+        }
+        // 形容词（含混合词性 agg./s.m. 等，词在形容词例外表即标记）
+        if (pos.contains("agg.")
+                && (ADJ_HARD.contains(w) || ADJ_SOFT.contains(w) || ADJ_INVARIANT.contains(w))) {
+            return "不规则变化";
+        }
+        return null;
+    }
+
     /** 是否以元音开头 */
     private static boolean startsWithVowel(String w) {
         return "aeiou".indexOf(w.charAt(0)) >= 0;
