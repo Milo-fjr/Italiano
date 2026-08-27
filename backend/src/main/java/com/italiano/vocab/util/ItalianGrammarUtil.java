@@ -53,9 +53,9 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PRESENT.put("sciare", new String[]{"scio", "scii", "scia", "sciamo", "sciate", "sciano"});
     }
 
-    /** -isc 型 -ire 动词（第一人称 -isco：capire → capisco） */
+    /** -isc 型 -ire 动词（第一人称 -isco：capire → capisco；trasferire 同型，全表排查补录） */
     private static final Set<String> ISC_VERBS = Set.of(
-            "capire", "finire", "preferire", "pulire", "spedire", "costruire");
+            "capire", "finire", "preferire", "pulire", "spedire", "costruire", "trasferire");
 
     /** 不规则过去分词（规则：-are→ato / -ere→uto / -ire→ito） */
     private static final Map<String, String> IRREGULAR_PP = new LinkedHashMap<>();
