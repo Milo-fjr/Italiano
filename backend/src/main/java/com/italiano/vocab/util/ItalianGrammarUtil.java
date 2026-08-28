@@ -266,7 +266,9 @@ public final class ItalianGrammarUtil {
      *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」；
      *   -e 结尾名词性别无法从词尾判断 →「性别需记」
      * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
-     * 名词多条命中时按优先级取一：不规则复数 > 复数不变 > 音变 > 阴阳性特殊 > 性别需记
+     * 名词复数特性与性别反常可叠加（顿号连接）：foto「复数不变、阴阳性特殊」、
+     * mano「不规则复数、阴阳性特殊」；不可数名词性别反常照标（nuoto -o 阴性）；
+     * -e 性别需记为中性信息不叠加，无其他标签时兜底
      */
     public static String irregularTag(String word, String pos, String gender) {
         if (word == null || word.isBlank() || pos == null) {
@@ -304,13 +306,20 @@ public final class ItalianGrammarUtil {
             }
             return null;
         }
-        // 名词：按优先级 不规则复数 > 复数不变 > 音变 > 阴阳性特殊
+        // 名词：复数特性与性别反常可叠加（foto 复数不变且 -o 阴性、mano 不规则复数且 -o 阴性）
         if (isNounPos(pos)) {
+            List<String> tags = new ArrayList<>();
             if (IRREGULAR_PLURAL.containsKey(w)) {
-                return "不规则复数";
+                tags.add("不规则复数");
+            } else if (INVARIANT_NOUNS.contains(w)) {
+                tags.add("复数不变");
             }
-            if (INVARIANT_NOUNS.contains(w)) {
-                return "复数不变";
+            if (gender != null && ((w.endsWith("o") && "f".equals(gender))
+                    || (w.endsWith("a") && "m".equals(gender)))) {
+                tags.add("阴阳性特殊");
+            }
+            if (!tags.isEmpty()) {
+                return String.join("、", tags);
             }
             // 不可数名词无复数形式，无音变陷阱可言
             if (UNCOUNTABLE_NOUNS.contains(w)) {
@@ -320,10 +329,6 @@ public final class ItalianGrammarUtil {
             // 音变类：-ca/-ga 复数加 h、-cia/-gia 复数去/留 i（取决于前一字母）
             if (w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia")) {
                 return "音变";
-            }
-            if (gender != null && ((w.endsWith("o") && "f".equals(gender))
-                    || (w.endsWith("a") && "m".equals(gender)))) {
-                return "阴阳性特殊";
             }
             // -e 结尾名词：阴阳性别无法从词尾判断（il fiore ♂ / la mano ♀），需连同冠词记忆
             if (w.endsWith("e") && gender != null) {
