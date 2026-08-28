@@ -33,7 +33,7 @@
     <!-- 单词卡片 -->
     <div v-loading="store.loading" class="card-grid">
       <el-card
-        v-for="w in store.words"
+        v-for="w in displayWords"
         :key="w.wordId"
         class="word-card"
         :class="{
@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTodayStore } from '../stores/today'
 import { posTagType } from '../utils/pos'
@@ -123,6 +123,35 @@ const flippedSet = reactive(new Set())
 /** 自测模式：点过「不认识」的词（卡片标红提示，会话内有效） */
 const forgotSet = reactive(new Set())
 
+/** 自测模式：打乱后的卡片顺序（存 wordId 序列，store 刷新后顺序仍稳定） */
+const shuffledIds = ref([])
+
+/** Fisher-Yates 洗牌 */
+function shuffleIds(ids) {
+  const arr = [...ids]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+/** 重新打乱（进入自测模式 / 换一批后调用） */
+function reshuffle() {
+  shuffledIds.value = shuffleIds(store.words.map((w) => w.wordId))
+}
+
+/** 展示顺序：浏览模式 = 原顺序（到期复习词在前）；自测模式 = 随机（避免按位置记忆） */
+const displayWords = computed(() => {
+  if (mode.value !== 'test') {
+    return store.words
+  }
+  const order = new Map(shuffledIds.value.map((id, i) => [id, i]))
+  return [...store.words].sort(
+    (a, b) => (order.get(a.wordId) ?? Infinity) - (order.get(b.wordId) ?? Infinity)
+  )
+})
+
 function openDetail(id) {
   activeId.value = id
   dialogVisible.value = true
@@ -130,6 +159,10 @@ function openDetail(id) {
 
 function onModeChange() {
   flippedSet.clear()
+  // 每次切入自测模式都重新打乱顺序
+  if (mode.value === 'test') {
+    reshuffle()
+  }
 }
 
 /** 自测模式点击卡片：翻转显示/收起释义 */
@@ -170,6 +203,9 @@ async function onRefreshBatch() {
   await store.refreshBatch()
   flippedSet.clear()
   forgotSet.clear()
+  if (mode.value === 'test') {
+    reshuffle()
+  }
   ElMessage.success('已换一批')
 }
 
