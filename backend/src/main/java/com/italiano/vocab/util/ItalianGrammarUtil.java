@@ -204,6 +204,11 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("lenzuolo", "lenzuola");
     }
 
+    /** 月份：复数不变且性别统一为阳性（il gennaio...），无记忆价值，不标「性别需记」 */
+    private static final Set<String> MONTHS = Set.of(
+            "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+            "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre");
+
     /** 不变复数名词：月份与常用外来词/缩写词（复数 = 原词） */
     private static final Set<String> INVARIANT_NOUNS = Set.of(
             "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -266,9 +271,9 @@ public final class ItalianGrammarUtil {
      *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」；
      *   -e 结尾名词性别无法从词尾判断 →「性别需记」
      * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
-     * 名词复数特性与性别反常可叠加（顿号连接）：foto「复数不变、阴阳性特殊」、
-     * mano「不规则复数、阴阳性特殊」；不可数名词性别反常照标（nuoto -o 阴性）；
-     * -e 性别需记为中性信息不叠加，无其他标签时兜底
+     * 名词复数特性与性别标签均可叠加（顿号连接）：foto「复数不变、阴阳性特殊」、
+     * mano「不规则复数、阴阳性特殊」、mouse「复数不变、性别需记」；
+     * 月份统一阳性不标性别，作为唯一例外
      */
     public static String irregularTag(String word, String pos, String gender) {
         if (word == null || word.isBlank() || pos == null) {
@@ -306,7 +311,7 @@ public final class ItalianGrammarUtil {
             }
             return null;
         }
-        // 名词：复数特性与性别反常可叠加（foto 复数不变且 -o 阴性、mano 不规则复数且 -o 阴性）
+        // 名词：复数特性与性别标签可叠加（顿号连接）
         if (isNounPos(pos)) {
             List<String> tags = new ArrayList<>();
             if (IRREGULAR_PLURAL.containsKey(w)) {
@@ -317,22 +322,21 @@ public final class ItalianGrammarUtil {
             if (gender != null && ((w.endsWith("o") && "f".equals(gender))
                     || (w.endsWith("a") && "m".equals(gender)))) {
                 tags.add("阴阳性特殊");
+            } else if (w.endsWith("e") && gender != null && !MONTHS.contains(w)) {
+                // -e 结尾性别无法从词尾判断（il mare ♂ / la notte ♀），需连同冠词记忆，
+                // 与复数特性叠加（mouse「复数不变、性别需记」）；月份统一阳性不标
+                tags.add("性别需记");
             }
             if (!tags.isEmpty()) {
                 return String.join("、", tags);
             }
-            // 不可数名词无复数形式，无音变陷阱可言
+            // 不可数名词无复数形式，无音变陷阱可言（-e 结尾性别已在上方统一处理）
             if (UNCOUNTABLE_NOUNS.contains(w)) {
-                // 但 -e 结尾者性别仍需记（il latte ♂ / la fame ♀），不可数只影响复数不影响性别
-                return w.endsWith("e") && gender != null ? "性别需记" : null;
+                return null;
             }
             // 音变类：-ca/-ga 复数加 h、-cia/-gia 复数去/留 i（取决于前一字母）
             if (w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia")) {
                 return "音变";
-            }
-            // -e 结尾名词：阴阳性别无法从词尾判断（il fiore ♂ / la mano ♀），需连同冠词记忆
-            if (w.endsWith("e") && gender != null) {
-                return "性别需记";
             }
             return null;
         }
