@@ -38,5 +38,7 @@ export default {
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),
   updateSettings: (data) => http.put('/settings', data),
-  importWords: () => http.post('/import')
+  importWords: () => http.post('/import'),
+  // 导出词库（数据库 -> vocab_data.json 备份）
+  exportWords: () => http.post('/export')
 }

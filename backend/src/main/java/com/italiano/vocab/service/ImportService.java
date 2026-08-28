@@ -16,9 +16,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -386,6 +392,30 @@ public class ImportService implements ApplicationRunner {
                 }
             }
             w.setPlural(ItalianGrammarUtil.buildPlural(text, w.getPos()));
+
+            // 备份恢复：导出文件带完整语法字段/例句时优先采用（全保真回灌），
+            // 旧的精简种子无这些字段则保持上方推导结果
+            if (node.hasNonNull("gender")) {
+                w.setGender(node.path("gender").asText());
+            }
+            if (node.hasNonNull("article")) {
+                w.setArticle(node.path("article").asText());
+            }
+            if (node.hasNonNull("plural")) {
+                w.setPlural(node.path("plural").asText());
+            }
+            JsonNode conj = node.path("conjugation");
+            if (conj.isObject() && !conj.isEmpty()) {
+                w.setConjugation(conj.toString());
+            }
+            JsonNode adj = node.path("adjForms");
+            if (adj.isObject() && !adj.isEmpty()) {
+                w.setAdjForms(adj.toString());
+            }
+            JsonNode ex = node.path("example");
+            if (ex.isObject() && !ex.isEmpty()) {
+                w.setExample(ex.toString());
+            }
             w.setCreatedAt(LocalDateTime.now());
 
             buffer.add(w);
@@ -398,5 +428,97 @@ public class ImportService implements ApplicationRunner {
         }
         buffer.forEach(wordMapper::insert);
         return new int[]{inserted, skipped};
+    }
+
+    /**
+     * 导出词库到 vocab_data.json（覆盖种子文件，git 可追踪变更）。
+     * 含全部语法字段（性别/冠词/复数/变位/形容词变化）与例句，
+     * 配合导入端的「JSON 值优先」实现完整备份闭环。
+     */
+    public Map<String, Object> exportToJson() {
+        List<Word> words = wordMapper.selectList(new LambdaQueryWrapper<Word>().orderByAsc(Word::getId));
+
+        // 分类统计（保持 DB 顺序去重）
+        Map<String, Long> categoryCounts = new LinkedHashMap<>();
+        for (Word w : words) {
+            categoryCounts.merge(w.getCategory() == null ? "未分类" : w.getCategory(), 1L, Long::sum);
+        }
+
+        List<Map<String, Object>> wordList = new ArrayList<>();
+        for (Word w : words) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", w.getId());
+            m.put("word", w.getWord());
+            m.put("pos", w.getPos());
+            m.put("meaning", w.getMeaning());
+            m.put("category", w.getCategory());
+            if (w.getGender() != null) {
+                m.put("gender", w.getGender());
+            }
+            if (w.getArticle() != null) {
+                m.put("article", w.getArticle());
+            }
+            if (w.getPlural() != null) {
+                m.put("plural", w.getPlural());
+            }
+            putJsonField(m, "conjugation", w.getConjugation());
+            putJsonField(m, "adjForms", w.getAdjForms());
+            putJsonField(m, "example", w.getExample());
+            wordList.add(m);
+        }
+
+        Map<String, Object> meta = new LinkedHashMap<>();
+        meta.put("name", "意大利语A2核心词库");
+        meta.put("description", "马可波罗计划生意大利语A2学习用词库（含手动编辑的语法字段与例句）");
+        meta.put("total", words.size());
+        meta.put("category_count", categoryCounts.size());
+        meta.put("category_counts", categoryCounts);
+        meta.put("exported_at", LocalDate.now().toString());
+        meta.put("source", "database export");
+
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("meta", meta);
+        root.put("categories", new ArrayList<>(categoryCounts.keySet()));
+        root.put("words", wordList);
+
+        Path target = resolveSeedPath();
+        try {
+            Files.createDirectories(target.getParent());
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(target.toFile(), root);
+        } catch (IOException e) {
+            throw new IllegalStateException("导出失败：" + e.getMessage(), e);
+        }
+        log.info("词库导出完成：{} 个单词 -> {}", words.size(), target);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total", words.size());
+        result.put("path", target.toString());
+        return result;
+    }
+
+    /** 语法 JSON 字符串 -> 嵌套对象写入导出结构（无效/空值跳过） */
+    private void putJsonField(Map<String, Object> m, String key, String json) {
+        if (json == null || json.isBlank()) {
+            return;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            if (node.isObject() && !node.isEmpty()) {
+                m.put(key, node);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /** 种子文件路径：优先 backend/ 运行目录（git 可见的源文件），退回仓库根相对路径 */
+    private Path resolveSeedPath() {
+        Path p = Paths.get("src/main/resources/data/vocab_data.json");
+        if (Files.exists(p.getParent())) {
+            return p;
+        }
+        Path alt = Paths.get("backend/src/main/resources/data/vocab_data.json");
+        if (Files.exists(alt.getParent())) {
+            return alt;
+        }
+        throw new IllegalStateException("未找到词库目录 src/main/resources/data（请从 backend/ 目录启动后端）");
     }
 }

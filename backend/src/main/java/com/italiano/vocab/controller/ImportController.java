@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** 词库导入 */
+/** 词库导入 / 导出（备份） */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -26,5 +26,11 @@ public class ImportController {
         data.put("inserted", r[0]);
         data.put("skipped", r[1]);
         return ApiResponse.ok(data);
+    }
+
+    /** 导出词库到 vocab_data.json（数据库 -> 种子文件，含手动编辑内容，git 可追踪） */
+    @PostMapping("/export")
+    public ApiResponse<Map<String, Object>> exportWords() {
+        return ApiResponse.ok(importService.exportToJson());
     }
 }
