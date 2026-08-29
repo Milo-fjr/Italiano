@@ -43,10 +43,6 @@ export const useTodayStore = defineStore('today', {
     async undo(id) {
       await api.undoWord(id)
       await this.load()
-    },
-    /** 自测「不认识」：盒子归 0、明天复习；不刷新列表（词保留本批次，避免重置翻转状态） */
-    async forgot(id) {
-      await api.forgetWord(id)
     }
   }
 })

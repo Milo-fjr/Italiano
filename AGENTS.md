@@ -32,10 +32,12 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | 文件                                                | 职责                                               |
 | ------------------------------------------------- | ------------------------------------------------ |
 | `backend/.../util/ItalianGrammarUtil.java`        | **语法引擎**：例外表（例外优先）+ 规则推导，所有变位/复数/冠词/不规则标签的单一事实来源 |
-| `backend/.../service/ExtractService.java`         | 批次抽取算法（到期复习 > 未完成保留 > 新词 > 冷却期补足）                |
-| `backend/.../service/WordService.java`            | 完成/撤销/编辑，SRS 升盒降盒逻辑                              |
+| `backend/.../service/ExtractService.java`         | **学习模式**批次抽取：完成次数流转（零遍随机 > 完成次数升序+冷却）          |
+| `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
+| `backend/.../service/WordService.java`            | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
 | `backend/src/main/resources/data/vocab_data.json` | 1087 词导入源（首启导入用）                                 |
-| `frontend/src/views/TodayView.vue`                | 学习批次卡片页（浏览/自测双模式）                                |
+| `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
+| `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
 
@@ -45,7 +47,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 2. **`extract_count`** **是完成次数，不是抽取次数**。仅被抽进批次不计数，点"标记完成"才 +1，撤销 -1（可到 0）。
 3. **双数据源**：`vocab_data.json` 是导入源，DB 是运行数据。改 JSON **不会**同步已导入的 DB 行，反向同步用「设置 → 词库备份」按钮（POST /api/export，DB 全量写回 JSON 含语法字段/例句；导入端 JSON 值优先，重灌为全保真恢复）。
 4. **irregularTag 标签系统**（卡片红色标签）：名词多标签叠加（顿号连接），如 foto「复数不变、阴阳性特殊」；月份排除在「性别需记」外（统一阳性无记忆价值）。
-5. **SRS 盒子**：完成时 box+1（上限 5），间隔 1/2/4/8/16 天；撤销 box-1；自测"不认识"归 0 且明天到期。到期复习词进新批次时**不占每日名额**（可超额）。
+5. **学习/测验双体系（两套独立）**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验模式只认盒子——next_review_at <= 今天即测（**不筛 box**，答错归 0 的词明天到期也能回来）。唯一交汇点：学习「标记完成」= 次数 +1 且盒 +1（词次日进测验）；测验「认识」盒 +1 **不动次数**（WordService.reviewKnow）、「不认识」盒归 0 明天到期。到期复习词**不进批次**；统计页到期数口径 = next_review_at <= 今天。
 6. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
 
 ## 历史事故记录（血泪教训）

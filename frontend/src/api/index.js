@@ -34,6 +34,9 @@ export default {
   undoWord: (id) => http.post(`/words/${id}/undo`),
   // 自测「不认识」：SRS 盒子归 0，明天再复习（词保留在本批次）
   forgetWord: (id) => http.post(`/words/${id}/forget`),
+  // 测验模式（SRS 到期复习，独立于学习批次）
+  getQuizDue: () => http.get('/quiz'),
+  quizKnow: (id) => http.post(`/quiz/${id}/know`),
   // 统计 / 设置 / 导入
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),

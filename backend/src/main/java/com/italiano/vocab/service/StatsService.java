@@ -44,10 +44,9 @@ public class StatsService {
         dto.setTotalExtractCount(progresses.stream()
                 .mapToLong(p -> p.getExtractCount() == null ? 0 : p.getExtractCount()).sum());
 
-        // SRS：今日到期复习数（box > 0 且 next_review_at <= 今天）
+        // SRS：今日到期复习数（next_review_at <= 今天，含测验答错归 0 的词）= 测验模式实际题量
         LocalDate today = LocalDate.now();
         dto.setDueReviewCount(progresses.stream()
-                .filter(p -> p.getBox() != null && p.getBox() > 0)
                 .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
                 .count());
 

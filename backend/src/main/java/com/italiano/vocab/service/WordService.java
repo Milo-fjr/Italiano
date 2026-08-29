@@ -314,6 +314,23 @@ public class WordService {
         return getDetail(id);
     }
 
+    /**
+     * 测验「认识」：SRS 盒 +1 并安排下次复习。
+     * 与 complete() 的区别：不动完成次数（extract_count）与批次状态——
+     * 学习模式认完成次数，测验模式只认盒子，两套体系互不干扰。
+     */
+    @Transactional
+    public WordDetailDTO reviewKnow(Long id) {
+        WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getWordId, id));
+        if (p == null) {
+            throw new IllegalArgumentException("该单词还没有学习记录");
+        }
+        advanceReview(p, LocalDate.now());
+        progressMapper.updateById(p);
+        return getDetail(id);
+    }
+
     /** SRS 推进（Leitner 简化版）：认识 → box+1（上限 5），下次复习 = 今天 + 对应间隔天数 */
     private void advanceReview(WordProgress p, LocalDate today) {
         int box = p.getBox() == null ? 0 : p.getBox();

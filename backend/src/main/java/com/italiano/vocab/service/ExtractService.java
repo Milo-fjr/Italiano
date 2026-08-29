@@ -27,13 +27,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 学习批次（核心业务）：
+ * 学习批次（核心业务，按完成次数流转——与测验模式的 SRS 盒子是两套独立体系）：
  * 1. 批次只在用户手动「换一批」时生成，不按日期自动轮换——没背完的批次一直保留，学完为止
- * 2. 换一批时（优先级从高到低）：① 到期复习词（SRS：next_review_at <= 今天 且 box > 0，
- *    到期日最旧优先，全部放入可超出每日数量）；② 上一批未完成的单词保留进入新批次；
- *    ③ 剩余名额补新词——第一优先抽「从未抽取过」的词（随机抽取），第二优先「累计完成次数少」的词
- *    （extract_count 升序 → 最近抽取时间升序 → id 升序）
+ * 2. 换一批时（优先级从高到低）：① 上一批未完成的单词保留进入新批次；
+ *    ② 剩余名额补新词——第一优先抽「从未抽取过」的词（随机抽取，第一遍覆盖全部词库），
+ *    第二优先「累计完成次数少」的词（extract_count 升序 → 最近抽取时间升序 → id 升序），
+ *    1 遍、2 遍循环，背完全库也有词可背
  * 3. 冷却期内（最近 cooldown_days 天抽取过）的词不参与新词候选，候选不足时放宽
+ * 4. 到期复习词不进批次——SRS 复习由测验模式（QuizService）接管
  * <p>
  * 词库总量仅千级，进度表全量加载后内存筛选排序即可，无需复杂 SQL。
  */
@@ -67,22 +68,17 @@ public class ExtractService {
             dailyExtractMapper.delete(new LambdaQueryWrapper<>());
         }
         List<DailyExtract> records = extract(today, carried);
-        // 到期复习词全部进批次（第⓪步无名额限制），直接按进度表统计
-        long dueCount = progressMapper.selectList(null).stream()
-                .filter(p -> p.getBox() != null && p.getBox() > 0)
-                .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
-                .count();
-        log.info("换一批完成：到期复习 {} 个，保留未完成 {} 个，本批共 {} 个词（每日 {} / 冷却 {} 天）",
-                dueCount, carried.size(), records.size(), settingService.getSetting().getDailyCount(),
+        log.info("换一批完成：保留未完成 {} 个，本批共 {} 个词（每日 {} / 冷却 {} 天）",
+                carried.size(), records.size(), settingService.getSetting().getDailyCount(),
                 settingService.getSetting().getCooldownDays());
         return assemble(records);
     }
 
     /**
-     * 执行抽取：到期复习词最优先（SRS），再保留上批未完成的词（carried），
-     * 名额有剩才按算法补新词。写入 daily_extract(status=0)，同时为无进度的词创建
-     * progress 记录（status=1 已抽取未完成），并刷新 last_extracted_at。
-     * 插入顺序即批次展示顺序（按 id 升序）：到期复习词排在批次前面。
+     * 执行抽取：保留上批未完成的词（carried），名额有剩才按完成次数流转补词
+     * （零遍随机 → 完成次数最少+冷却 → 放宽冷却）。写入 daily_extract(status=0)，
+     * 同时为无进度的词创建 progress 记录（status=1 已抽取未完成），并刷新 last_extracted_at。
+     * 到期复习词不进批次——SRS 复习由测验模式接管。
      */
     private List<DailyExtract> extract(LocalDate today, List<Long> carried) {
         Setting setting = settingService.getSetting();
@@ -95,17 +91,9 @@ public class ExtractService {
         Map<Long, WordProgress> progressById = allProgress.stream()
                 .collect(Collectors.toMap(WordProgress::getWordId, Function.identity(), (a, b) -> a));
 
-        // ⓪ 到期复习词（SRS）：next_review_at <= 今天 且 box > 0，到期日最旧优先。
-        //    复习优先于新词：全部放入，可超出每日数量，不占新词之外的名额限制
         Set<Long> picked = new LinkedHashSet<>();
-        allProgress.stream()
-                .filter(p -> p.getBox() != null && p.getBox() > 0)
-                .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
-                .sorted(Comparator.comparing(WordProgress::getNextReviewAt)
-                        .thenComparing(WordProgress::getWordId))
-                .forEach(p -> picked.add(p.getWordId()));
 
-        // 保留上批未完成的词（学完为止，不占到期复习词之后的复习优先级）
+        // 保留上批未完成的词（学完为止，优先级最高）
         picked.addAll(carried);
 
         // ① 新词：从未抽取过的词（无 progress 记录），随机抽取
