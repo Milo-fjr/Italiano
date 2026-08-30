@@ -18,6 +18,16 @@
         </div>
       </div>
       <div class="header-actions">
+        <el-button
+          v-if="store.completed < store.total"
+          type="success"
+          plain
+          round
+          :loading="store.loading"
+          @click="onCompleteAll"
+        >
+          全部完成
+        </el-button>
         <el-button type="primary" round :loading="store.loading" @click="onRefreshBatch">换一批</el-button>
       </div>
     </div>
@@ -99,6 +109,22 @@ async function onRefreshBatch() {
   }
   await store.refreshBatch()
   ElMessage.success('已换一批')
+}
+
+/** 全部完成：一键标记剩余未完成的词（影响完成次数与 SRS 盒子，与单个标记完成一致） */
+async function onCompleteAll() {
+  const unfinished = store.total - store.completed
+  try {
+    await ElMessageBox.confirm(
+      `将剩余 ${unfinished} 个单词全部标记完成（完成次数 +1、进入复习盒子）。确定吗？`,
+      '全部完成',
+      { confirmButtonText: '全部完成', cancelButtonText: '取消', type: 'info' }
+    )
+  } catch {
+    return
+  }
+  const count = await store.completeAll()
+  ElMessage.success(`已全部完成（${count} 个）`)
 }
 
 onMounted(() => store.load())

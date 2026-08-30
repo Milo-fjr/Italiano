@@ -266,6 +266,17 @@ public class WordService {
         return getDetail(id);
     }
 
+    /** 全部完成：当前批次中所有未完成的词一键标记完成（复用 complete 逻辑） */
+    @Transactional
+    public int completeAll() {
+        List<DailyExtract> unfinished = dailyExtractMapper.selectList(
+                new LambdaQueryWrapper<DailyExtract>().eq(DailyExtract::getStatus, 0));
+        for (DailyExtract de : unfinished) {
+            complete(de.getWordId());
+        }
+        return unfinished.size();
+    }
+
     /** 撤销完成：抽取次数 -1（下限 0）、状态回退、SRS 盒子对称回退一格；当前批次记录回退为未完成 */
     @Transactional
     public WordDetailDTO undo(Long id) {

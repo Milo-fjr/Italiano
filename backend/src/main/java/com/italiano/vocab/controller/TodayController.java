@@ -2,6 +2,7 @@ package com.italiano.vocab.controller;
 
 import com.italiano.vocab.dto.ApiResponse;
 import com.italiano.vocab.service.ExtractService;
+import com.italiano.vocab.service.WordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class TodayController {
 
     private final ExtractService extractService;
+    private final WordService wordService;
 
     /** 获取当前批次（不自动抽取；从未刷新过则返回空批次） */
     @GetMapping
@@ -28,5 +30,12 @@ public class TodayController {
     @PostMapping("/extract")
     public ApiResponse<Map<String, Object>> extract() {
         return ApiResponse.ok(extractService.refresh());
+    }
+
+    /** 全部完成：当前批次所有未完成的词一键标记完成 */
+    @PostMapping("/complete-all")
+    public ApiResponse<Map<String, Object>> completeAll() {
+        int count = wordService.completeAll();
+        return ApiResponse.ok(Map.of("completed", count));
     }
 }

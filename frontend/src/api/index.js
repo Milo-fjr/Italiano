@@ -26,6 +26,7 @@ export default {
   // 学习批次（手动刷新）
   getToday: () => http.get('/today'),
   extractToday: () => http.post('/today/extract'),
+  completeAllToday: () => http.post('/today/complete-all'),
   // 单词库
   listWords: (params) => http.get('/words', { params }),
   getWord: (id) => http.get(`/words/${id}`),

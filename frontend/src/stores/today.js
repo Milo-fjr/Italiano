@@ -40,6 +40,17 @@ export const useTodayStore = defineStore('today', {
       await api.completeWord(id)
       await this.load()
     },
+    /** 全部完成：当前批次未完成的词一键标记完成 */
+    async completeAll() {
+      this.loading = true
+      try {
+        const data = await api.completeAllToday()
+        await this.load()
+        return data.completed
+      } finally {
+        this.loading = false
+      }
+    },
     async undo(id) {
       await api.undoWord(id)
       await this.load()
