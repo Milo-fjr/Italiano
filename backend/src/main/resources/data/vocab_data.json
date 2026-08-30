@@ -12728,7 +12728,7 @@
     "category" : "形容词",
     "adjForms" : {
       "ms" : "buon / buono",
-      "fs" : "buona",
+      "fs" : "buona / buon'",
       "mp" : "buoni",
       "fp" : "buone"
     }
@@ -12752,7 +12752,7 @@
     "category" : "形容词",
     "adjForms" : {
       "ms" : "bel / bello / bell'",
-      "fs" : "bella",
+      "fs" : "bella / bell'",
       "mp" : "bei / begli",
       "fp" : "belle"
     }
@@ -13843,7 +13843,7 @@
     "category" : "代词·冠词·连词",
     "adjForms" : {
       "ms" : "quel / quello / quell'",
-      "fs" : "quella",
+      "fs" : "quella / quell'",
       "mp" : "quei / quegli",
       "fp" : "quelle"
     }

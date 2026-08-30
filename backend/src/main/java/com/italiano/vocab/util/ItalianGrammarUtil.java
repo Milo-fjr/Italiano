@@ -243,9 +243,9 @@ public final class ItalianGrammarUtil {
      * 表中存四格的定语形式（多形式用 " / " 分隔）；谓语位置仍用常规四式（bello/bella/belli/belle）。
      */
     private static final Map<String, Map<String, String>> BELLO_TYPE = Map.of(
-            "bello", Map.of("ms", "bel / bello / bell'", "fs", "bella", "mp", "bei / begli", "fp", "belle"),
-            "buono", Map.of("ms", "buon / buono", "fs", "buona", "mp", "buoni", "fp", "buone"),
-            "quello", Map.of("ms", "quel / quello / quell'", "fs", "quella", "mp", "quei / quegli", "fp", "quelle"));
+            "bello", Map.of("ms", "bel / bello / bell'", "fs", "bella / bell'", "mp", "bei / begli", "fp", "belle"),
+            "buono", Map.of("ms", "buon / buono", "fs", "buona / buon'", "mp", "buoni", "fp", "buone"),
+            "quello", Map.of("ms", "quel / quello / quell'", "fs", "quella / quell'", "mp", "quei / quegli", "fp", "quelle"));
 
     /**
      * 根据词性推断名词性别：含 s.m. → m；含 s.f. → f；
