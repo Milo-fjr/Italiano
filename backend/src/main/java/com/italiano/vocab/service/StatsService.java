@@ -71,6 +71,24 @@ public class StatsService {
         }
         dto.setBoxDistribution(boxDist);
 
+        // 拼写盒子分布：从未拼写（未进拼写体系） / Box 0（拼错过，待重拼） / Box 1-5
+        // 判据：拼写答过题必有 spell_next_review_at（答对排期、答错明天），NULL 即从未拼过
+        long inSpell = progresses.stream()
+                .filter(p -> p.getSpellNextReviewAt() != null
+                        || (p.getSpellBox() != null && p.getSpellBox() > 0)).count();
+        dto.setSpellCoveredWords(inSpell);
+        List<StatsDTO.CountBucket> spellDist = new ArrayList<>();
+        spellDist.add(bucket("从未拼写", words.size() - inSpell));
+        spellDist.add(bucket("Box 0", progresses.stream()
+                .filter(p -> p.getSpellNextReviewAt() != null
+                        && (p.getSpellBox() == null || p.getSpellBox() == 0)).count()));
+        for (int b = 1; b <= 5; b++) {
+            final int box = b;
+            spellDist.add(bucket("Box " + box, progresses.stream()
+                    .filter(p -> p.getSpellBox() != null && p.getSpellBox() == box).count()));
+        }
+        dto.setSpellBoxDistribution(spellDist);
+
         // 当前批次进度（批次手动刷新、不按日期轮换，表内即当前批次）
         List<DailyExtract> currentBatch = dailyExtractMapper.selectList(null);
         dto.setTodayTotal(currentBatch.size());

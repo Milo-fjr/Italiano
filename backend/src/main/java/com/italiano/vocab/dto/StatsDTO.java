@@ -32,8 +32,14 @@ public class StatsDTO {
     /** 今日到期拼写词数（拼写队列同口径：五条件防撞过滤后） */
     private long spellDueCount;
 
+    /** 已拼写词数（至少拼过一次，进入过拼写体系） */
+    private long spellCoveredWords;
+
     /** SRS 盒子分布（Box 0-5） */
     private List<CountBucket> boxDistribution;
+
+    /** 拼写盒子分布（从未拼写 / Box 0 拼错过 / Box 1-5） */
+    private List<CountBucket> spellBoxDistribution;
 
     /** 分类分布 */
     private List<CategoryStat> categoryStats;
