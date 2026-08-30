@@ -50,6 +50,15 @@ public class StatsService {
                 .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
                 .count());
 
+        // 今日到期拼写数（与拼写队列同口径：学过 + 拼写到期 + 当日未被学习/测验接触）
+        dto.setSpellDueCount(progresses.stream()
+                .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
+                .filter(p -> p.getSpellNextReviewAt() == null || !p.getSpellNextReviewAt().isAfter(today))
+                .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
+                .filter(p -> p.getLastQuizAt() == null || p.getLastQuizAt().isBefore(today))
+                .filter(p -> p.getCompletedAt() == null || p.getCompletedAt().isBefore(today.atStartOfDay()))
+                .count());
+
         // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
         long inSrs = progresses.stream()
                 .filter(p -> p.getBox() != null && p.getBox() > 0).count();

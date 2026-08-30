@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WordService {
 
-    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/2/4/8/16 天） */
-    private static final int[] REVIEW_INTERVALS = {1, 2, 4, 8, 16};
+    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/2/4/8/16 天）；拼写盒子复用同一间隔表 */
+    public static final int[] REVIEW_INTERVALS = {1, 2, 4, 8, 16};
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
@@ -316,10 +316,12 @@ public class WordService {
             p.setLastExtractedAt(LocalDate.now());
             p.setBox(0);
             p.setNextReviewAt(LocalDate.now().plusDays(1));
+            p.setLastQuizAt(LocalDate.now());
             progressMapper.insert(p);
         } else {
             p.setBox(0);
             p.setNextReviewAt(LocalDate.now().plusDays(1));
+            p.setLastQuizAt(LocalDate.now());
             progressMapper.updateById(p);
         }
         return getDetail(id);
@@ -338,6 +340,7 @@ public class WordService {
             throw new IllegalArgumentException("该单词还没有学习记录");
         }
         advanceReview(p, LocalDate.now());
+        p.setLastQuizAt(LocalDate.now());
         progressMapper.updateById(p);
         return getDetail(id);
     }

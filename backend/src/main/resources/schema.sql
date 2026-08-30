@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS `word_progress` (
     `completed_at`       DATETIME NULL COMMENT '最近完成时间',
     `box`                INT     NOT NULL DEFAULT 0 COMMENT 'SRS盒子级别0-5',
     `next_review_at`     DATE    NULL COMMENT '下次复习日期',
+    `spell_box`          INT     NOT NULL DEFAULT 0 COMMENT '拼写盒子级别0-5（独立于认识盒子）',
+    `spell_next_review_at` DATE  NULL COMMENT '下次拼写复习日期（NULL=从未拼过，视为到期）',
+    `last_quiz_at`       DATE    NULL COMMENT '最近一次认识测验答题日期（拼写防撞用）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_word_id` (`word_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '学习进度表';
@@ -77,6 +80,37 @@ SET @ddl = (SELECT IF(COUNT(*) = 0,
     'SELECT 1')
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'next_review_at');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+-- word_progress.example 之后的拼写模式三列迁移（幂等）
+-- word_progress.spell_box
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `word_progress` ADD COLUMN `spell_box` INT NOT NULL DEFAULT 0 COMMENT ''拼写盒子级别0-5（独立于认识盒子）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'spell_box');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+-- word_progress.spell_next_review_at
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `word_progress` ADD COLUMN `spell_next_review_at` DATE NULL COMMENT ''下次拼写复习日期（NULL=从未拼过，视为到期）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'spell_next_review_at');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+-- word_progress.last_quiz_at
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `word_progress` ADD COLUMN `last_quiz_at` DATE NULL COMMENT ''最近一次认识测验答题日期（拼写防撞用）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'last_quiz_at');
 PREPARE migrate_stmt FROM @ddl;
 EXECUTE migrate_stmt;
 DEALLOCATE PREPARE migrate_stmt;

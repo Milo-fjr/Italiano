@@ -28,6 +28,10 @@
         <div class="stat-value">{{ store.stats.dueReviewCount }}</div>
         <div class="stat-label">今日到期复习</div>
       </el-card>
+      <el-card class="stat-card">
+        <div class="stat-value">{{ store.stats.spellDueCount }}</div>
+        <div class="stat-label">今日到期拼写</div>
+      </el-card>
     </div>
 
     <!-- SRS 盒子分布：简单数字 + 进度条 -->

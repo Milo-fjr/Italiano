@@ -38,6 +38,9 @@ export default {
   // 测验模式（SRS 到期复习，独立于学习批次）
   getQuizDue: () => http.get('/quiz'),
   quizKnow: (id) => http.post(`/quiz/${id}/know`),
+  // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则）
+  getSpellDue: () => http.get('/spell'),
+  spellAnswer: (id, data) => http.post(`/spell/${id}/answer`, data),
   // 统计 / 设置 / 导入
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),

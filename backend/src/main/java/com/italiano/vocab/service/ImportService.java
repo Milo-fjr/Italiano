@@ -49,6 +49,10 @@ public class ImportService implements ApplicationRunner {
         // 老库升级：schema.sql 的 CREATE TABLE IF NOT EXISTS 不会为已有表补新列，这里显式补列（幂等）
         ensureColumn("word", "adj_forms", "TEXT NULL COMMENT '形容词性数变化 JSON {ms,fs,mp,fp}'");
         ensureColumn("word", "plural", "VARCHAR(64) NULL COMMENT '名词复数形式'");
+        // 拼写模式三列（独立拼写盒子 + 防撞数据源）
+        ensureColumn("word_progress", "spell_box", "INT NOT NULL DEFAULT 0 COMMENT '拼写盒子级别0-5（独立于认识盒子）'");
+        ensureColumn("word_progress", "spell_next_review_at", "DATE NULL COMMENT '下次拼写复习日期（NULL=从未拼过，视为到期）'");
+        ensureColumn("word_progress", "last_quiz_at", "DATE NULL COMMENT '最近一次认识测验答题日期（拼写防撞用）'");
         // 存量数据回填：仅为空值的词生成形容词变化/名词复数（不覆盖用户已编辑内容）
         backfillGrammarFields();
         // 变位结构升级（旧扁平 JSON → 四时态嵌套）+ 复数规则修正（含混合词性补齐），幂等

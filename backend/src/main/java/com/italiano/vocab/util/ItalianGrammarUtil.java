@@ -378,8 +378,8 @@ public final class ItalianGrammarUtil {
         return w.startsWith("s") && w.length() > 1 && "aeiou".indexOf(w.charAt(1)) < 0;
     }
 
-    /** 是否名词类词性（含混合词性如 agg./s.m.；排除复数名词） */
-    private static boolean isNounPos(String pos) {
+    /** 是否名词类词性（含混合词性如 agg./s.m.；排除复数名词）；拼写模式附加题判定复用 */
+    public static boolean isNounPos(String pos) {
         return pos != null && (pos.contains("s.m.") || pos.contains("s.f.")) && !pos.contains("pl.");
     }
 

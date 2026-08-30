@@ -9,6 +9,7 @@
         <el-menu mode="horizontal" router :default-active="activePath" class="menu" :ellipsis="false">
           <el-menu-item index="/">学习模式</el-menu-item>
           <el-menu-item index="/quiz">测验模式</el-menu-item>
+          <el-menu-item index="/spell">拼写模式</el-menu-item>
           <el-menu-item index="/library">单词库</el-menu-item>
           <el-menu-item index="/stats">统计</el-menu-item>
           <el-menu-item index="/settings">设置</el-menu-item>

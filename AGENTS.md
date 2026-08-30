@@ -34,10 +34,12 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/.../util/ItalianGrammarUtil.java`        | **语法引擎**：例外表（例外优先）+ 规则推导，所有变位/复数/冠词/不规则标签的单一事实来源 |
 | `backend/.../service/ExtractService.java`         | **学习模式**批次抽取：完成次数流转（零遍随机 > 完成次数升序+冷却）          |
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
+| `backend/.../service/SpellService.java`           | **拼写模式**：中→意产出复习，独立拼写盒子 + 防撞五条件队列                  |
 | `backend/.../service/WordService.java`            | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
 | `backend/src/main/resources/data/vocab_data.json` | 1087 词导入源（首启导入用）                                 |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
+| `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、不规则附加形式、结果对照）           |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
 
@@ -47,8 +49,9 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 2. **`extract_count`** **是完成次数，不是抽取次数**。仅被抽进批次不计数，点"标记完成"才 +1，撤销 -1（可到 0）。
 3. **双数据源**：`vocab_data.json` 是导入源，DB 是运行数据。改 JSON **不会**同步已导入的 DB 行，反向同步用「设置 → 词库备份」按钮（POST /api/export，DB 全量写回 JSON 含语法字段/例句；导入端 JSON 值优先，重灌为全保真恢复）。
 4. **irregularTag 标签系统**（卡片红色标签）：名词多标签叠加（顿号连接），如 foto「复数不变、阴阳性特殊」；月份排除在「性别需记」外（统一阳性无记忆价值）。
-5. **学习/测验双体系（两套独立）**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验模式只认盒子——next_review_at <= 今天即测（**不筛 box**，答错归 0 的词明天到期也能回来）。唯一交汇点：学习「标记完成」= 次数 +1 且盒 +1（词次日进测验）；测验「认识」盒 +1 **不动次数**（WordService.reviewKnow）、「不认识」盒归 0 明天到期。到期复习词**不进批次**；统计页到期数口径 = next_review_at <= 今天。
-6. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
+5. **学习/测验/拼写三套体系（互相独立）**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验模式只认盒子——next_review_at <= 今天即测（**不筛 box**，答错归 0 的词明天到期也能回来）；拼写模式只认 spell_box / spell_next_review_at（中→意拼写，全对升盒、有错归 0，判分在服务端归一化：大小写/重音/空格容错）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段**。
+6. **拼写防撞规则**（同一词一天只出现在一种模式）：拼写队列排除——当日认识测验欠账的词（测验优先级更高，且拼写会泄题）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）。**从未拼写的词（spell_next_review_at 为 NULL）视为到期**，无需冷启动迁移，由防撞规则自然节流。注意：撤销学习到 extract_count=0 会把词挡在拼写池外（资格门槛是 extract_count > 0）。
+7. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
 
 ## 历史事故记录（血泪教训）
 

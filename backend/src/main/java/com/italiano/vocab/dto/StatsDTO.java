@@ -29,6 +29,9 @@ public class StatsDTO {
     /** 今日到期复习词数（SRS：box > 0 且 next_review_at <= 今天） */
     private long dueReviewCount;
 
+    /** 今日到期拼写词数（拼写队列同口径：五条件防撞过滤后） */
+    private long spellDueCount;
+
     /** SRS 盒子分布（Box 0-5） */
     private List<CountBucket> boxDistribution;
 

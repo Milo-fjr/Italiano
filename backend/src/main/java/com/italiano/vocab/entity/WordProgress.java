@@ -43,4 +43,15 @@ public class WordProgress {
     /** 下次复习日期（Leitner：认识升级加长间隔，不认识归零明天再复习）；允许置空（撤销时作废） */
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDate nextReviewAt;
+
+    /** 拼写盒子级别 0-5（独立于认识盒子：答对升盒，答错归 0 明天再拼） */
+    private Integer spellBox;
+
+    /** 下次拼写复习日期；NULL=从未拼过（学过的词视为到期，由防撞规则节流） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate spellNextReviewAt;
+
+    /** 最近一次认识测验答题日期（拼写防撞：当天测过认识的词不进拼写队列） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate lastQuizAt;
 }
