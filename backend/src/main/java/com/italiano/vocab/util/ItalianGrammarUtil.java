@@ -238,6 +238,16 @@ public final class ItalianGrammarUtil {
             "blu", "rosa", "viola", "gratis", "ogni", "qualche", "nessuno", "arancione");
 
     /**
+     * 冠词式变化形容词（bello 型）：作定语（名词前）时形式随后续单词变化，同定冠词规则：
+     * bel libro / bello studente / bell'amico / bei libri / begli studenti。
+     * 表中存四格的定语形式（多形式用 " / " 分隔）；谓语位置仍用常规四式（bello/bella/belli/belle）。
+     */
+    private static final Map<String, Map<String, String>> BELLO_TYPE = Map.of(
+            "bello", Map.of("ms", "bel / bello / bell'", "fs", "bella", "mp", "bei / begli", "fp", "belle"),
+            "buono", Map.of("ms", "buon / buono", "fs", "buona", "mp", "buoni", "fp", "buone"),
+            "quello", Map.of("ms", "quel / quello / quell'", "fs", "quella", "mp", "quei / quegli", "fp", "quelle"));
+
+    /**
      * 根据词性推断名词性别：含 s.m. → m；含 s.f. → f；
      * 同时含两者（如 s.m./s.f.，词义决定性别）返回 null，交由用户手动编辑
      */
@@ -341,9 +351,14 @@ public final class ItalianGrammarUtil {
             return null;
         }
         // 形容词（含混合词性 agg./s.m. 等，词在形容词例外表即标记）
-        if (pos.contains("agg.")
-                && (ADJ_HARD.contains(w) || ADJ_SOFT.contains(w) || ADJ_INVARIANT.contains(w))) {
-            return "不规则变化";
+        if (pos.contains("agg.")) {
+            // bello 型（含 pron./agg. 的 quello）：定语形式随后续单词变化，同定冠词规则
+            if (BELLO_TYPE.containsKey(w)) {
+                return "冠词式变化";
+            }
+            if (ADJ_HARD.contains(w) || ADJ_SOFT.contains(w) || ADJ_INVARIANT.contains(w)) {
+                return "不规则变化";
+            }
         }
         return null;
     }
@@ -437,6 +452,11 @@ public final class ItalianGrammarUtil {
         String w = word.toLowerCase();
         if (ADJ_INVARIANT.contains(w)) {
             return null; // 不变形容词（blu、rosa、viola 等性数不变）
+        }
+        // bello 型：定语形式随后续单词变化（bel/bello/bell'、bei/begli），非规则四式
+        Map<String, String> belloForms = BELLO_TYPE.get(w);
+        if (belloForms != null) {
+            return new LinkedHashMap<>(belloForms);
         }
         Map<String, String> forms = new LinkedHashMap<>();
         if (w.endsWith("io")) {

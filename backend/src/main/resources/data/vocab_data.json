@@ -29,7 +29,7 @@
       "通讯与科技" : 21,
       "其他高频词" : 10
     },
-    "exported_at" : "2026-08-28",
+    "exported_at" : "2026-08-30",
     "source" : "database export"
   },
   "categories" : [ "问候与礼貌", "数字与数量", "时间与日期", "家庭与人物", "身体与健康", "饮食", "服装与购物", "家与居住", "城市与场所", "交通与旅行", "天气与自然", "工作与职业", "学习与学校", "爱好与休闲", "动物", "颜色", "动词", "形容词", "代词·冠词·连词", "副词与介词", "情感与性格", "通讯与科技", "其他高频词" ],
@@ -12727,7 +12727,7 @@
     "meaning" : "好的",
     "category" : "形容词",
     "adjForms" : {
-      "ms" : "buono",
+      "ms" : "buon / buono",
       "fs" : "buona",
       "mp" : "buoni",
       "fp" : "buone"
@@ -12751,9 +12751,9 @@
     "meaning" : "美丽的；好的",
     "category" : "形容词",
     "adjForms" : {
-      "ms" : "bello",
+      "ms" : "bel / bello / bell'",
       "fs" : "bella",
-      "mp" : "belli",
+      "mp" : "bei / begli",
       "fp" : "belle"
     }
   }, {
@@ -13842,9 +13842,9 @@
     "meaning" : "那个",
     "category" : "代词·冠词·连词",
     "adjForms" : {
-      "ms" : "quello",
+      "ms" : "quel / quello / quell'",
       "fs" : "quella",
-      "mp" : "quelli",
+      "mp" : "quei / quegli",
       "fp" : "quelle"
     }
   }, {
