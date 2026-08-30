@@ -22,13 +22,30 @@
       </div>
     </div>
 
-    <!-- 空状态：本次拼完全部 -->
-    <el-empty
-      v-if="!loading && !current && answered > 0"
-      :description="`今日拼写完成：拼对 ${rightCount} 个 · 拼错 ${wrongCount} 个（错的明天回来）`"
-    >
-      <el-button round @click="load">重新加载</el-button>
-    </el-empty>
+    <!-- 空状态：本次拼完全部（含错题回顾） -->
+    <div v-if="!loading && !current && answered > 0" class="summary-card">
+      <el-card>
+        <template #header>
+          <div class="summary-head">
+            <span>今日拼写完成：拼对 {{ rightCount }} 个 · 拼错 {{ wrongCount }} 个（错的明天回来）</span>
+            <el-button round @click="load">重新加载</el-button>
+          </div>
+        </template>
+        <div v-if="wrongList.length" class="wrong-list">
+          <div class="wrong-title">本次拼错（{{ wrongList.length }} 个）</div>
+          <div v-for="item in wrongList" :key="item.wordId" class="wrong-row">
+            <span class="wrong-word">
+              {{ item.word }}
+              <SoundButton :text="item.word" small />
+            </span>
+            <span class="wrong-meaning">{{ item.meaning }}</span>
+            <span v-if="item.extraLabel" class="wrong-extra">{{ item.extraLabel }}：{{ item.extraAnswer }}</span>
+            <span v-if="item.inputWord" class="wrong-input">你输入的：{{ item.inputWord }}<template v-if="item.inputExtra"> / {{ item.inputExtra }}</template></span>
+          </div>
+        </div>
+        <div v-else class="all-right">全部拼对，没有一个错词 🎉</div>
+      </el-card>
+    </div>
 
     <!-- 空状态：没有到期词 -->
     <el-empty
@@ -133,6 +150,8 @@ const inputWord = ref('')
 const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
+/** 本次会话的错题记录（结束后汇总展示；进度本身实时入库，中途退出不丢） */
+const wrongList = ref([])
 const submitting = ref(false)
 const wordInputRef = ref(null)
 const nextBtnRef = ref(null)
@@ -157,6 +176,7 @@ async function load() {
     rightCount.value = 0
     wrongCount.value = 0
     result.value = null
+    wrongList.value = []
     inputWord.value = ''
     inputExtra.value = ''
     focusWord()
@@ -178,6 +198,15 @@ async function submit() {
       rightCount.value++
     } else {
       wrongCount.value++
+      wrongList.value.push({
+        wordId: current.value.wordId,
+        word: result.value.word,
+        meaning: result.value.meaning,
+        extraLabel: result.value.extraLabel,
+        extraAnswer: result.value.extraAnswer,
+        inputWord: inputWord.value,
+        inputExtra: inputExtra.value
+      })
     }
     await nextTick()
     nextBtnRef.value?.focus()
@@ -363,5 +392,65 @@ onMounted(load)
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* 结束汇总卡（含错题回顾） */
+.summary-card {
+  margin-bottom: 24px;
+}
+
+.summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wrong-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #cd212a;
+  margin-bottom: 12px;
+}
+
+.wrong-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 8px 0;
+  border-top: 1px solid #f0f2f4;
+  flex-wrap: wrap;
+}
+
+.wrong-word {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e3a2b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 130px;
+}
+
+.wrong-meaning {
+  font-size: 14px;
+  color: #55606a;
+}
+
+.wrong-extra {
+  font-size: 13px;
+  color: #00934d;
+  font-weight: 600;
+}
+
+.wrong-input {
+  font-size: 12px;
+  color: #98a2ac;
+}
+
+.all-right {
+  color: #00934d;
+  font-size: 15px;
+  padding: 8px 0;
 }
 </style>
