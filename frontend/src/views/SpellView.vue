@@ -40,7 +40,8 @@
             </span>
             <span class="wrong-meaning">{{ item.meaning }}</span>
             <span v-if="item.extraLabel" class="wrong-extra">{{ item.extraLabel }}：{{ item.extraAnswer }}</span>
-            <span v-if="item.inputWord" class="wrong-input">你输入的：{{ item.inputWord }}<template v-if="item.inputExtra"> / {{ item.inputExtra }}</template></span>
+            <span v-if="item.gaveUp" class="wrong-input">不会</span>
+            <span v-else-if="item.inputWord" class="wrong-input">你输入的：{{ item.inputWord }}<template v-if="item.inputExtra"> / {{ item.inputExtra }}</template></span>
           </div>
         </div>
         <div v-else class="all-right">全部拼对，没有一个错词 🎉</div>
@@ -80,7 +81,7 @@
               size="large"
               placeholder="输入意大利语单词（重音符号可不带）"
               :disabled="!!result"
-              @keyup.enter="submit"
+              @keyup.enter="submit(false)"
             />
           </div>
           <div v-if="current.extraLabel" class="input-item">
@@ -90,7 +91,7 @@
               size="large"
               :placeholder="current.extraLabel"
               :disabled="!!result"
-              @keyup.enter="submit"
+              @keyup.enter="submit(false)"
             />
           </div>
         </div>
@@ -98,11 +99,11 @@
         <!-- 结果对照 -->
         <div v-if="result" class="result">
           <div class="verdict" :class="result.passed ? 'ok' : 'bad'">
-            {{ result.passed ? '✓ 全部拼对' : '✗ 有错误（明天再拼）' }}
+            {{ result.passed ? '✓ 全部拼对' : gaveUp ? '✗ 不会（明天再拼）' : '✗ 有错误（明天再拼）' }}
           </div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
-            <span class="compare-input">{{ inputWord || '（未输入）' }}</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">
               {{ result.word }}
@@ -111,17 +112,20 @@
           </div>
           <div v-if="result.extraLabel" class="compare-row" :class="result.extraCorrect ? 'ok' : 'bad'">
             <span class="compare-label">{{ result.extraLabel }}</span>
-            <span class="compare-input">{{ inputExtra || '（未输入）' }}</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : inputExtra || '（未输入）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">{{ result.extraAnswer }}</span>
           </div>
         </div>
 
         <div class="card-btns">
-          <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit">
+          <el-button v-if="!result" type="danger" plain round size="large" :loading="submitting" @click="giveUp">
+            不会
+          </el-button>
+          <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
           </el-button>
-          <el-button v-else ref="nextBtnRef" type="primary" round size="large" @click="next">
+          <el-button v-else type="primary" round size="large" @click="next">
             下一个（Enter）
           </el-button>
         </div>
@@ -131,7 +135,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import api from '../api'
 import { posTagType } from '../utils/pos'
 import SoundButton from '../components/SoundButton.vue'
@@ -150,11 +154,12 @@ const inputWord = ref('')
 const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
+/** 本题是否点了「不会」（结果页与错题汇总显示区别于拼错） */
+const gaveUp = ref(false)
 /** 本次会话的错题记录（结束后汇总展示；进度本身实时入库，中途退出不丢） */
 const wrongList = ref([])
 const submitting = ref(false)
 const wordInputRef = ref(null)
-const nextBtnRef = ref(null)
 
 const current = computed(() => words.value[currentIndex.value])
 const answered = computed(() => rightCount.value + wrongCount.value)
@@ -176,6 +181,7 @@ async function load() {
     rightCount.value = 0
     wrongCount.value = 0
     result.value = null
+    gaveUp.value = false
     wrongList.value = []
     inputWord.value = ''
     inputExtra.value = ''
@@ -185,8 +191,8 @@ async function load() {
   }
 }
 
-/** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错） */
-async function submit() {
+/** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错 */
+async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
   submitting.value = true
   try {
@@ -194,6 +200,7 @@ async function submit() {
       word: inputWord.value,
       extra: inputExtra.value
     })
+    gaveUp.value = gaveUpFlag
     if (result.value.passed) {
       rightCount.value++
     } else {
@@ -204,31 +211,52 @@ async function submit() {
         meaning: result.value.meaning,
         extraLabel: result.value.extraLabel,
         extraAnswer: result.value.extraAnswer,
+        gaveUp: gaveUpFlag,
         inputWord: inputWord.value,
         inputExtra: inputExtra.value
       })
     }
-    await nextTick()
-    nextBtnRef.value?.focus()
   } finally {
     submitting.value = false
   }
 }
 
+/** 不会：放弃作答判错（归 0 明天再拼），保留输入框内容仅作展示 */
+function giveUp() {
+  submit(true)
+}
+
 /** 下一题 */
 function next() {
+  if (!result.value) return
   result.value = null
+  gaveUp.value = false
   inputWord.value = ''
   inputExtra.value = ''
   currentIndex.value++
   focusWord()
 }
 
+/** 出结果后全局 Enter → 下一题（按钮 focus 不可靠：el-button ref 是组件实例非 DOM） */
+function onKeydown(e) {
+  if (e.key === 'Enter' && result.value && !loading.value) {
+    e.preventDefault()
+    next()
+  }
+}
+
 function focusWord() {
   nextTick(() => wordInputRef.value?.focus())
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  window.addEventListener('keydown', onKeydown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <style scoped>
