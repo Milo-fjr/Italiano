@@ -81,7 +81,7 @@
               size="large"
               placeholder="输入意大利语单词（重音符号可不带）"
               :disabled="!!result"
-              @keyup.enter="submit(false)"
+              @keydown.enter="submit(false)"
             />
           </div>
           <div v-if="current.extraLabel" class="input-item">
@@ -91,7 +91,7 @@
               size="large"
               :placeholder="current.extraLabel"
               :disabled="!!result"
-              @keyup.enter="submit(false)"
+              @keydown.enter="submit(false)"
             />
           </div>
         </div>
@@ -136,6 +136,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
 import SoundButton from '../components/SoundButton.vue'
@@ -194,6 +195,11 @@ async function load() {
 /** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错 */
 async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
+  // 防手滑：正常提交必须输入了单词（「不会」按钮不受限）
+  if (!gaveUpFlag && !inputWord.value.trim()) {
+    ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
+    return
+  }
   submitting.value = true
   try {
     result.value = await api.spellAnswer(current.value.wordId, {
