@@ -125,6 +125,7 @@ public class SpellService {
         } else {
             p.setSpellBox(0);
             p.setSpellNextReviewAt(today.plusDays(1));
+            p.setInNotebook(true); // 拼错进错题本（幂等：已在本的词保持不动）
         }
         progressMapper.updateById(p);
 

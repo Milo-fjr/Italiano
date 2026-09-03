@@ -54,4 +54,7 @@ public class WordProgress {
     /** 最近一次认识测验答题日期（拼写防撞：当天测过认识的词不进拼写队列） */
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDate lastQuizAt;
+
+    /** 错题本标记：测验答错/拼写判错自动置 true，背熟后手动移出；与三套复习体系零耦合 */
+    private Boolean inNotebook;
 }

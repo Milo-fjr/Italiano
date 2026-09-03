@@ -41,6 +41,11 @@ export default {
   // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则）
   getSpellDue: () => http.get('/spell'),
   spellAnswer: (id, data) => http.post(`/spell/${id}/answer`, data),
+  // 错题本（测验/拼写答错的词，背熟后手动移出）
+  getNotebook: () => http.get('/notebook'),
+  notebookLearn: (id) => http.post(`/notebook/${id}/learn`),
+  notebookUndo: (id) => http.post(`/notebook/${id}/undo`),
+  notebookLearnAll: () => http.post('/notebook/learn-all'),
   // 统计 / 设置 / 导入
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),

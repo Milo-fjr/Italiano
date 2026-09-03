@@ -301,7 +301,7 @@ public class WordService {
     }
 
     /**
-     * 自测「不认识」：SRS 盒子归 0、明天再复习。
+     * 自测「不认识」：SRS 盒子归 0、明天再复习，并进错题本。
      * 不改批次完成状态（daily_extract 保持未完成），词自然保留在本批次继续学。
      */
     @Transactional
@@ -317,11 +317,13 @@ public class WordService {
             p.setBox(0);
             p.setNextReviewAt(LocalDate.now().plusDays(1));
             p.setLastQuizAt(LocalDate.now());
+            p.setInNotebook(true);
             progressMapper.insert(p);
         } else {
             p.setBox(0);
             p.setNextReviewAt(LocalDate.now().plusDays(1));
             p.setLastQuizAt(LocalDate.now());
+            p.setInNotebook(true);
             progressMapper.updateById(p);
         }
         return getDetail(id);
