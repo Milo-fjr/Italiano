@@ -62,7 +62,7 @@
               <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
             </svg>
           </button>
-          <span class="play-hint">点击喇叭听发音 · 可反复听</span>
+          <span class="play-hint">点击喇叭或按空格播放 · 可反复听</span>
         </div>
 
         <div class="hint-line">
@@ -261,7 +261,8 @@ function next() {
   focusWord()
 }
 
-/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项、0 = 不会（主键盘/小键盘通用，e.key 均为 '1'-'4'/'0'） */
+/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项、0 = 不会、空格 = 播放发音
+ * 空格不跟打字冲突：焦点在任一输入框且已有内容时放行（a presto / mi siedo 需打空格），输入框空着时按空格播放 */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
@@ -269,6 +270,14 @@ function onKeydown(e) {
     return
   }
   if (!result.value && !loading.value && current.value) {
+    if (e.key === ' ') {
+      const el = document.activeElement
+      const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value.trim().length > 0
+      if (typing) return
+      e.preventDefault()
+      play()
+      return
+    }
     if (e.key === '0') {
       e.preventDefault()
       giveUp()
