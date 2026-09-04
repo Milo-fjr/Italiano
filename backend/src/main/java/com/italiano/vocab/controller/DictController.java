@@ -1,7 +1,7 @@
 package com.italiano.vocab.controller;
 
 import com.italiano.vocab.dto.ApiResponse;
-import com.italiano.vocab.dto.SpellAnswerDTO;
+import com.italiano.vocab.dto.DictAnswerDTO;
 import com.italiano.vocab.service.DictService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,15 +21,15 @@ public class DictController {
 
     private final DictService dictService;
 
-    /** 到期听写队列（随机顺序，含单词原文供 TTS）+ 最近未来到期日 */
+    /** 到期听写队列（随机顺序，含单词原文供 TTS；不含释义——释义是考察产出）+ 最近未来到期日 */
     @GetMapping
     public ApiResponse<Map<String, Object>> due() {
         return ApiResponse.ok(dictService.getDueWords());
     }
 
-    /** 答题判分 + 听写 SRS 推进，返回正确答案供结果页对照 */
+    /** 答题判分 + 听写 SRS 推进（单词 + 释义 + 附加形式全对才升盒），返回正确答案供结果页对照 */
     @PostMapping("/{id}/answer")
-    public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody SpellAnswerDTO body) {
-        return ApiResponse.ok(dictService.answer(id, body.getWord(), body.getExtra()));
+    public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody DictAnswerDTO body) {
+        return ApiResponse.ok(dictService.answer(id, body.getWord(), body.getExtra(), body.getMeaning()));
     }
 }

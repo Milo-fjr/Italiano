@@ -3,8 +3,8 @@ package com.italiano.vocab.dto;
 import lombok.Data;
 
 /**
- * 听写模式列表项：含单词原文（前端 TTS 朗读用，页面不显示——听写靠听不靠看），
- * 附加形式答案仍由答题接口判分后才返回。
+ * 听写模式列表项：含单词原文（前端 TTS 朗读用，页面不显示——听写靠听不靠看）。
+ * 不含中文释义（释义是听写要考察的产出之一，队列不下发答案）。
  */
 @Data
 public class DictWordDTO {
@@ -13,8 +13,6 @@ public class DictWordDTO {
 
     /** 单词原文：仅用于前端语音播放，界面不展示 */
     private String word;
-
-    private String meaning;
 
     private String pos;
 

@@ -65,9 +65,8 @@
           <span class="play-hint">点击喇叭听发音 · 可反复听</span>
         </div>
 
-        <div class="meaning-prompt">{{ current.meaning }}</div>
         <div class="hint-line">
-          拼出听到的单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
+          听音写出单词和中文释义<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
         </div>
 
         <!-- 输入区 -->
@@ -79,6 +78,16 @@
               v-model="inputWord"
               size="large"
               placeholder="输入听到的单词（重音符号可不带）"
+              :disabled="!!result"
+              @keydown.enter="submit(false)"
+            />
+          </div>
+          <div class="input-item">
+            <label class="input-label">中文释义</label>
+            <el-input
+              v-model="inputMeaning"
+              size="large"
+              placeholder="这个词是什么意思？"
               :disabled="!!result"
               @keydown.enter="submit(false)"
             />
@@ -108,6 +117,12 @@
               {{ result.word }}
               <SoundButton :text="result.word" small />
             </span>
+          </div>
+          <div class="compare-row" :class="result.meaningCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">中文释义</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : inputMeaning || '（未输入）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">{{ result.meaning }}</span>
           </div>
           <div v-if="result.extraLabel" class="compare-row" :class="result.extraCorrect ? 'ok' : 'bad'">
             <span class="compare-label">{{ result.extraLabel }}</span>
@@ -152,6 +167,7 @@ const currentIndex = ref(0)
 const rightCount = ref(0)
 const wrongCount = ref(0)
 const inputWord = ref('')
+const inputMeaning = ref('')
 const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
@@ -182,6 +198,7 @@ async function load() {
     result.value = null
     gaveUp.value = false
     inputWord.value = ''
+    inputMeaning.value = ''
     inputExtra.value = ''
     focusWord()
   } finally {
@@ -196,18 +213,19 @@ function play() {
   }
 }
 
-/** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错 */
+/** 提交判分（服务端判分：单词归一化容错、释义按「；」多答案括号剔除）；gaveUp=true 为「不会」直接判错 */
 async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
-  // 防手滑：正常提交必须输入了单词（「不会」按钮不受限）
-  if (!gaveUpFlag && !inputWord.value.trim()) {
-    ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
+  // 防手滑：正常提交必须单词和释义都填了（「不会」按钮不受限）
+  if (!gaveUpFlag && (!inputWord.value.trim() || !inputMeaning.value.trim())) {
+    ElMessage.warning('还没填完呢：单词和中文释义都写下再按 Enter，或点「不会」')
     return
   }
   submitting.value = true
   try {
     result.value = await api.dictAnswer(current.value.wordId, {
       word: inputWord.value,
+      meaning: inputMeaning.value,
       extra: inputExtra.value
     })
     gaveUp.value = gaveUpFlag
@@ -232,6 +250,7 @@ function next() {
   result.value = null
   gaveUp.value = false
   inputWord.value = ''
+  inputMeaning.value = ''
   inputExtra.value = ''
   currentIndex.value++
   focusWord()
@@ -362,20 +381,12 @@ onBeforeUnmount(() => {
   color: #98a2ac;
 }
 
-.meaning-prompt {
-  margin-top: 14px;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e3a2b;
-  line-height: 1.4;
-  text-align: center;
-}
-
 .hint-line {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #98a2ac;
+  margin-top: 14px;
+  font-size: 14px;
+  color: #55606a;
   text-align: center;
+  font-weight: 600;
 }
 
 .inputs {

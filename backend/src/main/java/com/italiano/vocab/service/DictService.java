@@ -22,9 +22,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 听写模式（听音→写词产出复习），独立于学习（extract_count）/测验（box）/拼写（spell_box）的体系：
+ * 听写模式（听音→写词 + 写释义产出复习），独立于学习（extract_count）/测验（box）/拼写（spell_box）的体系：
  * 只认 dict_box / dict_next_review_at——全对升盒、有错归 0 明天再听，不动另外三套的任何字段。
- * 判分口径与拼写模式完全一致（共用 ExtraFormService：归一化容错 + 不规则附加形式）。
+ * 答题产出两项：意大利语单词（听音拼写，归一化容错同拼写）+ 中文释义（按「；」拆多答案、括号注解剔除）；
+ * 不规则词的附加形式判定与拼写共用 ExtraFormService，同一口径。
  * <p>
  * 防撞规则（同一词一天只出现在一种模式）：听写队列额外排除——
  * ① 认识测验当天欠账的词（next_review_at <= 今天，测验优先级更高）；
@@ -87,11 +88,12 @@ public class DictService {
     }
 
     /**
-     * 答题判分 + 听写 SRS 推进（判分口径同拼写：归一化容错，全对才升盒）。
-     * 判错自动进错题本；返回正确答案供结果页对照（含拼写对照，听完才知道写成什么样）。
+     * 答题判分 + 听写 SRS 推进。
+     * 单词（听音拼写）+ 中文释义（+ 不规则附加形式）全部正确才升盒；
+     * 判错自动进错题本；返回正确答案供结果页对照。
      */
     @Transactional
-    public Map<String, Object> answer(Long id, String wordInput, String extraInput) {
+    public Map<String, Object> answer(Long id, String wordInput, String extraInput, String meaningInput) {
         Word w = wordMapper.selectById(id);
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
@@ -106,11 +108,12 @@ public class DictService {
         ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
 
         boolean wordCorrect = ExtraFormService.normalize(wordInput).equals(ExtraFormService.normalize(w.getWord()));
+        boolean meaningCorrect = matchMeaning(meaningInput, w.getMeaning());
         Boolean extraCorrect = null;
         if (extra != null) {
             extraCorrect = ExtraFormService.normalize(extraInput).equals(ExtraFormService.normalize(extra.answer()));
         }
-        boolean passed = wordCorrect && (extra == null || extraCorrect);
+        boolean passed = wordCorrect && meaningCorrect && (extra == null || extraCorrect);
 
         LocalDate today = LocalDate.now();
         int box = p.getDictBox() == null ? 0 : p.getDictBox();
@@ -129,6 +132,7 @@ public class DictService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("passed", passed);
         result.put("wordCorrect", wordCorrect);
+        result.put("meaningCorrect", meaningCorrect);
         result.put("extraCorrect", extraCorrect);
         result.put("word", w.getWord());
         result.put("meaning", w.getMeaning());
@@ -140,12 +144,11 @@ public class DictService {
         return result;
     }
 
-    /** 组装队列项：单词原文（TTS 用）+ 中文释义 + 附加填写提示（不含附加答案） */
+    /** 组装队列项：单词原文（TTS 用）+ 附加填写提示（不含释义与附加答案——都是要考察的产出） */
     private DictWordDTO toDTO(Word w) {
         DictWordDTO dto = new DictWordDTO();
         dto.setWordId(w.getId());
         dto.setWord(w.getWord());
-        dto.setMeaning(w.getMeaning());
         dto.setPos(w.getPos());
         dto.setCategory(w.getCategory());
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
@@ -156,5 +159,32 @@ public class DictService {
             dto.setExtraLabel(extra.label());
         }
         return dto;
+    }
+
+    /**
+     * 中文释义判分：按「；」拆成多个可接受答案，括号注解（如「（非正式）」「（阳性单数…）」）剔除后精确比较。
+     * 例：释义「你好；再见（非正式）」→ 输入「你好」「再见」任一即对。
+     */
+    private static boolean matchMeaning(String input, String answer) {
+        String normalizedInput = normalizeMeaning(input);
+        if (normalizedInput.isEmpty()) {
+            return false;
+        }
+        for (String alt : answer.split("[；;]")) {
+            if (normalizeMeaning(alt).equals(normalizedInput)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 释义归一化：trim + 剔除中英文括号注解 + 折叠空格 */
+    private static String normalizeMeaning(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.trim()
+                .replaceAll("（[^）]*）|\\([^)]*\\)", "")
+                .replaceAll("\\s+", "");
     }
 }
