@@ -108,7 +108,7 @@
 
         <div class="card-btns">
           <el-button v-if="!result" type="danger" plain round size="large" :loading="submitting" @click="giveUp">
-            不会
+            不会（0）
           </el-button>
           <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
@@ -218,11 +218,16 @@ function next() {
   focusWord()
 }
 
-/** 出结果后全局 Enter → 下一题（按钮 focus 不可靠：el-button ref 是组件实例非 DOM） */
+/** 全局键盘：出结果后 Enter 切题；答题阶段按 0 = 不会（数字键不跟意语打字冲突，选 0 避免 N 撞字母 n） */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
     next()
+    return
+  }
+  if (e.key === '0' && !result.value && !loading.value && current.value) {
+    e.preventDefault()
+    giveUp()
   }
 }
 

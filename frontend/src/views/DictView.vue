@@ -83,7 +83,7 @@
             />
           </div>
           <div class="input-item">
-            <label class="input-label">中文释义 <span class="label-hint">（按 1-4 选择，Enter 提交）</span></label>
+            <label class="input-label">中文释义 <span class="label-hint">（1-4 选释义 · 0 不会 · Enter 提交）</span></label>
             <div class="meaning-options">
               <button
                 v-for="(opt, idx) in current.meaningOptions"
@@ -138,7 +138,7 @@
 
         <div class="card-btns">
           <el-button v-if="!result" type="danger" plain round size="large" :loading="submitting" @click="giveUp">
-            不会
+            不会（0）
           </el-button>
           <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
@@ -261,7 +261,7 @@ function next() {
   focusWord()
 }
 
-/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项（主键盘/小键盘通用，e.key 均为 '1'-'4'） */
+/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项、0 = 不会（主键盘/小键盘通用，e.key 均为 '1'-'4'/'0'） */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
@@ -269,6 +269,11 @@ function onKeydown(e) {
     return
   }
   if (!result.value && !loading.value && current.value) {
+    if (e.key === '0') {
+      e.preventDefault()
+      giveUp()
+      return
+    }
     const idx = ['1', '2', '3', '4'].indexOf(e.key)
     if (idx >= 0 && idx < current.value.meaningOptions.length) {
       e.preventDefault()
