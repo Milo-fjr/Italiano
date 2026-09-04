@@ -83,17 +83,17 @@
             />
           </div>
           <div class="input-item">
-            <label class="input-label">中文释义</label>
+            <label class="input-label">中文释义 <span class="label-hint">（按 1-4 选择，Enter 提交）</span></label>
             <div class="meaning-options">
               <button
-                v-for="opt in current.meaningOptions"
+                v-for="(opt, idx) in current.meaningOptions"
                 :key="opt"
                 type="button"
                 class="option-btn"
                 :class="{ selected: selectedMeaning === opt }"
                 :disabled="!!result"
                 @click="selectedMeaning = opt"
-              >{{ opt }}</button>
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
             </div>
           </div>
           <div v-if="current.extraLabel" class="input-item">
@@ -261,11 +261,19 @@ function next() {
   focusWord()
 }
 
-/** 出结果后全局 Enter → 下一题（按钮 focus 不可靠：el-button ref 是组件实例非 DOM） */
+/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项（主键盘/小键盘通用，e.key 均为 '1'-'4'） */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
     next()
+    return
+  }
+  if (!result.value && !loading.value && current.value) {
+    const idx = ['1', '2', '3', '4'].indexOf(e.key)
+    if (idx >= 0 && idx < current.value.meaningOptions.length) {
+      e.preventDefault()
+      selectedMeaning.value = current.value.meaningOptions[idx]
+    }
   }
 }
 
@@ -408,7 +416,13 @@ onBeforeUnmount(() => {
   color: #55606a;
 }
 
-/* 释义 4 选 1 选项：两列卡片，点选高亮 */
+.label-hint {
+  color: #98a2ac;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+/* 释义 4 选 1 选项：两列卡片，点选高亮，序号角标对应键盘 1-4 */
 .meaning-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -416,6 +430,9 @@ onBeforeUnmount(() => {
 }
 
 .option-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px;
   border: 1px solid #d9dee3;
   border-radius: 8px;
@@ -425,6 +442,24 @@ onBeforeUnmount(() => {
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.option-idx {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #eef0f2;
+  color: #55606a;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-btn.selected .option-idx {
+  background: #00934d;
+  color: #fff;
 }
 
 .option-btn:hover:not(:disabled) {
