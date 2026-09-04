@@ -50,13 +50,24 @@ public class StatsService {
                 .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
                 .count());
 
-        // 今日到期拼写数（与拼写队列同口径：学过 + 拼写到期 + 当日未被学习/测验接触）
+        // 今日到期拼写数（与拼写队列同口径：学过 + 拼写到期 + 当日未被学习/测验/听写接触）
         dto.setSpellDueCount(progresses.stream()
                 .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
                 .filter(p -> p.getSpellNextReviewAt() == null || !p.getSpellNextReviewAt().isAfter(today))
                 .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
                 .filter(p -> p.getLastQuizAt() == null || p.getLastQuizAt().isBefore(today))
                 .filter(p -> p.getCompletedAt() == null || p.getCompletedAt().isBefore(today.atStartOfDay()))
+                .filter(p -> p.getLastDictAt() == null || p.getLastDictAt().isBefore(today))
+                .count());
+
+        // 今日到期听写数（与听写队列同口径：学过 + 听写到期 + 当日未被学习/测验/拼写接触）
+        dto.setDictDueCount(progresses.stream()
+                .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
+                .filter(p -> p.getDictNextReviewAt() == null || !p.getDictNextReviewAt().isAfter(today))
+                .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
+                .filter(p -> p.getLastQuizAt() == null || p.getLastQuizAt().isBefore(today))
+                .filter(p -> p.getCompletedAt() == null || p.getCompletedAt().isBefore(today.atStartOfDay()))
+                .filter(p -> p.getLastSpellAt() == null || p.getLastSpellAt().isBefore(today))
                 .count());
 
         // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
@@ -88,6 +99,24 @@ public class StatsService {
                     .filter(p -> p.getSpellBox() != null && p.getSpellBox() == box).count()));
         }
         dto.setSpellBoxDistribution(spellDist);
+
+        // 听写盒子分布：从未听写（未进听写体系） / Box 0（听错过，待重听） / Box 1-5
+        // 判据：听写答过题必有 dict_next_review_at（答对排期、答错明天），NULL 即从未听过
+        long inDict = progresses.stream()
+                .filter(p -> p.getDictNextReviewAt() != null
+                        || (p.getDictBox() != null && p.getDictBox() > 0)).count();
+        dto.setDictCoveredWords(inDict);
+        List<StatsDTO.CountBucket> dictDist = new ArrayList<>();
+        dictDist.add(bucket("从未听写", words.size() - inDict));
+        dictDist.add(bucket("Box 0", progresses.stream()
+                .filter(p -> p.getDictNextReviewAt() != null
+                        && (p.getDictBox() == null || p.getDictBox() == 0)).count()));
+        for (int b = 1; b <= 5; b++) {
+            final int box = b;
+            dictDist.add(bucket("Box " + box, progresses.stream()
+                    .filter(p -> p.getDictBox() != null && p.getDictBox() == box).count()));
+        }
+        dto.setDictBoxDistribution(dictDist);
 
         // 当前批次进度（批次手动刷新、不按日期轮换，表内即当前批次）
         List<DailyExtract> currentBatch = dailyExtractMapper.selectList(null);

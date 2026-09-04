@@ -36,6 +36,14 @@
         <div class="stat-value">{{ store.stats.spellCoveredWords }}</div>
         <div class="stat-label">已拼写词数</div>
       </el-card>
+      <el-card class="stat-card">
+        <div class="stat-value">{{ store.stats.dictDueCount }}</div>
+        <div class="stat-label">今日到期听写</div>
+      </el-card>
+      <el-card class="stat-card">
+        <div class="stat-value">{{ store.stats.dictCoveredWords }}</div>
+        <div class="stat-label">已听写词数</div>
+      </el-card>
     </div>
 
     <!-- SRS 盒子分布：简单数字 + 进度条 -->
@@ -67,6 +75,25 @@
       >
         <span class="box-label">
           {{ b.label }}<template v-if="b.label === 'Box 0'">（拼错过，待重拼）</template>
+        </span>
+        <el-progress
+          class="box-bar"
+          :percentage="boxPercentage(b.count)"
+          :format="() => `${b.count} 词`"
+        />
+      </div>
+    </el-card>
+
+    <!-- 听写盒子分布：听音→写词的产出型复习进度 -->
+    <el-card v-if="store.stats && store.stats.dictBoxDistribution" class="box-card">
+      <template #header>听写盒子分布（听音写词，独立于认识盒和拼写盒）</template>
+      <div
+        v-for="b in store.stats.dictBoxDistribution"
+        :key="b.label"
+        class="box-row"
+      >
+        <span class="box-label">
+          {{ b.label }}<template v-if="b.label === 'Box 0'">（听错过，待重听）</template>
         </span>
         <el-progress
           class="box-bar"
@@ -174,7 +201,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 20px;
 }

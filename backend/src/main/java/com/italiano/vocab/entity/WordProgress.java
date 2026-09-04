@@ -57,4 +57,19 @@ public class WordProgress {
 
     /** 错题本标记：测验答错/拼写判错自动置 true，背熟后手动移出；与三套复习体系零耦合 */
     private Boolean inNotebook;
+
+    /** 听写盒子级别 0-5（独立体系：听音写词，全对升盒/有错归 0，不动认识盒和拼写盒） */
+    private Integer dictBox;
+
+    /** 下次听写复习日期；NULL=从未听写过（学过的词视为到期，由防撞规则节流） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate dictNextReviewAt;
+
+    /** 最近一次拼写答题日期（听写防撞：当天拼过的词不进听写队列） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate lastSpellAt;
+
+    /** 最近一次听写答题日期（拼写防撞：当天听写过的词不进拼写队列） */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private LocalDate lastDictAt;
 }

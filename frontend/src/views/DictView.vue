@@ -1,11 +1,11 @@
 <template>
   <div>
-    <!-- 拼写进度 -->
+    <!-- 听写进度 -->
     <div class="today-header">
       <div class="today-info">
         <h2 class="page-title today-title">
-          拼写模式
-          <span class="date">中文 → 意大利语 · 全对升盒 / 有错归 0</span>
+          听写模式
+          <span class="date">听音 → 意大利语 · 全对升盒 / 有错归 0</span>
         </h2>
         <div class="progress-line">
           <el-progress
@@ -14,7 +14,7 @@
             :stroke-width="18"
             :format="() => `${answered} / ${total}`"
           />
-          <span class="progress-hint">已拼 / 到期总数 · 拼对 {{ rightCount }} · 拼错 {{ wrongCount }}</span>
+          <span class="progress-hint">已听 / 到期总数 · 听对 {{ rightCount }} · 听错 {{ wrongCount }}</span>
         </div>
       </div>
       <div class="header-actions">
@@ -22,29 +22,29 @@
       </div>
     </div>
 
-    <!-- 空状态：本次拼完全部 -->
+    <!-- 空状态：本次听完所有 -->
     <div v-if="!loading && !current && answered > 0" class="summary-card">
       <el-card>
         <template #header>
           <div class="summary-head">
-            <span>今日拼写完成：拼对 {{ rightCount }} 个 · 拼错 {{ wrongCount }} 个（错的明天回来）</span>
+            <span>今日听写完成：听对 {{ rightCount }} 个 · 听错 {{ wrongCount }} 个（错的明天回来）</span>
             <el-button round @click="load">重新加载</el-button>
           </div>
         </template>
-        <div v-if="wrongCount" class="wrong-note">拼错的 {{ wrongCount }} 个词已自动进错题本，去错题本复习吧</div>
-        <div v-else class="all-right">全部拼对，没有一个错词 🎉</div>
+        <div v-if="wrongCount" class="wrong-note">听错的 {{ wrongCount }} 个词已自动进错题本，去错题本复习吧</div>
+        <div v-else class="all-right">全部听对，没有一个错词 🎉</div>
       </el-card>
     </div>
 
     <!-- 空状态：没有到期词 -->
     <el-empty
       v-else-if="!loading && !current"
-      :description="nextDueAt ? `暂无到期拼写的单词，下一次拼写：${nextDueAtText}` : '暂无到期拼写的单词'"
+      :description="nextDueAt ? `暂无到期听写的单词，下一次听写：${nextDueAtText}` : '暂无到期听写的单词'"
     >
       <el-button type="primary" round @click="$router.push('/')">去学习模式背新词</el-button>
     </el-empty>
 
-    <!-- 答题卡：一次一题，中文释义 → 拼写意语单词（+ 不规则附加形式） -->
+    <!-- 答题卡：一次一题，听发音（不看词）→ 写出意语单词（+ 不规则附加形式） -->
     <div v-loading="loading" class="spell-stage">
       <el-card v-if="current" class="spell-card">
         <div class="prompt-tags">
@@ -54,9 +54,20 @@
             <el-tag size="small" type="info" effect="plain">{{ current.category }}</el-tag>
           </span>
         </div>
+
+        <!-- 听音区：大喇叭播放（单词原文仅进 TTS，页面不显示） -->
+        <div class="audio-prompt">
+          <button class="play-btn" type="button" title="播放单词发音" @click="play">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+          </button>
+          <span class="play-hint">点击喇叭听发音 · 可反复听</span>
+        </div>
+
         <div class="meaning-prompt">{{ current.meaning }}</div>
         <div class="hint-line">
-          拼出对应的意大利语单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
+          拼出听到的单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
         </div>
 
         <!-- 输入区 -->
@@ -67,7 +78,7 @@
               ref="wordInputRef"
               v-model="inputWord"
               size="large"
-              placeholder="输入意大利语单词（重音符号可不带）"
+              placeholder="输入听到的单词（重音符号可不带）"
               :disabled="!!result"
               @keydown.enter="submit(false)"
             />
@@ -87,7 +98,7 @@
         <!-- 结果对照 -->
         <div v-if="result" class="result">
           <div class="verdict" :class="result.passed ? 'ok' : 'bad'">
-            {{ result.passed ? '✓ 全部拼对' : gaveUp ? '✗ 不会（明天再拼）' : '✗ 有错误（明天再拼）' }}
+            {{ result.passed ? '✓ 全部听对' : gaveUp ? '✗ 不会（明天再听）' : '✗ 有错误（明天再听）' }}
           </div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
@@ -127,14 +138,15 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { speakItalian } from '../utils/tts'
 import SoundButton from '../components/SoundButton.vue'
 
 const loading = ref(false)
-/** 到期拼写队列（服务端随机顺序；逐题作答，答过的不再出现） */
+/** 到期听写队列（服务端随机顺序；逐题作答，答过的不再出现） */
 const words = ref([])
 /** 本次会话的到期总数（进度分母） */
 const total = ref(0)
-/** 最近一次未来拼写到期日（无到期词时的提示） */
+/** 最近一次未来听写到期日（无到期词时的提示） */
 const nextDueAt = ref(null)
 const currentIndex = ref(0)
 const rightCount = ref(0)
@@ -143,7 +155,7 @@ const inputWord = ref('')
 const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
-/** 本题是否点了「不会」（结果页显示区别于拼错） */
+/** 本题是否点了「不会」（结果页显示区别于听错） */
 const gaveUp = ref(false)
 const submitting = ref(false)
 const wordInputRef = ref(null)
@@ -160,7 +172,7 @@ const nextDueAtText = computed(() => {
 async function load() {
   loading.value = true
   try {
-    const r = await api.getSpellDue()
+    const r = await api.getDictDue()
     words.value = r.words
     total.value = r.total
     nextDueAt.value = r.nextDueAt
@@ -177,6 +189,13 @@ async function load() {
   }
 }
 
+/** 播放当前单词发音（Web Speech 意语语音包） */
+function play() {
+  if (current.value) {
+    speakItalian(current.value.word)
+  }
+}
+
 /** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错 */
 async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
@@ -187,7 +206,7 @@ async function submit(gaveUpFlag = false) {
   }
   submitting.value = true
   try {
-    result.value = await api.spellAnswer(current.value.wordId, {
+    result.value = await api.dictAnswer(current.value.wordId, {
       word: inputWord.value,
       extra: inputExtra.value
     })
@@ -202,7 +221,7 @@ async function submit(gaveUpFlag = false) {
   }
 }
 
-/** 不会：放弃作答判错（归 0 明天再拼），保留输入框内容仅作展示 */
+/** 不会：放弃作答判错（归 0 明天再听），保留输入框内容仅作展示 */
 function giveUp() {
   submit(true)
 }
@@ -307,18 +326,56 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
+/* 听音区：大喇叭居中 */
+.audio-prompt {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.play-btn {
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 2px solid #00934d;
+  border-radius: 50%;
+  background: #f0f9f3;
+  color: #00934d;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-btn:hover {
+  background: #d9f0e3;
+}
+
+.play-btn:active {
+  transform: scale(0.94);
+}
+
+.play-hint {
+  font-size: 13px;
+  color: #98a2ac;
+}
+
 .meaning-prompt {
   margin-top: 14px;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: #1e3a2b;
   line-height: 1.4;
+  text-align: center;
 }
 
 .hint-line {
   margin-top: 6px;
   font-size: 13px;
   color: #98a2ac;
+  text-align: center;
 }
 
 .inputs {

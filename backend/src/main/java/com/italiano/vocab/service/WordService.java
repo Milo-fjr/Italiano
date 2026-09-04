@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WordService {
 
-    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/2/4/8/16 天）；拼写盒子复用同一间隔表 */
-    public static final int[] REVIEW_INTERVALS = {1, 2, 4, 8, 16};
+    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/3/5/10/20 天）；拼写/听写盒子复用同一间隔表 */
+    public static final int[] REVIEW_INTERVALS = {1, 3, 5, 10, 20};
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
