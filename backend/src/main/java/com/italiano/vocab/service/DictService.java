@@ -162,8 +162,9 @@ public class DictService {
     }
 
     /**
-     * 中文释义判分：按「；」拆成多个可接受答案，括号注解（如「（非正式）」「（阳性单数…）」）剔除后精确比较。
+     * 中文释义判分：按「；」拆成多个可接受答案，括号注解（如「（非正式）」「（阳性单数…）」）剔除后比较。
      * 例：释义「你好；再见（非正式）」→ 输入「你好」「再见」任一即对。
+     * 尾部口语虚词容错：归一化会剥掉结尾的「的/了/呀/啊/吧/呢/吗/地」等（好 ≡ 好的、再见 ≡ 再见啦）。
      */
     private static boolean matchMeaning(String input, String answer) {
         String normalizedInput = normalizeMeaning(input);
@@ -178,13 +179,17 @@ public class DictService {
         return false;
     }
 
-    /** 释义归一化：trim + 剔除中英文括号注解 + 折叠空格 */
+    /** 释义归一化：trim + 剔除中英文括号注解 + 折叠空格 + 剥掉尾部口语虚词（好/好的） */
     private static String normalizeMeaning(String s) {
         if (s == null) {
             return "";
         }
-        return s.trim()
+        String t = s.trim()
                 .replaceAll("（[^）]*）|\\([^)]*\\)", "")
                 .replaceAll("\\s+", "");
+        while (!t.isEmpty() && "的了呀啊吧呢吗地".indexOf(t.charAt(t.length() - 1)) >= 0) {
+            t = t.substring(0, t.length() - 1);
+        }
+        return t;
     }
 }
