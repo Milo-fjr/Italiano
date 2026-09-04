@@ -22,10 +22,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 听写模式（听音→写词 + 写释义产出复习），独立于学习（extract_count）/测验（box）/拼写（spell_box）的体系：
+ * 听写模式（听音→写词 + 释义 4 选 1 产出复习），独立于学习（extract_count）/测验（box）/拼写（spell_box）的体系：
  * 只认 dict_box / dict_next_review_at——全对升盒、有错归 0 明天再听，不动另外三套的任何字段。
- * 答题产出两项：意大利语单词（听音拼写，归一化容错同拼写）+ 中文释义（按「；」拆多答案、括号注解剔除）；
- * 不规则词的附加形式判定与拼写共用 ExtraFormService，同一口径。
+ * 答题产出：意大利语单词手写（听音拼写，归一化容错同拼写）+ 中文释义选择题（4 选项随机，点选判定，
+ * 消除手打中文的错别字/格式误判）；不规则词的附加形式判定与拼写共用 ExtraFormService，同一口径。
  * <p>
  * 防撞规则（同一词一天只出现在一种模式）：听写队列额外排除——
  * ① 认识测验当天欠账的词（next_review_at <= 今天，测验优先级更高）；
@@ -144,13 +144,14 @@ public class DictService {
         return result;
     }
 
-    /** 组装队列项：单词原文（TTS 用）+ 附加填写提示（不含释义与附加答案——都是要考察的产出） */
+    /** 组装队列项：单词原文（TTS 用）+ 释义 4 选 1 选项 + 附加填写提示（不含附加答案） */
     private DictWordDTO toDTO(Word w) {
         DictWordDTO dto = new DictWordDTO();
         dto.setWordId(w.getId());
         dto.setWord(w.getWord());
         dto.setPos(w.getPos());
         dto.setCategory(w.getCategory());
+        dto.setMeaningOptions(buildMeaningOptions(w));
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
         dto.setIrregular(tag);
         ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
@@ -162,18 +163,45 @@ public class DictService {
     }
 
     /**
-     * 中文释义判分：按「；」拆成多个可接受答案，括号注解（如「（非正式）」「（阳性单数…）」）剔除后比较。
-     * 例：释义「你好；再见（非正式）」→ 输入「你好」「再见」任一即对。
-     * 尾部口语虚词容错：归一化会剥掉结尾的「的/了/呀/啊/吧/呢/吗/地」等（好 ≡ 好的、再见 ≡ 再见啦）。
+     * 释义选项：正确释义 + 3 个随机干扰项（从词库随机抽，归一化后与正确释义及彼此不重复），整体打乱顺序。
+     */
+    private List<String> buildMeaningOptions(Word w) {
+        List<String> options = new ArrayList<>();
+        options.add(w.getMeaning());
+
+        List<Word> candidates = wordMapper.selectList(new LambdaQueryWrapper<Word>()
+                .select(Word::getMeaning)
+                .ne(Word::getId, w.getId())
+                .last("ORDER BY RAND() LIMIT 20"));
+        for (Word c : candidates) {
+            if (options.size() >= 4) {
+                break;
+            }
+            String m = c.getMeaning();
+            boolean dup = options.stream().anyMatch(o -> normalizeMeaning(o).equals(normalizeMeaning(m)));
+            if (!dup) {
+                options.add(m);
+            }
+        }
+        Collections.shuffle(options);
+        return options;
+    }
+
+    /**
+     * 中文释义判分：输入与答案都按「；」拆成子段，任一子段归一化命中任一答案子段即对。
+     * 点选传入整个选项文本（如「一对；情侣」）也能正确命中；括号注解（「（非正式）」等）剔除；
+     * 尾部口语虚词容错（好 ≡ 好的、再见 ≡ 再见啦）。
      */
     private static boolean matchMeaning(String input, String answer) {
-        String normalizedInput = normalizeMeaning(input);
-        if (normalizedInput.isEmpty()) {
-            return false;
-        }
-        for (String alt : answer.split("[；;]")) {
-            if (normalizeMeaning(alt).equals(normalizedInput)) {
-                return true;
+        for (String in : input.split("[；;]")) {
+            String normalizedInput = normalizeMeaning(in);
+            if (normalizedInput.isEmpty()) {
+                continue;
+            }
+            for (String alt : answer.split("[；;]")) {
+                if (normalizeMeaning(alt).equals(normalizedInput)) {
+                    return true;
+                }
             }
         }
         return false;

@@ -2,9 +2,11 @@ package com.italiano.vocab.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 听写模式列表项：含单词原文（前端 TTS 朗读用，页面不显示——听写靠听不靠看）。
- * 不含中文释义（释义是听写要考察的产出之一，队列不下发答案）。
+ * 释义不直接下发，改为 4 选 1 选项（meaningOptions 含正确释义 + 随机干扰项，已打乱）。
  */
 @Data
 public class DictWordDTO {
@@ -26,4 +28,7 @@ public class DictWordDTO {
 
     /** 附加填写输入框标签（与 extraType 同空同有） */
     private String extraLabel;
+
+    /** 中文释义 4 选项（打乱顺序，含 1 个正确释义 + 3 个随机干扰项；用户点选，避免手打误判） */
+    private List<String> meaningOptions;
 }

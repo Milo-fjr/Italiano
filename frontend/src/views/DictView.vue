@@ -66,7 +66,7 @@
         </div>
 
         <div class="hint-line">
-          听音写出单词和中文释义<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
+          听音写出单词，选出中文释义<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
         </div>
 
         <!-- 输入区 -->
@@ -84,13 +84,17 @@
           </div>
           <div class="input-item">
             <label class="input-label">中文释义</label>
-            <el-input
-              v-model="inputMeaning"
-              size="large"
-              placeholder="这个词是什么意思？"
-              :disabled="!!result"
-              @keydown.enter="submit(false)"
-            />
+            <div class="meaning-options">
+              <button
+                v-for="opt in current.meaningOptions"
+                :key="opt"
+                type="button"
+                class="option-btn"
+                :class="{ selected: selectedMeaning === opt }"
+                :disabled="!!result"
+                @click="selectedMeaning = opt"
+              >{{ opt }}</button>
+            </div>
           </div>
           <div v-if="current.extraLabel" class="input-item">
             <label class="input-label">{{ current.extraLabel }}</label>
@@ -120,7 +124,7 @@
           </div>
           <div class="compare-row" :class="result.meaningCorrect ? 'ok' : 'bad'">
             <span class="compare-label">中文释义</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputMeaning || '（未输入）' }}</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : selectedMeaning || '（未选）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">{{ result.meaning }}</span>
           </div>
@@ -167,7 +171,8 @@ const currentIndex = ref(0)
 const rightCount = ref(0)
 const wrongCount = ref(0)
 const inputWord = ref('')
-const inputMeaning = ref('')
+/** 选中的中文释义选项（4 选 1，点选而非手打，避免错别字/格式误判） */
+const selectedMeaning = ref('')
 const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
@@ -198,7 +203,7 @@ async function load() {
     result.value = null
     gaveUp.value = false
     inputWord.value = ''
-    inputMeaning.value = ''
+    selectedMeaning.value = ''
     inputExtra.value = ''
     focusWord()
   } finally {
@@ -213,19 +218,19 @@ function play() {
   }
 }
 
-/** 提交判分（服务端判分：单词归一化容错、释义按「；」多答案括号剔除）；gaveUp=true 为「不会」直接判错 */
+/** 提交判分（服务端判分：单词归一化容错 + 释义选项点选比对）；gaveUp=true 为「不会」直接判错 */
 async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
-  // 防手滑：正常提交必须单词和释义都填了（「不会」按钮不受限）
-  if (!gaveUpFlag && (!inputWord.value.trim() || !inputMeaning.value.trim())) {
-    ElMessage.warning('还没填完呢：单词和中文释义都写下再按 Enter，或点「不会」')
+  // 防手滑：正常提交必须写了单词且选了释义（「不会」按钮不受限）
+  if (!gaveUpFlag && (!inputWord.value.trim() || !selectedMeaning.value)) {
+    ElMessage.warning('还没填完呢：写下单词、点选中文释义再按 Enter，或点「不会」')
     return
   }
   submitting.value = true
   try {
     result.value = await api.dictAnswer(current.value.wordId, {
       word: inputWord.value,
-      meaning: inputMeaning.value,
+      meaning: selectedMeaning.value,
       extra: inputExtra.value
     })
     gaveUp.value = gaveUpFlag
@@ -250,7 +255,7 @@ function next() {
   result.value = null
   gaveUp.value = false
   inputWord.value = ''
-  inputMeaning.value = ''
+  selectedMeaning.value = ''
   inputExtra.value = ''
   currentIndex.value++
   focusWord()
@@ -401,6 +406,41 @@ onBeforeUnmount(() => {
   margin-bottom: 6px;
   font-size: 13px;
   color: #55606a;
+}
+
+/* 释义 4 选 1 选项：两列卡片，点选高亮 */
+.meaning-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.option-btn {
+  padding: 10px 12px;
+  border: 1px solid #d9dee3;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e3a2b;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: #00934d;
+}
+
+.option-btn.selected {
+  border-color: #00934d;
+  background: #eef8f2;
+  color: #00934d;
+  font-weight: 600;
+}
+
+.option-btn:disabled {
+  cursor: default;
+  opacity: 1;
 }
 
 /* 结果对照 */
