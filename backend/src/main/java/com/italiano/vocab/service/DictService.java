@@ -88,6 +88,19 @@ public class DictService {
     }
 
     /**
+     * 释义预检（两段式第一关）：只判对错、不动 SRS——选对才进入拼写关，选错由前端再调 answer 落判错。
+     */
+    public Map<String, Object> checkMeaning(Long id, String meaningInput) {
+        Word w = wordMapper.selectById(id);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("correct", matchMeaning(meaningInput, w.getMeaning()));
+        return result;
+    }
+
+    /**
      * 答题判分 + 听写 SRS 推进。
      * 单词（听音拼写）+ 中文释义（+ 不规则附加形式）全部正确才升盒；
      * 判错自动进错题本；返回正确答案供结果页对照。

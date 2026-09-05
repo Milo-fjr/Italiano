@@ -45,6 +45,6 @@ export function speakItalian(text) {
   } else {
     utter.lang = 'it-IT' // 语音列表尚未就绪时先按语言朗读
   }
-  utter.rate = 0.9 // 稍慢，便于学习者听清
+  utter.rate = 1.0 // 常速：0.9 时尾音发拖（慢速合成拖长尾字母），1.0 干脆且仍清晰
   speechSynthesis.speak(utter)
 }

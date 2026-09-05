@@ -66,13 +66,35 @@
         </div>
 
         <div class="hint-line">
-          听音写出单词，选出中文释义<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
+          <template v-if="stage === 1">先听发音，选出正确的中文释义</template>
+          <template v-else>释义选对了！听音写出单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template></template>
         </div>
 
-        <!-- 输入区 -->
-        <div class="inputs">
+        <!-- 第一关：释义 4 选 1（听懂了才能进拼写关；出结果后收起） -->
+        <div v-if="stage === 1 && !result" class="inputs">
           <div class="input-item">
-            <label class="input-label">意大利语单词</label>
+            <label class="input-label">这个单词是什么意思？ <span class="label-hint">（1-4 选释义 · 0 不会 · Enter 确认）</span></label>
+            <div class="meaning-options">
+              <button
+                v-for="(opt, idx) in current.meaningOptions"
+                :key="opt"
+                type="button"
+                class="option-btn"
+                :class="{ selected: selectedMeaning === opt }"
+                @click="selectedMeaning = opt"
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第二关：拼写（空格可反复听） -->
+        <div v-else class="inputs">
+          <div class="input-item">
+            <label class="input-label">中文释义（已选对）</label>
+            <div class="meaning-confirmed">{{ selectedMeaning }}</div>
+          </div>
+          <div class="input-item">
+            <label class="input-label">意大利语单词 <span class="label-hint">（空格重听 · 0 不会 · Enter 提交）</span></label>
             <el-input
               ref="wordInputRef"
               v-model="inputWord"
@@ -81,20 +103,6 @@
               :disabled="!!result"
               @keydown.enter="submit(false)"
             />
-          </div>
-          <div class="input-item">
-            <label class="input-label">中文释义 <span class="label-hint">（1-4 选释义 · 0 不会 · Enter 提交）</span></label>
-            <div class="meaning-options">
-              <button
-                v-for="(opt, idx) in current.meaningOptions"
-                :key="opt"
-                type="button"
-                class="option-btn"
-                :class="{ selected: selectedMeaning === opt }"
-                :disabled="!!result"
-                @click="selectedMeaning = opt"
-              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
-            </div>
           </div>
           <div v-if="current.extraLabel" class="input-item">
             <label class="input-label">{{ current.extraLabel }}</label>
@@ -115,7 +123,7 @@
           </div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : stage === 1 ? '（未到拼写）' : inputWord || '（未输入）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">
               {{ result.word }}
@@ -140,7 +148,10 @@
           <el-button v-if="!result" type="danger" plain round size="large" :loading="submitting" @click="giveUp">
             不会（0）
           </el-button>
-          <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
+          <el-button v-if="!result && stage === 1" type="primary" round size="large" :loading="submitting" @click="confirmMeaning">
+            确认释义（Enter）
+          </el-button>
+          <el-button v-else-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
           </el-button>
           <el-button v-else type="primary" round size="large" @click="next">
@@ -174,6 +185,8 @@ const inputWord = ref('')
 /** 选中的中文释义选项（4 选 1，点选而非手打，避免错别字/格式误判） */
 const selectedMeaning = ref('')
 const inputExtra = ref('')
+/** 答题阶段：1=释义关（听音选义）、2=拼写关（听音写词）——释义选对才进 2 */
+const stage = ref(1)
 /** 答题结果（null=答题中） */
 const result = ref(null)
 /** 本题是否点了「不会」（结果页显示区别于听错） */
@@ -202,10 +215,10 @@ async function load() {
     wrongCount.value = 0
     result.value = null
     gaveUp.value = false
+    stage.value = 1
     inputWord.value = ''
     selectedMeaning.value = ''
     inputExtra.value = ''
-    focusWord()
   } finally {
     loading.value = false
   }
@@ -218,35 +231,67 @@ function play() {
   }
 }
 
-/** 提交判分（服务端判分：单词归一化容错 + 释义选项点选比对）；gaveUp=true 为「不会」直接判错 */
-async function submit(gaveUpFlag = false) {
-  if (!current.value || result.value || submitting.value) return
-  // 防手滑：正常提交必须写了单词且选了释义（「不会」按钮不受限）
-  if (!gaveUpFlag && (!inputWord.value.trim() || !selectedMeaning.value)) {
-    ElMessage.warning('还没填完呢：写下单词、点选中文释义再按 Enter，或点「不会」')
+/** 第一关：确认释义选项——选对进拼写关，选错整题判错（服务端预检不动 SRS，判错走正式 answer） */
+async function confirmMeaning() {
+  if (stage.value !== 1 || !current.value || result.value || submitting.value) return
+  if (!selectedMeaning.value) {
+    ElMessage.warning('先按 1-4 选一个释义')
     return
   }
   submitting.value = true
   try {
-    result.value = await api.dictAnswer(current.value.wordId, {
-      word: inputWord.value,
-      meaning: selectedMeaning.value,
-      extra: inputExtra.value
-    })
-    gaveUp.value = gaveUpFlag
-    if (result.value.passed) {
-      rightCount.value++
+    const r = await api.dictCheckMeaning(current.value.wordId, { meaning: selectedMeaning.value })
+    if (r.correct) {
+      stage.value = 2
+      focusWord()
     } else {
-      wrongCount.value++ // 错词由后端自动进错题本，这里只计数
+      await finalize(false)
     }
   } finally {
     submitting.value = false
   }
 }
 
-/** 不会：放弃作答判错（归 0 明天再听），保留输入框内容仅作展示 */
-function giveUp() {
-  submit(true)
+/** 第二关提交判分（服务端判分：单词归一化容错 + 附加形式） */
+async function submit(gaveUpFlag = false) {
+  if (stage.value !== 2 || !current.value || result.value || submitting.value) return
+  // 防手滑：正常提交必须写了单词（「不会」不受限）
+  if (!gaveUpFlag && !inputWord.value.trim()) {
+    ElMessage.warning('还没写呢：写下听到的单词再按 Enter，或点「不会」')
+    return
+  }
+  submitting.value = true
+  try {
+    await finalize(gaveUpFlag)
+  } finally {
+    submitting.value = false
+  }
+}
+
+/** 正式判分落库（SRS 推进 + 错题本），两关殊途同归：拼写提交 / 释义选错 / 不会 */
+async function finalize(gaveUpFlag) {
+  result.value = await api.dictAnswer(current.value.wordId, {
+    word: inputWord.value,
+    meaning: selectedMeaning.value,
+    extra: inputExtra.value
+  })
+  gaveUp.value = gaveUpFlag
+  if (result.value.passed) {
+    rightCount.value++
+  } else {
+    wrongCount.value++ // 错词由后端自动进错题本，这里只计数
+  }
+}
+
+/** 不会：两关任一阶段放弃作答，判错归 0 明天再听 */
+async function giveUp() {
+  if (!current.value || result.value || submitting.value) return
+  submitting.value = true
+  try {
+    await finalize(true)
+  } finally {
+    submitting.value = false
+  }
 }
 
 /** 下一题 */
@@ -254,14 +299,14 @@ function next() {
   if (!result.value) return
   result.value = null
   gaveUp.value = false
+  stage.value = 1
   inputWord.value = ''
   selectedMeaning.value = ''
   inputExtra.value = ''
   currentIndex.value++
-  focusWord()
 }
 
-/** 全局键盘：出结果后 Enter 切题；答题阶段数字键 1-4 选释义选项、0 = 不会、空格 = 播放发音
+/** 全局键盘：出结果后 Enter 切题；第一关 1-4 选释义 + Enter 确认；0 = 不会（两关通用）；空格 = 播放发音
  * 空格不跟打字冲突：焦点在任一输入框且已有内容时放行（a presto / mi siedo 需打空格），输入框空着时按空格播放 */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
@@ -283,10 +328,17 @@ function onKeydown(e) {
       giveUp()
       return
     }
-    const idx = ['1', '2', '3', '4'].indexOf(e.key)
-    if (idx >= 0 && idx < current.value.meaningOptions.length) {
-      e.preventDefault()
-      selectedMeaning.value = current.value.meaningOptions[idx]
+    if (stage.value === 1) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        confirmMeaning()
+        return
+      }
+      const idx = ['1', '2', '3', '4'].indexOf(e.key)
+      if (idx >= 0 && idx < current.value.meaningOptions.length) {
+        e.preventDefault()
+        selectedMeaning.value = current.value.meaningOptions[idx]
+      }
     }
   }
 }
@@ -434,6 +486,17 @@ onBeforeUnmount(() => {
   color: #98a2ac;
   font-weight: 400;
   font-size: 12px;
+}
+
+/* 第二关顶部：已选对的释义（绿色确认条，拼写时知道自己在写什么） */
+.meaning-confirmed {
+  padding: 10px 12px;
+  border: 1px solid #00934d;
+  border-radius: 8px;
+  background: #eef8f2;
+  color: #00934d;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 /* 释义 4 选 1 选项：两列卡片，点选高亮，序号角标对应键盘 1-4 */

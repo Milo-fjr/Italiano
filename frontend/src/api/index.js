@@ -41,8 +41,9 @@ export default {
   // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则）
   getSpellDue: () => http.get('/spell'),
   spellAnswer: (id, data) => http.post(`/spell/${id}/answer`, data),
-  // 听写模式（听音→写词，独立听写盒子 + 防撞规则）
+  // 听写模式（听音→写词，独立听写盒子 + 防撞规则；两段式：先选释义再拼写）
   getDictDue: () => http.get('/dict'),
+  dictCheckMeaning: (id, data) => http.post(`/dict/${id}/check-meaning`, data),
   dictAnswer: (id, data) => http.post(`/dict/${id}/answer`, data),
   // 错题本（测验/拼写答错的词，背熟后手动移出）
   getNotebook: () => http.get('/notebook'),

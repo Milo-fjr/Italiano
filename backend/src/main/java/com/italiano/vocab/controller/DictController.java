@@ -27,6 +27,12 @@ public class DictController {
         return ApiResponse.ok(dictService.getDueWords());
     }
 
+    /** 两段式第一关：释义选项预检（只判对错，不推进 SRS；选对后前端进入拼写关） */
+    @PostMapping("/{id}/check-meaning")
+    public ApiResponse<Map<String, Object>> checkMeaning(@PathVariable Long id, @RequestBody DictAnswerDTO body) {
+        return ApiResponse.ok(dictService.checkMeaning(id, body.getMeaning()));
+    }
+
     /** 答题判分 + 听写 SRS 推进（单词 + 释义 + 附加形式全对才升盒），返回正确答案供结果页对照 */
     @PostMapping("/{id}/answer")
     public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody DictAnswerDTO body) {
