@@ -36,7 +36,11 @@ public class ExtraFormService {
                 && (tag.contains("现在时不规则") || tag.contains("音变"))) {
             String io = extractPresentIo(w.getConjugation());
             if (io != null) {
-                return new Extra(EXTRA_PRESENT_IO, "现在时 io 形式", io);
+                // 自反动词（sedersi → mi siedo）：答案自带自反代词，标签要提示连代词一起写，否则学习者不知道
+                String label = io.matches("(?i)^(mi|ti|si|ci|vi)\\s+.*")
+                        ? "现在时 io 形式（含自反代词）"
+                        : "现在时 io 形式";
+                return new Extra(EXTRA_PRESENT_IO, label, io);
             }
             return null;
         }
