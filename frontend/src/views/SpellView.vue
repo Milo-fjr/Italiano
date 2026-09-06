@@ -127,6 +127,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { speakItalian } from '../utils/tts'
 import SoundButton from '../components/SoundButton.vue'
 
 const loading = ref(false)
@@ -177,7 +178,8 @@ async function load() {
   }
 }
 
-/** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错 */
+/** 提交判分（服务端归一化比较：大小写/重音符号/多余空格容错）；gaveUp=true 为「不会」直接判错。
+ * 判分后自动朗读正确答案，拼对时强化听觉记忆、拼错/不会时听到正确发音 */
 async function submit(gaveUpFlag = false) {
   if (!current.value || result.value || submitting.value) return
   // 防手滑：正常提交必须输入了单词（「不会」按钮不受限）
@@ -192,6 +194,7 @@ async function submit(gaveUpFlag = false) {
       extra: inputExtra.value
     })
     gaveUp.value = gaveUpFlag
+    speakItalian(result.value.word)
     if (result.value.passed) {
       rightCount.value++
     } else {
