@@ -2,7 +2,7 @@
   "meta" : {
     "name" : "意大利语A2核心词库",
     "description" : "马可波罗计划生意大利语A2学习用词库（含手动编辑的语法字段与例句）",
-    "total" : 1087,
+    "total" : 1084,
     "category_count" : 23,
     "category_counts" : {
       "问候与礼貌" : 30,
@@ -10,7 +10,7 @@
       "时间与日期" : 53,
       "家庭与人物" : 41,
       "身体与健康" : 44,
-      "饮食" : 80,
+      "饮食" : 77,
       "服装与购物" : 49,
       "家与居住" : 48,
       "城市与场所" : 49,
@@ -29,7 +29,7 @@
       "通讯与科技" : 21,
       "其他高频词" : 10
     },
-    "exported_at" : "2026-08-31",
+    "exported_at" : "2026-09-06",
     "source" : "database export"
   },
   "categories" : [ "问候与礼貌", "数字与数量", "时间与日期", "家庭与人物", "身体与健康", "饮食", "服装与购物", "家与居住", "城市与场所", "交通与旅行", "天气与自然", "工作与职业", "学习与学校", "爱好与休闲", "动物", "颜色", "动词", "形容词", "代词·冠词·连词", "副词与介词", "情感与性格", "通讯与科技", "其他高频词" ],
@@ -2112,24 +2112,6 @@
     "article" : "il",
     "plural" : "fagioli"
   }, {
-    "id" : 250,
-    "word" : "pisello",
-    "pos" : "s.m.",
-    "meaning" : "豌豆",
-    "category" : "饮食",
-    "gender" : "m",
-    "article" : "il",
-    "plural" : "piselli"
-  }, {
-    "id" : 251,
-    "word" : "peperone",
-    "pos" : "s.m.",
-    "meaning" : "甜椒",
-    "category" : "饮食",
-    "gender" : "m",
-    "article" : "il",
-    "plural" : "peperoni"
-  }, {
     "id" : 252,
     "word" : "melanzana",
     "pos" : "s.f.",
@@ -2138,15 +2120,6 @@
     "gender" : "f",
     "article" : "la",
     "plural" : "melanzane"
-  }, {
-    "id" : 253,
-    "word" : "zucchina",
-    "pos" : "s.f.",
-    "meaning" : "西葫芦",
-    "category" : "饮食",
-    "gender" : "f",
-    "article" : "la",
-    "plural" : "zucchine"
   }, {
     "id" : 254,
     "word" : "sale",
@@ -6579,7 +6552,7 @@
     "id" : 698,
     "word" : "lasciare",
     "pos" : "v.",
-    "meaning" : "留下；离开",
+    "meaning": "放手/留在某处；离开",
     "category" : "动词",
     "conjugation" : {
       "present" : {

@@ -17,6 +17,8 @@ backend/application-local.yml
 *.log
 
 # 开发调试临时文件
+tmp_*.txt
+tmp_*.js
 check_data.js
 essere.json
 p1.json
