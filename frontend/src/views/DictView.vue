@@ -268,7 +268,7 @@ async function submit(gaveUpFlag = false) {
   }
 }
 
-/** 正式判分落库（SRS 推进 + 错题本），两关殊途同归：拼写提交 / 释义选错 / 不会 */
+/** 正式判分落库（SRS 推进 + 错题本），两关殊途同归：拼写提交 / 释义选错 / 不会；判分后自动朗读单词强化听力记忆 */
 async function finalize(gaveUpFlag) {
   result.value = await api.dictAnswer(current.value.wordId, {
     word: inputWord.value,
@@ -276,6 +276,7 @@ async function finalize(gaveUpFlag) {
     extra: inputExtra.value
   })
   gaveUp.value = gaveUpFlag
+  speakItalian(result.value.word)
   if (result.value.passed) {
     rightCount.value++
   } else {

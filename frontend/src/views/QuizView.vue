@@ -81,6 +81,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { speakItalian } from '../utils/tts'
 import SoundButton from '../components/SoundButton.vue'
 
 const loading = ref(false)
@@ -125,19 +126,25 @@ function toggleFlip(id) {
   }
 }
 
+/** 认识/不认识后自动朗读该词一遍，强化听力记忆（卡片随即移出队列，先取词再删） */
+function speakAndRemove(id) {
+  const w = words.value.find((x) => x.wordId === id)
+  if (w) speakItalian(w.word)
+  words.value = words.value.filter((x) => x.wordId !== id)
+  flippedSet.delete(id)
+}
+
 /** 认识：盒 +1（不动完成次数），卡片移出队列 */
 async function onKnow(id) {
   await api.quizKnow(id)
-  words.value = words.value.filter((w) => w.wordId !== id)
-  flippedSet.delete(id)
+  speakAndRemove(id)
   knowCount.value++
 }
 
 /** 不认识：盒归 0 明天再测，卡片移出队列（刚看过释义，当场重测无意义） */
 async function onForget(id) {
   await api.forgetWord(id)
-  words.value = words.value.filter((w) => w.wordId !== id)
-  flippedSet.delete(id)
+  speakAndRemove(id)
   forgotCount.value++
 }
 
