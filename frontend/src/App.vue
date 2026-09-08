@@ -171,4 +171,13 @@ body {
 .el-card {
   border-radius: 12px;
 }
+
+/* ===== 不规则标签：实心红底白字加粗，高可见性 =====
+   所有 type="danger" 的 el-tag 都是不规则标记，覆盖 Element Plus 默认浅底红字 */
+.el-tag--danger {
+  --el-tag-bg-color: var(--it-red);
+  --el-tag-border-color: var(--it-red);
+  --el-tag-text-color: #ffffff;
+  font-weight: 600;
+}
 </style>
