@@ -78,6 +78,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { speakItalian } from '../utils/tts'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'
 
@@ -104,8 +105,10 @@ async function load() {
   }
 }
 
-/** 学会了：移出错题本（卡片置灰留卡，重新加载后消失） */
+/** 学会了：朗读该词强化记忆后移出错题本（卡片置灰留卡，重新加载后消失） */
 async function onLearn(id) {
+  const w = words.value.find((x) => x.wordId === id)
+  if (w) speakItalian(w.word)
   await api.notebookLearn(id)
   learnedIds.add(id)
 }

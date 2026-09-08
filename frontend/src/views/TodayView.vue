@@ -63,7 +63,7 @@
         </div>
 
         <div class="card-btns" @click.stop>
-          <el-button v-if="w.dailyStatus === 0" type="primary" round size="small" @click="store.complete(w.wordId)">
+          <el-button v-if="w.dailyStatus === 0" type="primary" round size="small" @click="onComplete(w.wordId)">
             标记完成
           </el-button>
           <el-button v-else round size="small" @click="store.undo(w.wordId)">撤销完成</el-button>
@@ -81,6 +81,7 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTodayStore } from '../stores/today'
 import { posTagType } from '../utils/pos'
+import { speakItalian } from '../utils/tts'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'
 
@@ -91,6 +92,13 @@ const activeId = ref(null)
 function openDetail(id) {
   activeId.value = id
   dialogVisible.value = true
+}
+
+/** 标记完成：先朗读该词强化听觉记忆，再落库（完成次数 +1、进复习盒子） */
+async function onComplete(id) {
+  const w = store.words.find((x) => x.wordId === id)
+  if (w) speakItalian(w.word)
+  await store.complete(id)
 }
 
 /** 换一批：还有未完成的词时先确认（未完成的会保留进新批次） */
