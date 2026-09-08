@@ -285,16 +285,15 @@ public final class ItalianGrammarUtil {
      * 判定单词的语法形式是否不规则（供卡片加标记，常规词返回 null 不标记）：
      * - 动词（含反身动词，剥 -si 还原不定式）：命中任一例外表
      *   （现在时 / -isc 型 / 过去分词 / 未完成过去时 / 将来时词干）→「不规则变位」；
-     *   未命中例外表但属拼写音变类 →「音变」（-care/-gare 加 h、-ciare/-giare 去 i、
-     *   -iare 避免双 i：cercare→cerchi、mangiare→mangio、studiare→tu studi）
-     * - 名词：不规则复数表 →「不规则复数」；不变复数表 →「复数不变」；
-     *   不可数名词无复数不标记；-ca/-ga/-cia/-gia 词尾复数音变 →「音变」
-     *   （banca→banche、arancia→arance、camicia→camicie）；
+     *   未命中例外表但属拼写音变类（-care/-gare/-iare）不标记——io 形式规则，无记忆价值
+     * - 名词：不规则复数表 →「不规则复数」；
+     *   不变复数（外来词/缩写词/月份）不标记——性质即规则，无逐个记忆价值；
+     *   不可数名词无复数不标记；-ca/-ga/-cia/-gia 词尾复数音变不标记（拼写有规律，
+     *   附加题判分另走 isPluralTrapNoun）；
      *   词尾与性别反常（-o 却阴性 / -a 却阳性）→「阴阳性特殊」；
      *   -e 结尾名词性别无法从词尾判断 →「性别需记」
      * - 形容词：加 h / 不加 h / 不变形容词例外表 →「不规则变化」
-     * 名词复数特性与性别标签均可叠加（顿号连接）：foto「复数不变、阴阳性特殊」、
-     * mano「不规则复数、阴阳性特殊」、mouse「复数不变、性别需记」；
+     * 名词复数特性与性别标签均可叠加（顿号连接）：mano「不规则复数、阴阳性特殊」；
      * 月份统一阳性不标性别，作为唯一例外
      */
     public static String irregularTag(String word, String pos, String gender) {
@@ -335,9 +334,9 @@ public final class ItalianGrammarUtil {
             List<String> tags = new ArrayList<>();
             if (IRREGULAR_PLURAL.containsKey(w)) {
                 tags.add("不规则复数");
-            } else if (INVARIANT_NOUNS.contains(w)) {
-                tags.add("复数不变");
             }
+            // 不变复数（外来词/缩写词/月份）不再打「复数不变」标签：性质即规则（外来词、缩写
+            // 词复数不变），无需逐个标红提醒；仅真正不规则的复数（IRREGULAR_PLURAL）保留标签
             if (gender != null && ((w.endsWith("o") && "f".equals(gender))
                     || (w.endsWith("a") && "m".equals(gender)))) {
                 tags.add("阴阳性特殊");
