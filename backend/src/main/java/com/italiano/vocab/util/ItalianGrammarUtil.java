@@ -270,6 +270,18 @@ public final class ItalianGrammarUtil {
     }
 
     /**
+     * 名词复数拼写陷阱（-ca/-ga 加 h：banca→banche、-cia/-gia 去/留 i：arancia→arance、
+     * camicia→camicie）。卡片上不再打「音变」标签（冗余），但附加题判分仍据此出复数题。
+     */
+    public static boolean isPluralTrapNoun(String word) {
+        if (word == null || word.isBlank()) {
+            return false;
+        }
+        String w = word.toLowerCase();
+        return w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia");
+    }
+
+    /**
      * 判定单词的语法形式是否不规则（供卡片加标记，常规词返回 null 不标记）：
      * - 动词（含反身动词，剥 -si 还原不定式）：命中任一例外表
      *   （现在时 / -isc 型 / 过去分词 / 未完成过去时 / 将来时词干）→「不规则变位」；
@@ -314,11 +326,8 @@ public final class ItalianGrammarUtil {
             if (!irregulars.isEmpty()) {
                 return String.join("、", irregulars.stream().distinct().toList());
             }
-            // 音变类：拼写有规律陷阱但必须知道（加 h / 去 i / 避免双 i）
-            if (infinitive.endsWith("care") || infinitive.endsWith("gare")
-                    || infinitive.endsWith("iare")) {
-                return "音变";
-            }
+            // 拼写音变类（-care/-gare 加 h、-ciare/-giare 去 i、-iare 避免双 i）不再打标签：
+            // 卡片上冗余信息，且 io 形式均为规则变化（cerco/pago/studio），无附加题价值
             return null;
         }
         // 名词：复数特性与性别标签可叠加（顿号连接）
@@ -344,10 +353,8 @@ public final class ItalianGrammarUtil {
             if (UNCOUNTABLE_NOUNS.contains(w)) {
                 return null;
             }
-            // 音变类：-ca/-ga 复数加 h、-cia/-gia 复数去/留 i（取决于前一字母）
-            if (w.endsWith("ca") || w.endsWith("ga") || w.endsWith("cia") || w.endsWith("gia")) {
-                return "音变";
-            }
+            // -ca/-ga 复数加 h、-cia/-gia 复数去/留 i 属拼写陷阱，但不再打「音变」标签
+            //（卡片冗余）；附加题判分由 ExtraFormService 调 isPluralTrapNoun 保留
             return null;
         }
         // 形容词（含混合词性 agg./s.m. 等，词在形容词例外表即标记）

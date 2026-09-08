@@ -24,29 +24,29 @@ public class ExtraFormService {
     private final ObjectMapper objectMapper;
 
     /**
-     * 附加填写判定：不规则动词（现在时不规则/音变）→ 现在时 io 形式（conosco/vado/viaggio，
-     * 覆盖 -isc、双写、音变陷阱）；不规则名词（不规则复数/复数不变/音变）→ 复数。
+     * 附加填写判定：不规则动词（现在时不规则）→ 现在时 io 形式（conosco/vado/faccio，
+     * 覆盖 -isc、双写）；-care/-gare/-iare 拼写音变词不再出附加题（io 均为规则形式，送分）；
+     * 不规则名词（不规则复数/复数不变/-ca/-ga/-cia/-gia 拼写陷阱）→ 复数。
      * 形容词与性别类标签不考（斜杠多形式难校验/非拼写范畴）；只在其他时态不规则的动词无附加题。
      */
     public Extra resolve(Word w, String tag) {
-        if (tag == null) {
-            return null;
-        }
-        if (w.getPos() != null && w.getPos().startsWith("v.")
-                && (tag.contains("现在时不规则") || tag.contains("音变"))) {
-            String io = extractPresentIo(w.getConjugation());
-            if (io != null) {
-                // 自反动词（sedersi → mi siedo）：答案自带自反代词，标签要提示连代词一起写，否则学习者不知道
-                String label = io.matches("(?i)^(mi|ti|si|ci|vi)\\s+.*")
-                        ? "现在时 io 形式（含自反代词）"
-                        : "现在时 io 形式";
-                return new Extra(EXTRA_PRESENT_IO, label, io);
+        if (w.getPos() != null && w.getPos().startsWith("v.")) {
+            if (tag != null && tag.contains("现在时不规则")) {
+                String io = extractPresentIo(w.getConjugation());
+                if (io != null) {
+                    // 自反动词（sedersi → mi siedo）：答案自带自反代词，标签要提示连代词一起写，否则学习者不知道
+                    String label = io.matches("(?i)^(mi|ti|si|ci|vi)\\s+.*")
+                            ? "现在时 io 形式（含自反代词）"
+                            : "现在时 io 形式";
+                    return new Extra(EXTRA_PRESENT_IO, label, io);
+                }
             }
             return null;
         }
         if (ItalianGrammarUtil.isNounPos(w.getPos())
                 && w.getPlural() != null && !w.getPlural().isBlank()
-                && (tag.contains("不规则复数") || tag.contains("复数不变") || tag.contains("音变"))) {
+                && ((tag != null && (tag.contains("不规则复数") || tag.contains("复数不变")))
+                || ItalianGrammarUtil.isPluralTrapNoun(w.getWord()))) {
             return new Extra(EXTRA_PLURAL, "复数形式", w.getPlural());
         }
         return null;
