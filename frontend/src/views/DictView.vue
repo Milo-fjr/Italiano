@@ -200,9 +200,9 @@ const wordInputRef = ref(null)
 const current = computed(() => words.value[currentIndex.value])
 const answered = computed(() => rightCount.value + wrongCount.value)
 
-/** 自反动词：不定式以 -si 结尾。题面需提示写完整形，否则易漏 si 写成原形 */
+/** 自反动词：词性 v.rifl.。与拼写模式同口径用词性判断，题面提示写完整形避免漏 si */
 const isReflexiveVerb = computed(
-  () => !!current.value && current.value.word.toLowerCase().endsWith('si')
+  () => !!current.value && (current.value.pos || '').startsWith('v.rifl')
 )
 
 const nextDueAtText = computed(() => {
