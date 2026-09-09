@@ -268,6 +268,11 @@ async function submit(gaveUpFlag = false) {
     ElMessage.warning('还没写呢：写下听到的单词再按 Enter，或点「不会」')
     return
   }
+  // 防手滑：需要填附加形式时漏填不判错，先提示补上
+  if (!gaveUpFlag && current.value.extraLabel && !inputExtra.value.trim()) {
+    ElMessage.warning(`还差附加形式：${current.value.extraLabel}，补上再 Enter，或点「不会」`)
+    return
+  }
   submitting.value = true
   try {
     await finalize(gaveUpFlag)
