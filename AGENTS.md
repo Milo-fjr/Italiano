@@ -4,8 +4,9 @@
 
 ## 一句话概述
 
-意大利语 A2 词汇学习系统（用户为马可波罗计划生，明年 11 月出国）。Spring Boot 3 + Vue 3，本地单机运行，MySQL 8。
-启动：双击根目录 `start.bat`（后端 8080 + 前端 5173）。数据库密码在 `backend/application-local.yml`（gitignored，不入库）。
+意大利语 A2 词汇学习系统（用户为马可波罗计划生，明年 11 月出国）。Spring Boot 3 + Vue 3，本地单机运行，MySQL 8，词库约 1084 词。
+五种学习模式：学习 / 测验 / 拼写 / 听写 / 错题本。
+启动：双击根目录 `start.bat`（后端 8080 + 前端 5173，会开两个 cmd 窗口 + 自动开浏览器）。数据库密码在 `backend/application-local.yml`（gitignored，不入库）。
 
 ## 高频操作
 
@@ -23,23 +24,28 @@ cd frontend && npm run dev
 mysql -u root -p<密码> italian_vocab -e "SQL..."
 ```
 
-- 验证 API：`Invoke-RestMethod -Uri "http://localhost:8080/api/..."`（中文输出会乱码，可写临时文件用 Read 看）
+- 验证 API：`Invoke-RestMethod -Uri "http://localhost:8080/api/..."`（中文输出会乱码，可写临时文件用 Read 看；临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore）
 - 表名是 `word`（不是 words）、`word_progress`、`daily_extract`、`setting`
-- **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错），git commit 多段信息用多个 `-m` 参数
+- **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
+- start.bat 固定在启动后 5 秒开浏览器——若后端还没就绪，那个标签页会一直转圈，**刷新即可**。但先看控制台有没有报错：渲染崩溃（TypeError）也会表现为"打不开"，两者别混淆
 
 ## 架构地图
 
 | 文件                                                | 职责                                               |
 | ------------------------------------------------- | ------------------------------------------------ |
 | `backend/.../util/ItalianGrammarUtil.java`        | **语法引擎**：例外表（例外优先）+ 规则推导，所有变位/复数/冠词/不规则标签的单一事实来源 |
+| `backend/.../service/ExtraFormService.java`       | **拼写/听写共用判分支撑**：附加题判定 + 输入归一化（重音/大小写/空格容错），两模式永远同一口径 |
 | `backend/.../service/ExtractService.java`         | **学习模式**批次抽取：完成次数流转（零遍随机 > 完成次数升序+冷却）          |
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
-| `backend/.../service/SpellService.java`           | **拼写模式**：中→意产出复习，独立拼写盒子 + 防撞五条件队列                  |
-| `backend/.../service/WordService.java`            | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
-| `backend/src/main/resources/data/vocab_data.json` | 1087 词导入源（首启导入用）                                 |
+| `backend/.../service/SpellService.java`          | **拼写模式**：中→意产出复习，独立 spell 盒子 + 防撞五条件队列                  |
+| `backend/.../service/DictService.java`            | **听写模式**：听音→意拼写，两段式（先选释义后拼写），独立 dict 盒子 + 防撞队列      |
+| `backend/.../service/WordService.java`           | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
+| `backend/src/main/resources/data/vocab_data.json` | 1084 词导入源（首启导入用）                                  |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
-| `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、不规则附加形式、结果对照）           |
+| `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、不规则附加形式、自反动词提示、结果对照）    |
+| `frontend/src/views/DictView.vue`                | **听写模式**两段式答题页（听音选释义 → 听音拼写单词）                   |
+| `frontend/src/views/NotebookView.vue`             | **错题本**：测验/拼写/听写答错自动进本，学会移出                      |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
 
@@ -47,11 +53,15 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 
 1. **语法引擎三层优先级**：例外表（代码内硬编码）> 规则推导 > 数据库手动编辑值（手动值最高，永不被覆盖）。改例外表只影响"无手动值"的词。
 2. **`extract_count`** **是完成次数，不是抽取次数**。仅被抽进批次不计数，点"标记完成"才 +1，撤销 -1（可到 0）。
-3. **双数据源**：`vocab_data.json` 是导入源，DB 是运行数据。改 JSON **不会**同步已导入的 DB 行，反向同步用「设置 → 词库备份」按钮（POST /api/export，DB 全量写回 JSON 含语法字段/例句；导入端 JSON 值优先，重灌为全保真恢复）。
-4. **irregularTag 标签系统**（卡片红色标签）：名词多标签叠加（顿号连接），如 foto「复数不变、阴阳性特殊」；月份排除在「性别需记」外（统一阳性无记忆价值）。
-5. **学习/测验/拼写三套体系（互相独立）**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验模式只认盒子——next_review_at <= 今天即测（**不筛 box**，答错归 0 的词明天到期也能回来）；拼写模式只认 spell_box / spell_next_review_at（中→意拼写，全对升盒、有错归 0，判分在服务端归一化：大小写/重音/空格容错）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段**。
-6. **拼写防撞规则**（同一词一天只出现在一种模式）：拼写队列排除——当日认识测验欠账的词（测验优先级更高，且拼写会泄题）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）。**从未拼写的词（spell_next_review_at 为 NULL）视为到期**，无需冷启动迁移，由防撞规则自然节流。注意：撤销学习到 extract_count=0 会把词挡在拼写池外（资格门槛是 extract_count > 0）。
-7. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
+3. **双数据源**：`vocab_data.json` 是导入源，DB 是运行数据。改 JSON **不会**同步已导入的 DB 行，反向同步用「设置 → 词库备份」按钮（POST /api/export，DB 全量写回 JSON 含语法字段/例句；导入端 JSON 值优先，重灌为全保真恢复）。**删词要两处同步**：DB 先删 `daily_extract` → `word_progress` → `word`（有外键依赖顺序），再删 JSON 对应条目并用 node 验证 JSON 合法。
+4. **irregularTag 标签哲学：红标 = 必须额外记，规则推导可得的一律不标**（标签通胀会让用户不再看红标）。已删除：「音变」（动词 -care/-gare/-iare、名词 -ca/-ga/-cia/-gia，拼写有规律）、「复数不变」（外来词/缩写词/月份，性质即规则）。保留：时态不规则（现在/近过去/未完成/将来）、不规则复数、阴阳性特殊、性别需记（-e 结尾）、冠词式变化（bello 型）、形容词不规则变化。名词多标签顿号叠加；月份不标性别。
+   注意：附加题判定已不依赖被删标签——名词复数附加题（banca→banche 类拼写陷阱）由 `ItalianGrammarUtil.isPluralTrapNoun` 词形判断兜底，改标签逻辑时别把这条断了。
+5. **五套独立体系**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验只认 box/next_review_at（**不筛 box**，答错归 0 的词明天到期也回来）；拼写只认 spell_box/spell_next_review_at；听写只认 dict_box/dict_next_review_at；错题本只认 in_notebook。判分规则：拼写/听写全对升盒、有错归 0 明天回，服务端归一化容错（大小写/重音/空格）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段、听写只动 dict 字段**。
+6. **防撞规则**（同一词一天只出现在一种产出模式）：拼写/听写队列排除——当日认识测验欠账的词（测验优先级更高）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）、当日拼写/听写答过的词。**从未拼写/听写的词（对应 next_review_at 为 NULL）视为到期**，由防撞规则自然节流。撤销学习到 extract_count=0 会把词挡在产出池外（资格门槛 extract_count > 0）。
+7. **题目 DTO 防泄题设计**：拼写模式的题目接口**不返回意语单词**（word 字段不存在，只有 wordId/meaning/pos/category/extraLabel），答案只在判分结果里返回；听写模式的题目**含 word**（TTS 要播放，听本身就是题面）。前端写 `current.xxx` 前先确认 DTO 里真有这个字段——2026-09-09 就是读了不存在的 `current.word` 导致渲染崩溃（见事故记录）。
+8. **自动朗读**：五模式统一"标记过了就读一遍"——学习「标记完成」、错题本「学会了」、测验认识/不认识、拼写提交/不会、听写判分落库后调 `speakItalian(该词)`。批量操作（全部完成/全部学会）不播，避免音频叠加。
+9. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
+10. **释义边界化**：中文一词多义会造成拼写歧义，释义要拆开各归一词（sera=傍晚；晚上 / notte=夜里，"晚上"只归前者）。用户提出释义质疑时先查库对账再动手。
 
 ## 历史事故记录（血泪教训）
 
@@ -60,19 +70,32 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 外部 AI（豆包）断言 `lenzuolo`（床单，阳性）复数 `le lenzuola` 是错的、另有阴性词 `la lenzuola`=床罩。**这是幻觉**。实际（Accademia della Crusca 权威确认）：`i lenzuoli`（逐张）/ `le lenzuola`（成对）双重复数都正确，后者日常更常用；"la lenzuola 床罩"是不存在的词（床罩是 copriletto）。
 **教训：任何 AI 给出的语法/数据断言，改库前必须先查 Treccani / Accademia della Crusca / 权威词典验证。** 数据曾经是对的，被错误"修复"过一次又回滚。
 
+### 渲染崩溃 + 误诊（2026-09-09，AI 责任事故）
+
+加自反动词提示时读了 `current.value.word`，但拼写题目 DTO 防泄题不含 word 字段 → 进拼写页即 TypeError，整站白屏转圈。更糟的是用户反馈"打不开"时，AI 只测了首页（正常的）就下结论"刷新一下就好"，测错了页面、给错了诊断，直到用户贴出控制台报错才定位。
+**教训三条：①改哪个页面就实测哪个页面，不能拿别的页面正常当依据；②用没把握的字段先查 DTO/后端代码，别凭感觉写；③用户报障先复现到他说的那个场景，看控制台，别急着下结论。**
+
+### 端口占用（两次，惯犯）
+
+调试时 AI 在后台启动的后端未清理，用户双击 `start.bat` 报 `Port 8080 already in use`。诊断：`netstat -ano | findstr ":8080"` 找 PID，`Stop-Process -Id <pid> -Force`。**调试用完的后台服务必须归还：StopCommand 停后台命令后，用 netstat 确认端口真释放了再走；没释放就按 PID 补刀。收工前必查。**
+
 ### SRS 上线前的历史数据
 
 SRS 部署前完成的 11 个词曾滞留 box 0，已回填 box 1（`UPDATE ... SET box=1, next_review_at=DATE(completed_at)+INTERVAL 1 DAY`）。注意判据用 `extract_count > 0` 而非 `completed_at IS NOT NULL`（后者含撤销遗留的脏时间戳）。
 
-### 端口占用
+## AI 工作守则
 
-调试时 AI 在后台启动的后端未清理，用户双击 `start.bat` 报 `Port 8080 already in use` 但网页仍可用（旧实例在服务）。诊断：`netstat -ano | findstr ":8080"` 找 PID，`Stop-Process -Id <pid> -Force`。**调试用完的后台服务必须归还。**
+1. **改完必实测，测改动的那个页面本身**——看渲染、看功能、看控制台有无报错，再提交推送。这是用户的固定工作流（改完 → 浏览器实测 → commit + push），不能跳。
+2. **不拿别的页面的正常当依据**去否掉用户报告的故障。
+3. **写字段前核对数据来源**：DTO/接口/表结构没把握就读代码确认，不凭记忆和感觉。
+4. **AI 的语法断言必须查权威词典验证后才能改库**（lenzuolo 事件）。
+5. **收工归还资源**：后台服务、临时进程、端口，全部清干净（netstat 验证）再结束。
+6. 用户对数据不一致的质疑**往往是对的**——先认真查库对账，不要急着解释。
 
 ## 用户协作偏好
 
 - 中文交流
 - 每次改动：改完 → 浏览器实测 → git commit + push 到 Gitee（习惯性推送，直接推）
 - 用户学习目标：每天 10-15 词精背（含变位变形），A2 全覆盖后加 B1；明年 6 月毕业、11 月出发意大利
-- 用户会对数据不一致提出质疑且**往往是对的**（lenzuolo 案除外）——认真查库对账，不要敷衍
-- 技术审美：YAGNI，最小实现，反对过度设计
-
+- 词汇取舍标准是**用户的认知实用性**：中文里都不知道是什么的东西（如西葫芦 zucchina、甜椒 peperone）直接删；中国常见的（茄子、豆子）保留——判断权在用户，AI 别拿"意大利高频"反驳
+- 技术审美：YAGNI，最小实现，反对过度设计；红标/UI 提示同理——什么都强调等于什么都不强调
