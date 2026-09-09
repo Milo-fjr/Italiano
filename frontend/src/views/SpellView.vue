@@ -55,6 +55,9 @@
           </span>
         </div>
         <div class="meaning-prompt">{{ current.meaning }}</div>
+        <div v-if="isReflexiveVerb" class="reflexive-note">
+          这是自反动词，请写出带 <b>si</b> 的完整形式（如 svegliarsi / sedersi）
+        </div>
         <div class="hint-line">
           拼出对应的意大利语单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
         </div>
@@ -151,6 +154,11 @@ const wordInputRef = ref(null)
 
 const current = computed(() => words.value[currentIndex.value])
 const answered = computed(() => rightCount.value + wrongCount.value)
+
+/** 自反动词：不定式以 -si 结尾（-arsi/-ersi/-irsi）。题面需提示写完整形，否则易漏 si 写成原形 */
+const isReflexiveVerb = computed(
+  () => !!current.value && current.value.word.toLowerCase().endsWith('si')
+)
 
 const nextDueAtText = computed(() => {
   if (!nextDueAt.value) return ''
@@ -321,6 +329,18 @@ onBeforeUnmount(() => {
   font-weight: 700;
   color: #1e3a2b;
   line-height: 1.4;
+}
+
+.reflexive-note {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #f3f0e8;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #8b6d1c;
+  b {
+    font-weight: 600;
+  }
 }
 
 .hint-line {

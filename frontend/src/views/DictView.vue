@@ -93,6 +93,9 @@
             <label class="input-label">中文释义（已选对）</label>
             <div class="meaning-confirmed">{{ selectedMeaning }}</div>
           </div>
+          <div v-if="isReflexiveVerb" class="reflexive-note">
+            这是自反动词，请写出带 <b>si</b> 的完整形式（如 svegliarsi / sedersi）
+          </div>
           <div class="input-item">
             <label class="input-label">意大利语单词 <span class="label-hint">（空格重听 · 0 不会 · Enter 提交）</span></label>
             <el-input
@@ -196,6 +199,11 @@ const wordInputRef = ref(null)
 
 const current = computed(() => words.value[currentIndex.value])
 const answered = computed(() => rightCount.value + wrongCount.value)
+
+/** 自反动词：不定式以 -si 结尾。题面需提示写完整形，否则易漏 si 写成原形 */
+const isReflexiveVerb = computed(
+  () => !!current.value && current.value.word.toLowerCase().endsWith('si')
+)
 
 const nextDueAtText = computed(() => {
   if (!nextDueAt.value) return ''
@@ -498,6 +506,18 @@ onBeforeUnmount(() => {
   color: #00934d;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* 自反动词提示：避免漏 si 写成原形 */
+.reflexive-note {
+  padding: 6px 10px;
+  background: #f3f0e8;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #8b6d1c;
+  b {
+    font-weight: 600;
+  }
 }
 
 /* 释义 4 选 1 选项：两列卡片，点选高亮，序号角标对应键盘 1-4 */
