@@ -29,6 +29,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
 - **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
 - start.bat 固定在启动后 5 秒开浏览器——若后端还没就绪，那个标签页会一直转圈，**刷新即可**。但先看控制台有没有报错：渲染崩溃（TypeError）也会表现为"打不开"，两者别混淆
+- **往 MySQL 写含重音/中文的值**（如变位 JSON 里的 è/ò/à）：PowerShell 直接内联会乱码，用 `FROM_BASE64('<base64>')` 传值最稳——`node -e` 读 JSON 算出 `Buffer.from(str).toString('base64')`，喂 `UPDATE ... SET col=FROM_BASE64('...')`，全程纯 ASCII 无编码问题。临时脚本/输出命名 tmp_*，用完即删
 
 ## 架构地图
 
@@ -63,6 +64,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 8. **自动朗读**：五模式统一"标记过了就读一遍"——学习「标记完成」、错题本「学会了」、测验认识/不认识、拼写提交/不会、听写判分落库后调 `speakItalian(该词)`。批量操作（全部完成/全部学会）不播，避免音频叠加。
 9. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
 10. **释义边界化**：中文一词多义会造成拼写歧义，释义要拆开各归一词（sera=傍晚；晚上 / notte=夜里，"晚上"只归前者）。用户提出释义质疑时先查库对账再动手。
+11. **双助动词有两处硬编码，必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS`（规则引擎）与 `ImportService.fixDualAuxV3` 内的动词列表（启动迁移）各自维护一份"双助动词"清单，改一处忘改另一处会导致启动迁移每次重复执行并打误导日志。camminare/nuotare 是"动作方式"动词（不表去向），只用 avere（ho camminato / ho nuotato，无 essere 形式、分词不变性数），永远别加回这两份清单；误加的回退逻辑在 `fixDualAuxV6`（幂等）。追加到双助动词清单前先确认该词真的是"avere 及物 / essere 不及物"两义都对（如 correre/vivere/volare），拿不准查权威词典。
 
 ## 历史事故记录（血泪教训）
 
