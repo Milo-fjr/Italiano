@@ -84,6 +84,14 @@
           </el-table>
         </div>
 
+        <!-- 不变形容词：无变化数据时显示说明而非空着，解释卡片红标「不规则变化」的含义 -->
+        <div v-else-if="isInvariantAdj" class="section">
+          <h4>形容词变化</h4>
+          <div class="invariant-note">
+            <b>{{ detail.word }}</b> 是<b>不变形容词</b>：没有性、数变化，阳/阴、单/复数都用同一形式——这正是卡片红标「不规则变化」的含义。
+          </div>
+        </div>
+
         <!-- 动词：四时态变位（现在时/近过去时/未完成过去时/简单将来时） -->
         <div v-if="hasConjugation" class="section">
           <h4>动词变位</h4>
@@ -287,6 +295,12 @@ const adjRows = computed(() => {
     .map(([key, form]) => ({ label: adjLabels[key] || key, form }))
 })
 
+/** 不变形容词（blu、rosa、qualche 等）：词性含 agg. 但无变化数据——性数同形，显示说明而非空表 */
+const isInvariantAdj = computed(() => {
+  const d = detail.value
+  return !!d && !!d.pos && d.pos.includes('agg.') && !adjRows.value.length
+})
+
 async function load() {
   if (!props.wordId) return
   loading.value = true
@@ -437,6 +451,17 @@ defineExpose({ reload: load })
   padding-left: 10px;
   border-left: 3px solid #00934d;
   line-height: 1.4;
+}
+
+/* 不变形容词说明条：性数同形，无变化表可显示 */
+.invariant-note {
+  padding: 10px 12px;
+  background: #eef8f2;
+  border: 1px dashed #00934d;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #55606a;
+  line-height: 1.6;
 }
 
 /* 名词单复数展示 */
