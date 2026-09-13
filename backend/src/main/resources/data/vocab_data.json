@@ -7369,12 +7369,12 @@
         "loro" : "camminano"
       },
       "passatoProssimo" : {
-        "io" : "ho/sono camminato/a",
-        "tu" : "hai/sei camminato/a",
-        "lui/lei" : "ha/è camminato/a",
-        "noi" : "abbiamo/siamo camminato/i/e",
-        "voi" : "avete/siete camminato/i/e",
-        "loro" : "hanno/sono camminato/i/e"
+        "io" : "ho camminato",
+        "tu" : "hai camminato",
+        "lui/lei" : "ha camminato",
+        "noi" : "abbiamo camminato",
+        "voi" : "avete camminato",
+        "loro" : "hanno camminato"
       },
       "imperfetto" : {
         "io" : "camminavo",
@@ -7449,12 +7449,12 @@
         "loro" : "nuotano"
       },
       "passatoProssimo" : {
-        "io" : "ho/sono nuotato/a",
-        "tu" : "hai/sei nuotato/a",
-        "lui/lei" : "ha/è nuotato/a",
-        "noi" : "abbiamo/siamo nuotato/i/e",
-        "voi" : "avete/siete nuotato/i/e",
-        "loro" : "hanno/sono nuotato/i/e"
+        "io" : "ho nuotato",
+        "tu" : "hai nuotato",
+        "lui/lei" : "ha nuotato",
+        "noi" : "abbiamo nuotato",
+        "voi" : "avete nuotato",
+        "loro" : "hanno nuotato"
       },
       "imperfetto" : {
         "io" : "nuotavo",

@@ -117,9 +117,13 @@ public final class ItalianGrammarUtil {
             "nascere", "morire", "diventare", "succedere", "cadere", "piacere",
             "dispiacere", "sembrare", "apparire", "riuscire", "bastare", "costare");
 
-    /** 双助动词动词（avere 及物 / essere 不及物，近过去时两种形式均合法）：显示为 ho/sono vissuto */
+    /**
+     * 双助动词动词（avere 及物 / essere 不及物，近过去时两种形式均合法）：显示为 ho/sono vissuto。
+     * 注意：camminare、nuotare 是"动作方式"动词（不表去向），只用 avere，绝不可加回此表
+     * （ho camminato / ho nuotato，无 essere 形式、分词不变性数）。曾误加导致数据错误，已移除。
+     */
     private static final Set<String> DUAL_AUX_VERBS = Set.of(
-            "correre", "vivere", "nuotare", "volare", "camminare", "crescere",
+            "correre", "vivere", "volare", "crescere",
             "dimagrire", "migliorare", "peggiorare",
             "passare", "cambiare", "finire", "iniziare", "continuare", "girare", "mancare");
 

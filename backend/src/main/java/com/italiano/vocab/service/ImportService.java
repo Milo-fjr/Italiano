@@ -65,6 +65,8 @@ public class ImportService implements ApplicationRunner {
         // 全表排查修正（V5）：二轮深查——不可数名词清空复数、-ma→-mi、-io 形容词、
         // 不变形容词清空、sciare 将来时、双助动词扩充、双性别名词冠词，幂等
         fixGrammarV5();
+        // 双助动词纠错（V6）：camminare/nuotare 实为"动作方式"动词只用 avere，回退 V3 误加的双形式，幂等
+        fixDualAuxV6();
 
         Long count = wordMapper.selectCount(null);
         if (count == null || count == 0) {
@@ -311,12 +313,13 @@ public class ImportService implements ApplicationRunner {
     }
 
     /**
-     * 双助动词动词（correre/vivere 等）近过去时升级：旧单助形式 → ho/sono 双形式。
+     * 双助动词动词（correre/vivere/volare 等）近过去时升级：旧单助形式 → ho/sono 双形式。
      * 仅当近过去时 io 形式不含 "/"（即机器生成的旧单形式）时重建，用户手动编辑过的不动（幂等）。
+     * 注意：不含 camminare、nuotare——它们是"动作方式"动词只用 avere，误加已由 fixDualAuxV6 纠错。
      */
     private void fixDualAuxV3() {
         int fixed = 0;
-        for (String verb : List.of("correre", "vivere", "nuotare", "volare", "camminare")) {
+        for (String verb : List.of("correre", "vivere", "volare")) {
             Word w = wordMapper.selectOne(new LambdaQueryWrapper<Word>().eq(Word::getWord, verb));
             if (w == null || w.getConjugation() == null) {
                 continue;
@@ -338,6 +341,38 @@ public class ImportService implements ApplicationRunner {
         }
         if (fixed > 0) {
             log.info("双助动词近过去时升级完成：{} 个（ho/sono 双形式）", fixed);
+        }
+    }
+
+    /**
+     * 双助动词纠错（V6）：camminare、nuotare 是"动作方式"动词（不表去向），只用 avere
+     * （ho camminato / ho nuotato，无 essere 形式、分词不变性数）。V3 曾误把它们列入双助动词，
+     * 此处回退为单助动词。幂等：仅当近过去时 io 形含 "/"（双形式）才重建。
+     */
+    private void fixDualAuxV6() {
+        int fixed = 0;
+        for (String verb : List.of("camminare", "nuotare")) {
+            Word w = wordMapper.selectOne(new LambdaQueryWrapper<Word>().eq(Word::getWord, verb));
+            if (w == null || w.getConjugation() == null) {
+                continue;
+            }
+            try {
+                JsonNode node = objectMapper.readTree(w.getConjugation());
+                String io = node.path("passatoProssimo").path("io").asText("");
+                if (!io.contains("/")) {
+                    continue; // 已是单助动词（avere）
+                }
+                Map<String, Map<String, String>> c = ItalianGrammarUtil.buildConjugation(w.getWord(), w.getPos());
+                if (c != null) {
+                    w.setConjugation(objectMapper.writeValueAsString(c));
+                    wordMapper.updateById(w);
+                    fixed++;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        if (fixed > 0) {
+            log.info("双助动词纠错（V6）完成：{} 个（camminare/nuotare 回退为 avere）", fixed);
         }
     }
 
