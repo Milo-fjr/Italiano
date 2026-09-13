@@ -27,6 +27,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - 验证 API：`Invoke-RestMethod -Uri "http://localhost:8080/api/..."`（中文输出会乱码，可写临时文件用 Read 看；临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore）
 - 表名是 `word`（不是 words）、`word_progress`、`daily_extract`、`setting`
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
+- **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
 - start.bat 固定在启动后 5 秒开浏览器——若后端还没就绪，那个标签页会一直转圈，**刷新即可**。但先看控制台有没有报错：渲染崩溃（TypeError）也会表现为"打不开"，两者别混淆
 
 ## 架构地图
@@ -88,6 +89,13 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 
 SRS 部署前完成的 11 个词曾滞留 box 0，已回填 box 1（`UPDATE ... SET box=1, next_review_at=DATE(completed_at)+INTERVAL 1 DAY`）。注意判据用 `extract_count > 0` 而非 `completed_at IS NOT NULL`（后者含撤销遗留的脏时间戳）。
 
+### GitHub 迁移：连接器不能建仓 + 国内直连不通（2026-09-12）
+
+- **GitHub 连接器（TRAE 插件 MCP）无法建仓**：`create_repository` 持续 403 `Resource not accessible by integration`——GitHub App 签发的 token 权限里没有"建仓"这一项，重新授权/重启 TRAE 都补不上（Gitee 连接器默认就有建仓权限，所以 Gitee 一直正常）。**建仓只能网页手动**（github.com/new，Public、不勾 README）。
+- **国内直连 github.com 不通**（`Connection was reset` / 连不上 443）。**遇到 github.com 连接/push 失败先检测本机有没有可用代理，别信写死的端口**：①查系统代理设置 `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings` 的 ProxyServer；②或 `Get-NetTCPConnection -State Listen` 扫常见代理端口；③本机加速器（AtlasCore）的本地端口可能变化，以实际检测为准，测通后配 `git config --global http.https://github.com.proxy http://<host>:<port>`（只对 github.com 生效，Gitee 仍直连）。代理客户端没开或端口失效时 push 会失败，按此流程重配。
+- **GCM 曾用错账号**：本地存有旧账号 fjr101 的 GitHub 凭据，push 到 Milo-fjr 的仓库被 403 拒。清凭据命令：`"protocol=https`nhost=github.com`n" | git credential reject`，然后重推，GCM 弹浏览器以 **Milo-fjr** 登录。
+- 现状：origin = https://github.com/Milo-fjr/Italiano.git（master 已推送，公开），Milo-fjr 凭据已由 GCM 保存。
+
 ## AI 工作守则
 
 0. **踩坑即沉淀**：每次操作后，凡是踩过的坑、遇到的容易再次犯错的问题、发现的领域新知识，都要**主动、及时**补进本文件对应章节（事故记录/领域逻辑陷阱/高频操作）——不要等用户提醒。本文件是接手的 AI 避坑的唯一文档，越完整越少重蹈覆辙。
@@ -102,7 +110,7 @@ SRS 部署前完成的 11 个词曾滞留 box 0，已回填 box 1（`UPDATE ... 
 ## 用户协作偏好
 
 - 中文交流
-- 每次改动：改完 → 浏览器实测 → git commit + push 到 Gitee（习惯性推送，直接推）
+- 每次改动：改完 → 浏览器实测 → git commit + push（origin 已改指 GitHub `Milo-fjr/Italiano`，Gitee 停推；GitHub 推送需本机代理开着，见事故记录）
 - 用户学习目标：每天 10-15 词精背（含变位变形），A2 全覆盖后加 B1；明年 6 月毕业、11 月出发意大利
 - 词汇取舍标准是**用户的认知实用性**：中文里都不知道是什么的东西（如西葫芦 zucchina、甜椒 peperone）直接删；中国常见的（茄子、豆子）保留——判断权在用户，AI 别拿"意大利高频"反驳
 - 技术审美：YAGNI，最小实现，反对过度设计；红标/UI 提示同理——什么都强调等于什么都不强调
