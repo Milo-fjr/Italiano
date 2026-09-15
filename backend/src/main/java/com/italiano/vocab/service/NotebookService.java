@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +31,14 @@ public class NotebookService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
 
-    /** 本内词列表（随机顺序，避免按位置记忆） */
+    /**
+     * 本内词列表（按进本先后稳定排序，id 升序；与学习模式一样位置固定，不随机打乱——
+     * 错题本是"翻账本"场景，稳定顺序便于对照回忆，不需要防位置记忆）
+     */
     public Map<String, Object> getWords() {
         List<WordProgress> list = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
-                .eq(WordProgress::getInNotebook, true));
+                .eq(WordProgress::getInNotebook, true)
+                .orderByAsc(WordProgress::getId));
 
         List<TodayWordDTO> words = new ArrayList<>();
         if (!list.isEmpty()) {
@@ -58,7 +61,6 @@ public class NotebookService {
                 words.add(dto);
             }
         }
-        Collections.shuffle(words);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", words.size());

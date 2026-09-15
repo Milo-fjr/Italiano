@@ -83,7 +83,7 @@ import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'
 
 const loading = ref(false)
-/** 本内词（服务端随机顺序；学会的先置灰留卡防手滑，重新加载后消失） */
+/** 本内词（服务端按进本先后稳定排序；学会的先置灰留卡防手滑，重新加载后消失） */
 const words = ref([])
 const total = ref(0)
 /** 本次会话已标记学会的词（撤销用） */

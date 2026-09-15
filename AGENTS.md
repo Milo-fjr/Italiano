@@ -65,6 +65,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 9. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
 10. **释义边界化**：中文一词多义会造成拼写歧义，释义要拆开各归一词（sera=傍晚；晚上 / notte=夜里，"晚上"只归前者）。用户提出释义质疑时先查库对账再动手。
 11. **双助动词有两处硬编码，必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS`（规则引擎）与 `ImportService.fixDualAuxV3` 内的动词列表（启动迁移）各自维护一份"双助动词"清单，改一处忘改另一处会导致启动迁移每次重复执行并打误导日志。camminare/nuotare 是"动作方式"动词（不表去向），只用 avere（ho camminato / ho nuotato，无 essere 形式、分词不变性数），永远别加回这两份清单；误加的回退逻辑在 `fixDualAuxV6`（幂等）。追加到双助动词清单前先确认该词真的是"avere 及物 / essere 不及物"两义都对（如 correre/vivere/volare），拿不准查权威词典。
+12. **错题本排序是稳定的**（按 `word_progress.id` 升序=进本先后），刻意不随机打乱——用户要求"翻账本"场景位置固定便于对照回忆（2026-09-15 改）。测验模式 SRS 是随机顺序（防位置记忆），两者不要混淆；也别在错题本加回 `Collections.shuffle`。
 
 ## 历史事故记录（血泪教训）
 
