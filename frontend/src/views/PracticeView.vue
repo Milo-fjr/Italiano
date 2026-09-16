@@ -392,9 +392,7 @@ async function start() {
     dictStage.value = 1
     pickedMeaning.value = ''
     gaveUp.value = false
-    if (selectedType.value === 'dict') {
-      nextTick(() => playDictWord())
-    } else if (selectedType.value === 'spell') {
+    if (selectedType.value === 'spell') {
       focusWord()
     }
   } finally {
@@ -489,7 +487,6 @@ async function confirmDictMeaning() {
     if (r.correct) {
       dictStage.value = 2
       focusWord()
-      nextTick(() => playDictWord())
     } else {
       await dictFinalize(false)
     }
@@ -558,9 +555,6 @@ function dictNext() {
   pickedMeaning.value = ''
   dictStage.value = 1
   currentIndex.value++
-  nextTick(() => {
-    if (dictCurrent.value) playDictWord()
-  })
 }
 
 // ===== 通用 =====

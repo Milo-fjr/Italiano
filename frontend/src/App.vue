@@ -11,8 +11,8 @@
           <el-menu-item index="/quiz">测验模式</el-menu-item>
           <el-menu-item index="/spell">拼写模式</el-menu-item>
           <el-menu-item index="/dict">听写模式</el-menu-item>
-          <el-menu-item index="/notebook">错题本</el-menu-item>
           <el-menu-item index="/practice">加练模式</el-menu-item>
+          <el-menu-item index="/notebook">错题本</el-menu-item>
           <el-menu-item index="/library">单词库</el-menu-item>
           <el-menu-item index="/stats">统计</el-menu-item>
           <el-menu-item index="/settings">设置</el-menu-item>
