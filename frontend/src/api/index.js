@@ -56,5 +56,11 @@ export default {
   updateSettings: (data) => http.put('/settings', data),
   importWords: () => http.post('/import'),
   // 导出词库（数据库 -> vocab_data.json 备份）
-  exportWords: () => http.post('/export')
+  exportWords: () => http.post('/export'),
+  // 加练模式（纯练习，不碰SRS盒子，答错进错题本）
+  getPractice: (type, count) => http.get('/practice', { params: { type, count } }),
+  practiceKnow: (id, know) => http.post(`/practice/${id}/know`, null, { params: { know } }),
+  practiceSpellAnswer: (id, data) => http.post(`/practice/${id}/spell-answer`, data),
+  practiceDictCheckMeaning: (id, data) => http.post(`/practice/${id}/dict-check-meaning`, data),
+  practiceDictAnswer: (id, data) => http.post(`/practice/${id}/dict-answer`, data)
 }
