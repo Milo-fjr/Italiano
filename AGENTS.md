@@ -32,6 +32,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - **白屏但标签页标题正常 + 控制台只有 `[Vue Router warn] Unexpected error when starting the router: {}`（错误对象序列化为空）**：不是代码崩了，是浏览器 HTTP 缓存被投毒——Vite 给 `node_modules/.vite/deps/*` 加了 `immutable` 一年缓存头，启动瞬间 Vite 未就绪时浏览器把一次失败的模块响应缓存了下来。特征：`fetch(该URL)` 返回 200 但 `import()` 失败，URL 加任意参数就活。**修复：Ctrl+F5 强刷一次即愈**，不用改任何代码（2026-09-17 实锤，axios.js?v=xxx 中招，所有 import axios 的视图全白，App 壳正常所以导航栏还在）
 - **往 MySQL 写含重音/中文的值**（如变位 JSON 里的 è/ò/à）：PowerShell 直接内联会乱码，用 `FROM_BASE64('<base64>')` 传值最稳——`node -e` 读 JSON 算出 `Buffer.from(str).toString('base64')`，喂 `UPDATE ... SET col=FROM_BASE64('...')`，全程纯 ASCII 无编码问题。临时脚本/输出命名 tmp_*，用完即删
 - **查"某个行为/标记什么时候被谁改的"**：`git log -S "关键词" --oneline -- <文件>`（pickaxe，按字符串增删过滤提交）——排查"昨天还有今天没了"类问题的第一步（faccia 红标疑云用它 10 秒定位）
+- **word_progress 的 status 语义**：0=从未抽取（初始态）、1=已抽取未完成（last_extracted_at 有值、extract_count=0）、2=已完成（extract_count>0）。单词库「已抽取未完成」筛选看 status=1。**测试残留排查法**：`SELECT last_extracted_at, COUNT(*) FROM word_progress WHERE status=1 AND extract_count=0 AND completed_at IS NULL GROUP BY last_extracted_at`——历史日期分组 = 测试抽取没归还（2026-08-27 曾有 17 词残留，已还原 status=0/last_extracted_at=NULL）；当天分组 = 用户当前真实批次（勿动）。还原命令：`UPDATE word_progress SET status=0, last_extracted_at=NULL WHERE last_extracted_at='<日期>' AND extract_count=0 AND completed_at IS NULL`
 
 ## 架构地图
 
