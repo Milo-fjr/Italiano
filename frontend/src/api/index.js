@@ -62,5 +62,6 @@ export default {
   practiceKnow: (id, know) => http.post(`/practice/${id}/know`, null, { params: { know } }),
   practiceSpellAnswer: (id, data) => http.post(`/practice/${id}/spell-answer`, data),
   practiceDictCheckMeaning: (id, data) => http.post(`/practice/${id}/dict-check-meaning`, data),
-  practiceDictAnswer: (id, data) => http.post(`/practice/${id}/dict-answer`, data)
+  practiceDictAnswer: (id, data) => http.post(`/practice/${id}/dict-answer`, data),
+  practiceIrregularAnswer: (id, data) => http.post(`/practice/${id}/irregular-answer`, data)
 }

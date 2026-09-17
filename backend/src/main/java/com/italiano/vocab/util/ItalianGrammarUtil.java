@@ -15,8 +15,8 @@ public final class ItalianGrammarUtil {
     private ItalianGrammarUtil() {
     }
 
-    /** 变位表人称顺序 */
-    private static final String[] PERSONS = {"io", "tu", "lui/lei", "noi", "voi", "loro"};
+    /** 变位表人称顺序（键与变位 JSON、加练模式判分共用） */
+    public static final String[] PERSONS = {"io", "tu", "lui/lei", "noi", "voi", "loro"};
 
     /** 反身代词（与 PERSONS 一一对应） */
     private static final String[] REFLEXIVE_PRONOUNS = {"mi", "ti", "si", "ci", "vi", "si"};
@@ -252,6 +252,22 @@ public final class ItalianGrammarUtil {
             "quello", Map.of("ms", "quel / quello / quell'", "fs", "quella / quell'", "mp", "quei / quegli", "fp", "quelle"));
 
     /**
+     * bello 型定语加练语境（名词/中文/性别/是否复数），覆盖定语形式全部考点：
+     * 一般辅音（bel/buon）、特殊开头（bello/buono）、元音省音（bell'/buon）、
+     * 复数一般（bei/quei）、复数特殊（begli/quegli）、复数元音（begli/quegli）、阴性省音（bell'/buon'）。
+     * 语境名词取已学高频词，复数直接给复数形（libri/studenti/amici）。
+     */
+    public static final String[][] BELLO_PRACTICE = {
+            {"libro", "书", "m", ""},
+            {"studente", "学生", "m", ""},
+            {"amico", "朋友", "m", ""},
+            {"libri", "书", "m", "pl"},
+            {"studenti", "学生", "m", "pl"},
+            {"amici", "朋友", "m", "pl"},
+            {"amica", "朋友", "f", ""},
+    };
+
+    /**
      * 根据词性推断名词性别：含 s.m. → m；含 s.f. → f；
      * 同时含两者（如 s.m./s.f.，词义决定性别）返回 null，交由用户手动编辑
      */
@@ -275,7 +291,8 @@ public final class ItalianGrammarUtil {
 
     /**
      * 名词复数拼写陷阱（-ca/-ga 加 h：banca→banche、-cia/-gia 去/留 i：arancia→arance、
-     * camicia→camicie）。卡片上不再打「音变」标签（冗余），但附加题判分仍据此出复数题。
+     * camicia→camicie）。属规则拼写（曾打「音变」标签已删），拼写模式附加题下线后暂无调用方，
+     * 保留作语法判定；此类词的复数由规则推导，不进不规则复数加练。
      */
     public static boolean isPluralTrapNoun(String word) {
         if (word == null || word.isBlank()) {
@@ -504,6 +521,47 @@ public final class ItalianGrammarUtil {
     }
 
     /**
+     * bello 型定语形式加练判分：给定语境名词推导该形容词唯一的定语形式
+     * （bel libro / bello studente / bell'amico / bei libri / begli studenti / begli amici）。
+     * 形容词不在 bello 型表内返回 null。
+     */
+    public static String belloAttributive(String adjective, String contextNoun, String gender, boolean plural) {
+        Map<String, String> forms = BELLO_TYPE.get(adjective == null ? "" : adjective.toLowerCase());
+        if (forms == null) {
+            return null;
+        }
+        String key = plural ? ("m".equals(gender) ? "mp" : "fp") : ("m".equals(gender) ? "ms" : "fs");
+        String[] options = forms.get(key).split(" / ");
+        if (options.length == 1) {
+            return options[0];
+        }
+        boolean vowel = startsWithVowel(contextNoun);
+        boolean special = startsWithSpecial(contextNoun);
+        // 省音式（末尾 '）仅用于元音开头：bell'amico / bell'amica
+        if (options[options.length - 1].endsWith("'") && vowel) {
+            return options[options.length - 1];
+        }
+        // 两式且均非省音 [一般, 特殊]：单数元音用一般式省音（buon amico），复数元音用特殊式（begli amici）
+        if (options.length == 2 && !options[1].endsWith("'")) {
+            return (vowel && plural) || special ? options[1] : options[0];
+        }
+        return special ? options[1] : options[0];
+    }
+
+    /**
+     * 不变形容词加练考点：性数不变（blu/rosa/viola/gratis/arancione），复数 = 原词。
+     * ogni/qualche/nessuno 本身无复数形式，不考，返回 false。
+     */
+    public static boolean isInvariantAdjective(String word) {
+        if (word == null) {
+            return false;
+        }
+        String w = word.toLowerCase();
+        return ADJ_INVARIANT.contains(w)
+                && !"ogni".equals(w) && !"qualche".equals(w) && !"nessuno".equals(w);
+    }
+
+    /**
      * 生成名词复数形式：
      * - 不规则表优先（-co/-go 全部显式收录：加 h 与不加 h 取决于重音位置，纯文本无法判断）
      * - 重音结尾（città、caffè）→ 不变复数，返回原词
@@ -636,39 +694,61 @@ public final class ItalianGrammarUtil {
         }
     }
 
-    /** 现在时：不规则表 → -isc 型 → 规则模板 */
+    /** 现在时：不规则（例外表 ∪ -isc 型）→ 规则模板 */
     private static Map<String, String> buildPresent(String infinitive, boolean reflexive) {
-        String[] forms = IRREGULAR_PRESENT.get(infinitive);
+        String[] forms = irregularPresent(infinitive);
         if (forms == null) {
-            if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
-                return null;
-            }
-            String stem = infinitive.substring(0, infinitive.length() - 3);
-            String ending = infinitive.substring(infinitive.length() - 3);
-            boolean isc = ending.equals("ire") && ISC_VERBS.contains(infinitive);
-            forms = switch (ending) {
-                // -are 按词干分三类：
-                // -care/-gare 保硬音加 h（cercare→cerchi/cerchiamo）；
-                // -iare 去 i（mangiare→mangi/mangiate、cambiare→cambi/cambiate）；
-                // 其余规则（parlare→parli/parlate）
-                case "are" -> {
-                    if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
-                        yield new String[]{stem + "o", stem + "hi", stem + "a", stem + "hiamo", stem + "ate", stem + "ano"};
-                    }
-                    if (infinitive.endsWith("iare")) {
-                        String s = stem.substring(0, stem.length() - 1);
-                        yield new String[]{s + "io", s + "i", s + "ia", s + "iamo", s + "iate", s + "iano"};
-                    }
-                    yield new String[]{stem + "o", stem + "i", stem + "a", stem + "iamo", stem + "ate", stem + "ano"};
-                }
-                case "ere" -> new String[]{stem + "o", stem + "i", stem + "e", stem + "iamo", stem + "ete", stem + "ono"};
-                // -ire 分 -isc 型（capire→capisco）与普通型（dormire→dormo）
-                default -> isc
-                        ? new String[]{stem + "isco", stem + "isci", stem + "isce", stem + "iamo", stem + "ite", stem + "iscono"}
-                        : new String[]{stem + "o", stem + "i", stem + "e", stem + "iamo", stem + "ite", stem + "ono"};
-            };
+            forms = regularPresent(infinitive);
+        }
+        if (forms == null) {
+            return null;
         }
         return withPersons(forms, reflexive);
+    }
+
+    /**
+     * 不规则现在时六人称（例外表 ∪ -isc 型推导；-isc 型 capisco 无法由通用规则得出，视为不规则）。
+     * 规则动词返回 null。加练模式「不规则变位」抽题/筛考点用。
+     */
+    public static String[] irregularPresent(String infinitive) {
+        String[] forms = IRREGULAR_PRESENT.get(infinitive);
+        if (forms != null) {
+            return forms;
+        }
+        if (infinitive.endsWith("ire") && ISC_VERBS.contains(infinitive)) {
+            String stem = infinitive.substring(0, infinitive.length() - 3);
+            return new String[]{stem + "isco", stem + "isci", stem + "isce",
+                    stem + "iamo", stem + "ite", stem + "iscono"};
+        }
+        return null;
+    }
+
+    /**
+     * 规则现在时六人称（含 -care/-gare 加 h、-iare 去 i 拼写规则；不查例外表）。
+     * 与 irregularPresent 逐人称对比：形式相同的人称是规则形式，不进加练考点
+     * （prendere/mettere 整表现在时与规则推导一致、andare 的 noi/voi 均被自然过滤）。
+     */
+    public static String[] regularPresent(String infinitive) {
+        if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
+            return null;
+        }
+        String stem = infinitive.substring(0, infinitive.length() - 3);
+        return switch (infinitive.substring(infinitive.length() - 3)) {
+            // -care/-gare 保硬音加 h（cercare→cerchi/cerchiamo）；-iare 去 i（mangiare→mangi）；
+            // 其余规则（parlare→parli/parlate）
+            case "are" -> {
+                if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
+                    yield new String[]{stem + "o", stem + "hi", stem + "a", stem + "hiamo", stem + "ate", stem + "ano"};
+                }
+                if (infinitive.endsWith("iare")) {
+                    String s = stem.substring(0, stem.length() - 1);
+                    yield new String[]{s + "io", s + "i", s + "ia", s + "iamo", s + "iate", s + "iano"};
+                }
+                yield new String[]{stem + "o", stem + "i", stem + "a", stem + "iamo", stem + "ate", stem + "ano"};
+            }
+            case "ere" -> new String[]{stem + "o", stem + "i", stem + "e", stem + "iamo", stem + "ete", stem + "ono"};
+            default -> new String[]{stem + "o", stem + "i", stem + "e", stem + "iamo", stem + "ite", stem + "ono"};
+        };
     }
 
     /**
@@ -725,26 +805,41 @@ public final class ItalianGrammarUtil {
 
     /** 简单将来时：不规则词干表 → 规则（-are/-ere→erò、-ire→irò） */
     private static Map<String, String> buildFuturo(String infinitive, boolean reflexive) {
-        String[] forms;
-        String irregularStem = IRREGULAR_FUTURO_STEM.get(infinitive);
-        if (irregularStem != null) {
-            forms = conjugateFromStem(irregularStem);
-        } else if (infinitive.endsWith("are") || infinitive.endsWith("ere") || infinitive.endsWith("ire")) {
-            String stem = infinitive.substring(0, infinitive.length() - 3);
-            String link;
-            if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
-                link = "her"; // 保硬音：giocare→giocherò、pagare→pagherò
-            } else if (infinitive.endsWith("ciare") || infinitive.endsWith("giare")) {
-                stem = stem.substring(0, stem.length() - 1); // 去 i：mangiare→mangerò、lasciare→lascerò
-                link = "er";
-            } else {
-                link = infinitive.endsWith("ire") ? "ir" : "er"; // 普通 -iare 保留 i：cambiare→cambierò
-            }
-            forms = conjugateFromStem(stem + link);
-        } else {
+        String[] forms = irregularFuturo(infinitive);
+        if (forms == null) {
+            forms = regularFuturo(infinitive);
+        }
+        if (forms == null) {
             return null;
         }
         return withPersons(forms, reflexive);
+    }
+
+    /** 不规则将来时六人称（例外词干表推导）；规则动词返回 null */
+    public static String[] irregularFuturo(String infinitive) {
+        String stem = IRREGULAR_FUTURO_STEM.get(infinitive);
+        return stem == null ? null : conjugateFromStem(stem);
+    }
+
+    /**
+     * 规则将来时六人称（含 -care/-gare→her、-ciare/-giare 去 i 拼写规则；不查例外表）。
+     * 与 irregularFuturo 逐人称对比筛考点，同 regularPresent。
+     */
+    public static String[] regularFuturo(String infinitive) {
+        if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
+            return null;
+        }
+        String stem = infinitive.substring(0, infinitive.length() - 3);
+        String link;
+        if (infinitive.endsWith("care") || infinitive.endsWith("gare")) {
+            link = "her"; // 保硬音：giocare→giocherò、pagare→pagherò
+        } else if (infinitive.endsWith("ciare") || infinitive.endsWith("giare")) {
+            stem = stem.substring(0, stem.length() - 1); // 去 i：mangiare→mangerò、lasciare→lascerò
+            link = "er";
+        } else {
+            link = infinitive.endsWith("ire") ? "ir" : "er"; // 普通 -iare 保留 i：cambiare→cambierò
+        }
+        return conjugateFromStem(stem + link);
     }
 
     /** 将来时词干 → 六人称（sarò/sarai/sarà/saremo/sarete/saranno） */
@@ -752,8 +847,11 @@ public final class ItalianGrammarUtil {
         return new String[]{stem + "ò", stem + "ai", stem + "à", stem + "emo", stem + "ete", stem + "anno"};
     }
 
-    /** 过去分词：不规则表 → 规则（-are→ato / -ere→uto / -ire→ito） */
-    private static String pastParticiple(String infinitive) {
+    /**
+     * 过去分词：不规则表 → 规则（-are→ato / -ere→uto / -ire→ito）。
+     * 加练模式近过去考裸分词（避开 ho/sono 助动词歧义）。
+     */
+    public static String pastParticiple(String infinitive) {
         String pp = IRREGULAR_PP.get(infinitive);
         if (pp != null) {
             return pp;

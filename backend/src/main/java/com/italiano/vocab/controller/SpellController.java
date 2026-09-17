@@ -30,6 +30,6 @@ public class SpellController {
     /** 答题判分 + 拼写 SRS 推进，返回正确答案供结果页对照 */
     @PostMapping("/{id}/answer")
     public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody SpellAnswerDTO body) {
-        return ApiResponse.ok(spellService.answer(id, body.getWord(), body.getExtra()));
+        return ApiResponse.ok(spellService.answer(id, body.getWord()));
     }
 }

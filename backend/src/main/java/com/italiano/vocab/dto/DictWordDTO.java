@@ -23,12 +23,6 @@ public class DictWordDTO {
     /** 语法形式不规则标记（红色标签；null=常规不显示） */
     private String irregular;
 
-    /** 附加填写类型：null=无附加题 / "presentIo"=现在时 io 形式 / "plural"=名词复数 */
-    private String extraType;
-
-    /** 附加填写输入框标签（与 extraType 同空同有） */
-    private String extraLabel;
-
     /** 中文释义 4 选项（打乱顺序，含 1 个正确释义 + 3 个随机干扰项；用户点选，避免手打误判） */
     private List<String> meaningOptions;
 }

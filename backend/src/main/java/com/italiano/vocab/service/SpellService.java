@@ -39,7 +39,6 @@ public class SpellService {
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
-    private final ExtraFormService extraFormService;
 
     /** 到期拼写队列（随机排序，不含答案）+ 最近未来拼写到期日（空状态提示） */
     public Map<String, Object> getDueWords() {
@@ -86,12 +85,11 @@ public class SpellService {
     }
 
     /**
-     * 答题判分 + 拼写 SRS 推进。
-     * 单词与附加形式全部正确才算过（任一错误 → spell_box 归 0 明天再拼）；
-     * 返回正确答案供结果页对照。
+     * 答题判分 + 拼写 SRS 推进（只考单词本身；不规则变化由加练模式第 4 题型专考）。
+     * 拼对升盒，拼错 → spell_box 归 0 明天再拼；返回正确答案供结果页对照。
      */
     @Transactional
-    public Map<String, Object> answer(Long id, String wordInput, String extraInput) {
+    public Map<String, Object> answer(Long id, String wordInput) {
         Word w = wordMapper.selectById(id);
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
@@ -103,14 +101,8 @@ public class SpellService {
         }
 
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
-        ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
-
         boolean wordCorrect = ExtraFormService.normalize(wordInput).equals(ExtraFormService.normalize(w.getWord()));
-        Boolean extraCorrect = null;
-        if (extra != null) {
-            extraCorrect = ExtraFormService.normalize(extraInput).equals(ExtraFormService.normalize(extra.answer()));
-        }
-        boolean passed = wordCorrect && (extra == null || extraCorrect);
+        boolean passed = wordCorrect;
 
         LocalDate today = LocalDate.now();
         int box = p.getSpellBox() == null ? 0 : p.getSpellBox();
@@ -129,31 +121,22 @@ public class SpellService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("passed", passed);
         result.put("wordCorrect", wordCorrect);
-        result.put("extraCorrect", extraCorrect);
         result.put("word", w.getWord());
         result.put("meaning", w.getMeaning());
         result.put("pos", w.getPos());
         result.put("category", w.getCategory());
         result.put("irregular", tag);
-        result.put("extraLabel", extra == null ? null : extra.label());
-        result.put("extraAnswer", extra == null ? null : extra.answer());
         return result;
     }
 
-    /** 组装队列项：中文释义 + 附加填写提示（不含答案） */
+    /** 组装队列项：中文释义（不含答案） */
     private SpellWordDTO toDTO(Word w) {
         SpellWordDTO dto = new SpellWordDTO();
         dto.setWordId(w.getId());
         dto.setMeaning(w.getMeaning());
         dto.setPos(w.getPos());
         dto.setCategory(w.getCategory());
-        String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
-        dto.setIrregular(tag);
-        ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
-        if (extra != null) {
-            dto.setExtraType(extra.type());
-            dto.setExtraLabel(extra.label());
-        }
+        dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
         return dto;
     }
 }

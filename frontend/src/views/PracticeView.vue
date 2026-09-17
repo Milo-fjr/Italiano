@@ -51,9 +51,11 @@
           </div>
         </div>
         <div class="count-row">
-          <span class="count-label">题量</span>
+          <span class="count-label">{{ selectedType === 'irregular' ? '词量（每词多个考点）' : '题量' }}</span>
           <el-radio-group v-model="selectedCount" size="large">
-            <el-radio-button v-for="n in [10, 20, 30, 50]" :key="n" :value="n">{{ n }} 题</el-radio-button>
+            <el-radio-button v-for="n in [10, 20, 30, 50]" :key="n" :value="n">
+              {{ n }}{{ selectedType === 'irregular' ? ' 词' : ' 题' }}
+            </el-radio-button>
           </el-radio-group>
         </div>
         <div class="start-row">
@@ -114,9 +116,7 @@
         <div v-if="spellIsReflexive" class="reflexive-note">
           这是自反动词，请写出带 <b>si</b> 的完整形式（如 svegliarsi / sedersi）
         </div>
-        <div class="hint-line">
-          拼出对应的意大利语单词<template v-if="spellCurrent.extraLabel">，并填写{{ spellCurrent.extraLabel }}</template>
-        </div>
+        <div class="hint-line">拼出对应的意大利语单词（不规则变化去「不规则变化」题型专练）</div>
         <div class="inputs">
           <div class="input-item">
             <label class="input-label">意大利语单词</label>
@@ -129,32 +129,16 @@
               @keydown.enter="spellSubmit(false)"
             />
           </div>
-          <div v-if="spellCurrent.extraLabel" class="input-item">
-            <label class="input-label">{{ spellCurrent.extraLabel }}</label>
-            <el-input
-              v-model="inputExtra"
-              size="large"
-              :placeholder="spellCurrent.extraLabel"
-              :disabled="!!spellResult"
-              @keydown.enter="spellSubmit(false)"
-            />
-          </div>
         </div>
         <div v-if="spellResult" class="result">
           <div class="verdict" :class="spellResult.passed ? 'ok' : 'bad'">
-            {{ spellResult.passed ? '✓ 全部拼对' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
+            {{ spellResult.passed ? '✓ 拼对了' : gaveUp ? '✗ 不会' : '✗ 拼错了' }}
           </div>
           <div class="compare-row" :class="spellResult.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
             <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">{{ spellResult.word }}<SoundButton :text="spellResult.word" small /></span>
-          </div>
-          <div v-if="spellResult.extraLabel" class="compare-row" :class="spellResult.extraCorrect ? 'ok' : 'bad'">
-            <span class="compare-label">{{ spellResult.extraLabel }}</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputExtra || '（未输入）' }}</span>
-            <span class="arrow">→</span>
-            <span class="compare-answer">{{ spellResult.extraAnswer }}</span>
           </div>
         </div>
         <div class="card-btns">
@@ -194,7 +178,7 @@
 
         <div class="stage-hint">
           <template v-if="dictStage === 1">先听发音，选出正确的中文释义</template>
-          <template v-else>释义选对了！听音写出单词<template v-if="dictCurrent.extraLabel">，并填写{{ dictCurrent.extraLabel }}</template></template>
+          <template v-else>释义选对了！听音写出单词</template>
         </div>
 
         <!-- 第一关：释义 4 选 1（听懂了才能进拼写关） -->
@@ -234,19 +218,9 @@
               @keydown.enter="dictSubmit(false)"
             />
           </div>
-          <div v-if="dictCurrent.extraLabel" class="input-item">
-            <label class="input-label">{{ dictCurrent.extraLabel }}</label>
-            <el-input
-              v-model="inputExtra"
-              size="large"
-              :placeholder="dictCurrent.extraLabel"
-              :disabled="!!dictResult"
-              @keydown.enter="dictSubmit(false)"
-            />
-          </div>
         </div>
 
-        <!-- 结果对照：与普通听写同顺序（单词 → 释义 → 附加形式） -->
+        <!-- 结果对照：与普通听写同顺序（单词 → 释义） -->
         <div v-if="dictResult" class="result">
           <div class="verdict" :class="dictResult.passed ? 'ok' : 'bad'">
             {{ dictResult.passed ? '✓ 全部听对' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
@@ -266,12 +240,6 @@
             <span class="arrow">→</span>
             <span class="compare-answer">{{ dictResult.meaning }}</span>
           </div>
-          <div v-if="dictResult.extraLabel" class="compare-row" :class="dictResult.extraCorrect ? 'ok' : 'bad'">
-            <span class="compare-label">{{ dictResult.extraLabel }}</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputExtra || '（未输入）' }}</span>
-            <span class="arrow">→</span>
-            <span class="compare-answer">{{ dictResult.extraAnswer }}</span>
-          </div>
         </div>
 
         <div class="card-btns">
@@ -285,6 +253,67 @@
             提交（Enter）
           </el-button>
           <el-button v-else type="primary" round size="large" @click="dictNext">
+            下一个（Enter）
+          </el-button>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 不规则变化（irregular）：单卡逐考点，单词即题面 -->
+    <div v-else-if="selectedType === 'irregular' && irrCurrent" v-loading="loading" class="spell-stage">
+      <el-card class="spell-card">
+        <div class="prompt-tags">
+          <span class="head-tags">
+            <el-tag v-if="irrCurrent.irregular" size="small" type="danger">{{ irrCurrent.irregular }}</el-tag>
+            <el-tag size="small" :type="posTagType(irrCurrent.pos)">{{ irrCurrent.pos || '-' }}</el-tag>
+            <el-tag size="small" type="info" effect="plain">{{ irrCurrent.category }}</el-tag>
+          </span>
+        </div>
+        <div class="word-line">
+          <span class="word">{{ irrCurrent.word }}</span>
+          <SoundButton :text="irrCurrent.word" />
+        </div>
+        <div class="meaning-prompt">{{ irrCurrent.meaning }}</div>
+        <div class="point-label">{{ irrCurrent.point.label }}</div>
+        <div v-if="irrCurrent.point.type === 'bello'" class="bello-context">
+          ___ {{ irrCurrent.point.contextNoun }}（{{ irrCurrent.point.contextMeaning }}{{ irrCurrent.point.contextPlural ? '，复数' : '' }}）
+        </div>
+        <div class="hint-line">写出上方考点的正确形式（重音符号可不带；多形式任写其一）</div>
+        <div class="inputs">
+          <div class="input-item">
+            <label class="input-label">{{ irrCurrent.point.label }} <span class="label-hint">（0 不会 · Enter 提交）</span></label>
+            <el-input
+              ref="wordInputRef"
+              v-model="inputWord"
+              size="large"
+              placeholder="输入正确形式（重音符号可不带）"
+              :disabled="!!irrResult"
+              @keydown.enter="irrSubmit(false)"
+            />
+          </div>
+        </div>
+        <div v-if="irrResult" class="result">
+          <div class="verdict" :class="irrResult.passed ? 'ok' : 'bad'">
+            {{ irrResult.passed ? '✓ 答对了' : gaveUp ? '✗ 不会' : '✗ 答错了' }}
+          </div>
+          <div class="compare-row" :class="irrResult.passed ? 'ok' : 'bad'">
+            <span class="compare-label">{{ irrCurrent.point.label }}</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">
+              {{ irrResult.answer }}
+              <SoundButton :text="(irrResult.answer || '').split('/')[0]" small />
+            </span>
+          </div>
+        </div>
+        <div class="card-btns">
+          <el-button v-if="!irrResult" type="danger" plain round size="large" :loading="submitting" @click="irrGiveUp">
+            不会（0）
+          </el-button>
+          <el-button v-if="!irrResult" type="primary" round size="large" :loading="submitting" @click="irrSubmit(false)">
+            提交（Enter）
+          </el-button>
+          <el-button v-else type="primary" round size="large" @click="irrNext">
             下一个（Enter）
           </el-button>
         </div>
@@ -320,7 +349,8 @@ import SoundButton from '../components/SoundButton.vue'
 const typeOptions = [
   { value: 'quiz', label: '认识翻卡', icon: '🔄', desc: '意→中翻卡核对，练眼熟' },
   { value: 'spell', label: '中→意拼写', icon: '✍️', desc: '给中文拼意语，练手速' },
-  { value: 'dict', label: '听音写词', icon: '🎧', desc: '先选释义再拼写，练听力' }
+  { value: 'dict', label: '听音写词', icon: '🎧', desc: '先选释义再拼写，练听力' },
+  { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '专练变位/复数/变形，一词多考点' }
 ]
 
 const loading = ref(false)
@@ -339,10 +369,9 @@ const finished = computed(() => started.value && answered.value >= total.value)
 const flippedSet = reactive(new Set())
 const remainingQuiz = computed(() => words.value.filter((w) => !answeredIds.has(w.wordId)))
 
-// spell/dict 共享
+// spell/dict/irregular 共享
 const currentIndex = ref(0)
 const inputWord = ref('')
-const inputExtra = ref('')
 const gaveUp = ref(false)
 const submitting = ref(false)
 const wordInputRef = ref(null)
@@ -369,12 +398,29 @@ const dictIsReflexive = computed(
   () => !!dictCurrent.value && (dictCurrent.value.pos || '').startsWith('v.rifl')
 )
 
+// irregular 专属：整词入队后按考点摊平成逐题队列（一个词的不规则点一次练全）
+const irregularQueue = ref([])
+const irrIndex = ref(0)
+const irrResult = ref(null)
+const irrCurrent = computed(() => {
+  if (selectedType.value !== 'irregular') return null
+  return irregularQueue.value[irrIndex.value] || null
+})
+
 async function start() {
   loading.value = true
   try {
     const r = await api.getPractice(selectedType.value, selectedCount.value)
     words.value = r.words
-    total.value = r.total
+    if (selectedType.value === 'irregular') {
+      // r.total 是词数；进度按考点题数计（每词多个考点）
+      irregularQueue.value = r.words.flatMap((w) =>
+        (w.points || []).map((p) => ({ ...w, point: p }))
+      )
+      total.value = irregularQueue.value.length
+    } else {
+      total.value = r.total
+    }
     if (!total.value) {
       ElMessage.info(r.message || '没有可加练的词')
       return
@@ -385,14 +431,15 @@ async function start() {
     rightCount.value = 0
     wrongCount.value = 0
     currentIndex.value = 0
+    irrIndex.value = 0
     inputWord.value = ''
-    inputExtra.value = ''
     spellResult.value = null
     dictResult.value = null
     dictStage.value = 1
     pickedMeaning.value = ''
+    irrResult.value = null
     gaveUp.value = false
-    if (selectedType.value === 'spell') {
+    if (selectedType.value === 'spell' || selectedType.value === 'irregular') {
       focusWord()
     }
   } finally {
@@ -435,15 +482,10 @@ async function spellSubmit(gaveUpFlag = false) {
     ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
     return
   }
-  if (!gaveUpFlag && spellCurrent.value.extraLabel && !inputExtra.value.trim()) {
-    ElMessage.warning(`还差附加形式：${spellCurrent.value.extraLabel}，补上再 Enter，或点「不会」`)
-    return
-  }
   submitting.value = true
   try {
     spellResult.value = await api.practiceSpellAnswer(spellCurrent.value.wordId, {
-      word: inputWord.value,
-      extra: inputExtra.value
+      word: inputWord.value
     })
     gaveUp.value = gaveUpFlag
     speakItalian(spellResult.value.word)
@@ -464,8 +506,48 @@ function spellNext() {
   spellResult.value = null
   gaveUp.value = false
   inputWord.value = ''
-  inputExtra.value = ''
   currentIndex.value++
+  focusWord()
+}
+
+// ===== Irregular（不规则变化专考）=====
+async function irrSubmit(gaveUpFlag = false) {
+  if (!irrCurrent.value || irrResult.value || submitting.value) return
+  if (!gaveUpFlag && !inputWord.value.trim()) {
+    ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
+    return
+  }
+  submitting.value = true
+  try {
+    const p = irrCurrent.value.point
+    irrResult.value = await api.practiceIrregularAnswer(irrCurrent.value.wordId, {
+      type: p.type,
+      person: p.person,
+      contextNoun: p.contextNoun,
+      contextGender: p.contextGender,
+      contextPlural: p.contextPlural,
+      input: inputWord.value
+    })
+    gaveUp.value = gaveUpFlag
+    // 多形式（colleghi/colleghe）读第一个
+    speakItalian((irrResult.value.answer || '').split('/')[0])
+    if (irrResult.value.passed) rightCount.value++
+    else wrongCount.value++
+  } finally {
+    submitting.value = false
+  }
+}
+
+function irrGiveUp() {
+  irrSubmit(true)
+}
+
+function irrNext() {
+  if (!irrResult.value) return
+  irrResult.value = null
+  gaveUp.value = false
+  inputWord.value = ''
+  irrIndex.value++
   focusWord()
 }
 
@@ -506,15 +588,10 @@ async function dictSubmit(gaveUpFlag = false) {
     ElMessage.warning('还没写呢：写下听到的单词再按 Enter，或点「不会」')
     return
   }
-  if (!gaveUpFlag && dictCurrent.value.extraLabel && !inputExtra.value.trim()) {
-    ElMessage.warning(`还差附加形式：${dictCurrent.value.extraLabel}，补上再 Enter，或点「不会」`)
-    return
-  }
   submitting.value = true
   try {
     dictResult.value = await api.practiceDictAnswer(dictCurrent.value.wordId, {
       word: inputWord.value,
-      extra: inputExtra.value,
       meaning: pickedMeaning.value
     })
     gaveUp.value = gaveUpFlag
@@ -534,7 +611,6 @@ async function dictFinalize(gaveUpFlag) {
   try {
     dictResult.value = await api.practiceDictAnswer(dictCurrent.value.wordId, {
       word: '',
-      extra: '',
       meaning: pickedMeaning.value || ''
     })
     gaveUp.value = gaveUpFlag
@@ -551,7 +627,6 @@ function dictNext() {
   dictResult.value = null
   gaveUp.value = false
   inputWord.value = ''
-  inputExtra.value = ''
   pickedMeaning.value = ''
   dictStage.value = 1
   currentIndex.value++
@@ -567,7 +642,7 @@ function focusWord() {
 function onKeydown(e) {
   if (!started.value || loading.value) return
 
-  // 出结果后 Enter 下一题（spell/dict）
+  // 出结果后 Enter 下一题（spell/dict/irregular）
   if (e.key === 'Enter') {
     if (selectedType.value === 'spell' && spellResult.value) {
       e.preventDefault()
@@ -577,6 +652,11 @@ function onKeydown(e) {
     if (selectedType.value === 'dict' && dictResult.value) {
       e.preventDefault()
       dictNext()
+      return
+    }
+    if (selectedType.value === 'irregular' && irrResult.value) {
+      e.preventDefault()
+      irrNext()
       return
     }
   }
@@ -618,6 +698,12 @@ function onKeydown(e) {
     e.preventDefault()
     spellGiveUp()
   }
+
+  // 不规则：0 = 不会（Enter 提交由输入框 @keydown.enter 处理）
+  if (e.key === '0' && selectedType.value === 'irregular' && irrCurrent.value && !irrResult.value) {
+    e.preventDefault()
+    irrGiveUp()
+  }
 }
 
 onMounted(() => {
@@ -650,7 +736,7 @@ onBeforeUnmount(() => {
 .setup-title { font-size: 16px; font-weight: 600; color: #1e3a2b; }
 .type-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -772,6 +858,25 @@ onBeforeUnmount(() => {
 
 /* 拼写区小字提示（与普通拼写一致） */
 .hint-line { margin-top: 6px; font-size: 13px; color: #98a2ac; }
+
+/* 不规则题型：考点标签与 bello 型填空语境 */
+.point-label {
+  margin-top: 14px;
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #00934d;
+  border-radius: 999px;
+  background: #eef8f2;
+  color: #00934d;
+  font-size: 14px;
+  font-weight: 600;
+}
+.bello-context {
+  margin-top: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a2b;
+}
 
 /* 听写区阶段提示（与普通听写一致：居中加粗） */
 .stage-hint {

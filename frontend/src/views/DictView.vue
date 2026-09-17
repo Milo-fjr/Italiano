@@ -44,7 +44,7 @@
       <el-button type="primary" round @click="$router.push('/')">去学习模式背新词</el-button>
     </el-empty>
 
-    <!-- 答题卡：一次一题，听发音（不看词）→ 写出意语单词（+ 不规则附加形式） -->
+    <!-- 答题卡：一次一题，听发音（不看词）→ 写出意语单词 -->
     <div v-loading="loading" class="spell-stage">
       <el-card v-if="current" class="spell-card">
         <div class="prompt-tags">
@@ -67,7 +67,7 @@
 
         <div class="hint-line">
           <template v-if="stage === 1">先听发音，选出正确的中文释义</template>
-          <template v-else>释义选对了！听音写出单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template></template>
+          <template v-else>释义选对了！听音写出单词</template>
         </div>
 
         <!-- 第一关：释义 4 选 1（听懂了才能进拼写关；出结果后收起） -->
@@ -107,16 +107,6 @@
               @keydown.enter="submit(false)"
             />
           </div>
-          <div v-if="current.extraLabel" class="input-item">
-            <label class="input-label">{{ current.extraLabel }}</label>
-            <el-input
-              v-model="inputExtra"
-              size="large"
-              :placeholder="current.extraLabel"
-              :disabled="!!result"
-              @keydown.enter="submit(false)"
-            />
-          </div>
         </div>
 
         <!-- 结果对照 -->
@@ -138,12 +128,6 @@
             <span class="compare-input">{{ gaveUp ? '（不会）' : selectedMeaning || '（未选）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">{{ result.meaning }}</span>
-          </div>
-          <div v-if="result.extraLabel" class="compare-row" :class="result.extraCorrect ? 'ok' : 'bad'">
-            <span class="compare-label">{{ result.extraLabel }}</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputExtra || '（未输入）' }}</span>
-            <span class="arrow">→</span>
-            <span class="compare-answer">{{ result.extraAnswer }}</span>
           </div>
         </div>
 
@@ -187,7 +171,6 @@ const wrongCount = ref(0)
 const inputWord = ref('')
 /** 选中的中文释义选项（4 选 1，点选而非手打，避免错别字/格式误判） */
 const selectedMeaning = ref('')
-const inputExtra = ref('')
 /** 答题阶段：1=释义关（听音选义）、2=拼写关（听音写词）——释义选对才进 2 */
 const stage = ref(1)
 /** 答题结果（null=答题中） */
@@ -226,7 +209,6 @@ async function load() {
     stage.value = 1
     inputWord.value = ''
     selectedMeaning.value = ''
-    inputExtra.value = ''
   } finally {
     loading.value = false
   }
@@ -260,17 +242,12 @@ async function confirmMeaning() {
   }
 }
 
-/** 第二关提交判分（服务端判分：单词归一化容错 + 附加形式） */
+/** 第二关提交判分（服务端判分：单词归一化容错） */
 async function submit(gaveUpFlag = false) {
   if (stage.value !== 2 || !current.value || result.value || submitting.value) return
   // 防手滑：正常提交必须写了单词（「不会」不受限）
   if (!gaveUpFlag && !inputWord.value.trim()) {
     ElMessage.warning('还没写呢：写下听到的单词再按 Enter，或点「不会」')
-    return
-  }
-  // 防手滑：需要填附加形式时漏填不判错，先提示补上
-  if (!gaveUpFlag && current.value.extraLabel && !inputExtra.value.trim()) {
-    ElMessage.warning(`还差附加形式：${current.value.extraLabel}，补上再 Enter，或点「不会」`)
     return
   }
   submitting.value = true
@@ -285,8 +262,7 @@ async function submit(gaveUpFlag = false) {
 async function finalize(gaveUpFlag) {
   result.value = await api.dictAnswer(current.value.wordId, {
     word: inputWord.value,
-    meaning: selectedMeaning.value,
-    extra: inputExtra.value
+    meaning: selectedMeaning.value
   })
   gaveUp.value = gaveUpFlag
   speakItalian(result.value.word)
@@ -316,7 +292,6 @@ function next() {
   stage.value = 1
   inputWord.value = ''
   selectedMeaning.value = ''
-  inputExtra.value = ''
   currentIndex.value++
 }
 

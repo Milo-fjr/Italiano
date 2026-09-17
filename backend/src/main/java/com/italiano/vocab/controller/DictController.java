@@ -33,9 +33,9 @@ public class DictController {
         return ApiResponse.ok(dictService.checkMeaning(id, body.getMeaning()));
     }
 
-    /** 答题判分 + 听写 SRS 推进（单词 + 释义 + 附加形式全对才升盒），返回正确答案供结果页对照 */
+    /** 答题判分 + 听写 SRS 推进（单词 + 释义全对才升盒），返回正确答案供结果页对照 */
     @PostMapping("/{id}/answer")
     public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody DictAnswerDTO body) {
-        return ApiResponse.ok(dictService.answer(id, body.getWord(), body.getExtra(), body.getMeaning()));
+        return ApiResponse.ok(dictService.answer(id, body.getWord(), body.getMeaning()));
     }
 }

@@ -37,7 +37,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | 文件                                                | 职责                                               |
 | ------------------------------------------------- | ------------------------------------------------ |
 | `backend/.../util/ItalianGrammarUtil.java`        | **语法引擎**：例外表（例外优先）+ 规则推导，所有变位/复数/冠词/不规则标签的单一事实来源 |
-| `backend/.../service/ExtraFormService.java`       | **拼写/听写共用判分支撑**：附加题判定 + 输入归一化（重音/大小写/空格容错），两模式永远同一口径 |
+| `backend/.../service/ExtraFormService.java`       | **各产出型模式共用输入归一化**（重音/大小写/空格容错，静态方法）；原附加题判定已下线（不规则改由加练第 4 题型专考） |
 | `backend/.../service/ExtractService.java`         | **学习模式**批次抽取：完成次数流转（零遍随机 > 完成次数升序+冷却）          |
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
 | `backend/.../service/SpellService.java`          | **拼写模式**：中→意产出复习，独立 spell 盒子 + 防撞五条件队列                  |
@@ -46,7 +46,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/src/main/resources/data/vocab_data.json` | 1084 词导入源（首启导入用）                                  |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
-| `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、不规则附加形式、自反动词提示、结果对照）    |
+| `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、自反动词提示、结果对照）                  |
 | `frontend/src/views/DictView.vue`                | **听写模式**两段式答题页（听音选释义 → 听音拼写单词）                   |
 | `frontend/src/views/NotebookView.vue`             | **错题本**：测验/拼写/听写答错自动进本，学会移出                      |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
@@ -61,13 +61,14 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
    注意：附加题判定已不依赖被删标签——名词复数附加题（banca→banche 类拼写陷阱）由 `ItalianGrammarUtil.isPluralTrapNoun` 词形判断兜底，改标签逻辑时别把这条断了。
 5. **五套独立体系**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验只认 box/next_review_at（**不筛 box**，答错归 0 的词明天到期也回来）；拼写只认 spell_box/spell_next_review_at；听写只认 dict_box/dict_next_review_at；错题本只认 in_notebook。判分规则：拼写/听写全对升盒、有错归 0 明天回，服务端归一化容错（大小写/重音/空格）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段、听写只动 dict 字段**。
 6. **防撞规则**（同一词一天只出现在一种产出模式）：拼写/听写队列排除——当日认识测验欠账的词（测验优先级更高）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）、当日拼写/听写答过的词。**从未拼写/听写的词（对应 next_review_at 为 NULL）视为到期**，由防撞规则自然节流。撤销学习到 extract_count=0 会把词挡在产出池外（资格门槛 extract_count > 0）。
-7. **题目 DTO 防泄题设计**：拼写模式的题目接口**不返回意语单词**（word 字段不存在，只有 wordId/meaning/pos/category/extraLabel），答案只在判分结果里返回；听写模式的题目**含 word**（TTS 要播放，听本身就是题面）。前端写 `current.xxx` 前先确认 DTO 里真有这个字段——2026-09-09 就是读了不存在的 `current.word` 导致渲染崩溃（见事故记录）。
+7. **题目 DTO 防泄题设计**：拼写模式的题目接口**不返回意语单词**（word 字段不存在，只有 wordId/meaning/pos/category），答案只在判分结果里返回；听写/加练不规则模式的题目**含 word**（TTS 要播放 / 单词本身即不规则题面）。前端写 `current.xxx` 前先确认 DTO 里真有这个字段——2026-09-09 就是读了不存在的 `current.word` 导致渲染崩溃（见事故记录）。
 8. **自动朗读**：五模式统一"标记过了就读一遍"——学习「标记完成」、错题本「学会了」、测验认识/不认识、拼写提交/不会、听写判分落库后调 `speakItalian(该词)`。批量操作（全部完成/全部学会）不播，避免音频叠加。
 9. MyBatis-Plus 全局 `FieldStrategy.ALWAYS`——此前为 IGNORED 时 null 字段不更新，导致撤销操作清不掉 `completed_at`，留下过脏时间戳。
 10. **释义边界化**：中文一词多义会造成拼写歧义，释义要拆开各归一词（sera=傍晚；晚上 / notte=夜里，"晚上"只归前者）。用户提出释义质疑时先查库对账再动手。
 11. **双助动词有两处硬编码，必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS`（规则引擎）与 `ImportService.fixDualAuxV3` 内的动词列表（启动迁移）各自维护一份"双助动词"清单，改一处忘改另一处会导致启动迁移每次重复执行并打误导日志。camminare/nuotare 是"动作方式"动词（不表去向），只用 avere（ho camminato / ho nuotato，无 essere 形式、分词不变性数），永远别加回这两份清单；误加的回退逻辑在 `fixDualAuxV6`（幂等）。追加到双助动词清单前先确认该词真的是"avere 及物 / essere 不及物"两义都对（如 correre/vivere/volare），拿不准查权威词典。
 12. **错题本排序是稳定的**（按 `word_progress.id` 升序=进本先后），刻意不随机打乱——用户要求"翻账本"场景位置固定便于对照回忆（2026-09-15 改）。测验模式 SRS 是随机顺序（防位置记忆），两者不要混淆；也别在错题本加回 `Collections.shuffle`。
 13. **加练模式（PracticeView/PracticeService，2026-09-16）**：纯练习、零 SRS——从已学词（extract_count>0）随机抽，答错只进错题本，不碰任何盒子/次数/时间戳；中途退出无任何持久化。**新页面 UI 必须对齐同类型现有模式的交互惯例**（大喇叭、选项卡样式、确认条、快捷键全套、结果对照顺序），不要自造简化版——本次听写加练 UI 没对齐被用户直接点名。听写释义选错立即判错（`/practice/{id}/dict-check-meaning` 预检，只判断不落库不泄答案）。
+14. **不规则变化专考（加练第 4 题型 irregular，2026-09-17）**：拼写/听写/加练拼写/加练听写的**附加题已全部撤下**，不规则变化统一由本题型专考（用户拍板：保持连贯、防手滑）。考点由引擎枚举：动词现在时/将来时**逐人称**与规则推导比对（相同=规则形式不考，prendere 整表、andare 的 noi/voi 被自然过滤）+ 过去分词（考裸分词，避开 ho/sono 歧义）；名词不规则复数（DB plural，"/"双形式任答其一）；形容词 bello 型（`BELLO_PRACTICE` 固定语境名词推导唯一定语形式，`belloAttributive()` 规则式复数如 buoni 自动跳过）、-co/-go 硬软音阳性复数（DB adjForms.mp）、不变形容词复数=原词。**答案现场推导、题目 DTO 不含答案**（无状态判分，请求带考点描述 type/person/contextNoun）；DB 手动编辑值（变位/复数/adjForms JSON）优先，引擎推导兜底。整词入队一次练全全部考点。**TODO：未完成时（imperfetto）未考察**——用户还没学，学到后补（IRREGULAR_IMPERFETTO 表只有 essere/fare/dire/bere 四词）。
 
 ## 历史事故记录（血泪教训）
 

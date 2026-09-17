@@ -44,7 +44,7 @@
       <el-button type="primary" round @click="$router.push('/')">去学习模式背新词</el-button>
     </el-empty>
 
-    <!-- 答题卡：一次一题，中文释义 → 拼写意语单词（+ 不规则附加形式） -->
+    <!-- 答题卡：一次一题，中文释义 → 拼写意语单词 -->
     <div v-loading="loading" class="spell-stage">
       <el-card v-if="current" class="spell-card">
         <div class="prompt-tags">
@@ -58,9 +58,7 @@
         <div v-if="isReflexiveVerb" class="reflexive-note">
           这是自反动词，请写出带 <b>si</b> 的完整形式（如 svegliarsi / sedersi）
         </div>
-        <div class="hint-line">
-          拼出对应的意大利语单词<template v-if="current.extraLabel">，并填写{{ current.extraLabel }}</template>
-        </div>
+        <div class="hint-line">拼出对应的意大利语单词（不规则变化去加练模式专练）</div>
 
         <!-- 输入区 -->
         <div class="inputs">
@@ -75,22 +73,12 @@
               @keydown.enter="submit(false)"
             />
           </div>
-          <div v-if="current.extraLabel" class="input-item">
-            <label class="input-label">{{ current.extraLabel }}</label>
-            <el-input
-              v-model="inputExtra"
-              size="large"
-              :placeholder="current.extraLabel"
-              :disabled="!!result"
-              @keydown.enter="submit(false)"
-            />
-          </div>
         </div>
 
         <!-- 结果对照 -->
         <div v-if="result" class="result">
           <div class="verdict" :class="result.passed ? 'ok' : 'bad'">
-            {{ result.passed ? '✓ 全部拼对' : gaveUp ? '✗ 不会（明天再拼）' : '✗ 有错误（明天再拼）' }}
+            {{ result.passed ? '✓ 拼对了' : gaveUp ? '✗ 不会（明天再拼）' : '✗ 拼错了（明天再拼）' }}
           </div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
@@ -100,12 +88,6 @@
               {{ result.word }}
               <SoundButton :text="result.word" small />
             </span>
-          </div>
-          <div v-if="result.extraLabel" class="compare-row" :class="result.extraCorrect ? 'ok' : 'bad'">
-            <span class="compare-label">{{ result.extraLabel }}</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputExtra || '（未输入）' }}</span>
-            <span class="arrow">→</span>
-            <span class="compare-answer">{{ result.extraAnswer }}</span>
           </div>
         </div>
 
@@ -144,7 +126,6 @@ const currentIndex = ref(0)
 const rightCount = ref(0)
 const wrongCount = ref(0)
 const inputWord = ref('')
-const inputExtra = ref('')
 /** 答题结果（null=答题中） */
 const result = ref(null)
 /** 本题是否点了「不会」（结果页显示区别于拼错） */
@@ -179,7 +160,6 @@ async function load() {
     result.value = null
     gaveUp.value = false
     inputWord.value = ''
-    inputExtra.value = ''
     focusWord()
   } finally {
     loading.value = false
@@ -195,16 +175,10 @@ async function submit(gaveUpFlag = false) {
     ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
     return
   }
-  // 防手滑：需要填附加形式（不规则复数/变位）时，漏填同样不判错，先提示补上
-  if (!gaveUpFlag && current.value.extraLabel && !inputExtra.value.trim()) {
-    ElMessage.warning(`还差附加形式：${current.value.extraLabel}，补上再 Enter，或点「不会」`)
-    return
-  }
   submitting.value = true
   try {
     result.value = await api.spellAnswer(current.value.wordId, {
-      word: inputWord.value,
-      extra: inputExtra.value
+      word: inputWord.value
     })
     gaveUp.value = gaveUpFlag
     speakItalian(result.value.word)
@@ -229,7 +203,6 @@ function next() {
   result.value = null
   gaveUp.value = false
   inputWord.value = ''
-  inputExtra.value = ''
   currentIndex.value++
   focusWord()
 }

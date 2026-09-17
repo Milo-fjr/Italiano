@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * 听写模式（听音→写词 + 释义 4 选 1 产出复习），独立于学习（extract_count）/测验（box）/拼写（spell_box）的体系：
  * 只认 dict_box / dict_next_review_at——全对升盒、有错归 0 明天再听，不动另外三套的任何字段。
  * 答题产出：意大利语单词手写（听音拼写，归一化容错同拼写）+ 中文释义选择题（4 选项随机，点选判定，
- * 消除手打中文的错别字/格式误判）；不规则词的附加形式判定与拼写共用 ExtraFormService，同一口径。
+ * 消除手打中文的错别字/格式误判）；不规则变化由加练模式第 4 题型专考，不再出附加题。
  * <p>
  * 防撞规则（同一词一天只出现在一种模式）：听写队列额外排除——
  * ① 认识测验当天欠账的词（next_review_at <= 今天，测验优先级更高）；
@@ -41,7 +41,6 @@ public class DictService {
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
-    private final ExtraFormService extraFormService;
 
     /** 到期听写队列（随机顺序；含单词原文供前端 TTS）+ 最近未来听写到期日（空状态提示） */
     public Map<String, Object> getDueWords() {
@@ -101,12 +100,11 @@ public class DictService {
     }
 
     /**
-     * 答题判分 + 听写 SRS 推进。
-     * 单词（听音拼写）+ 中文释义（+ 不规则附加形式）全部正确才升盒；
+     * 答题判分 + 听写 SRS 推进（单词 + 释义全对才升盒；不规则变化由加练模式第 4 题型专考）。
      * 判错自动进错题本；返回正确答案供结果页对照。
      */
     @Transactional
-    public Map<String, Object> answer(Long id, String wordInput, String extraInput, String meaningInput) {
+    public Map<String, Object> answer(Long id, String wordInput, String meaningInput) {
         Word w = wordMapper.selectById(id);
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
@@ -118,15 +116,9 @@ public class DictService {
         }
 
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
-        ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
-
         boolean wordCorrect = ExtraFormService.normalize(wordInput).equals(ExtraFormService.normalize(w.getWord()));
         boolean meaningCorrect = matchMeaning(meaningInput, w.getMeaning());
-        Boolean extraCorrect = null;
-        if (extra != null) {
-            extraCorrect = ExtraFormService.normalize(extraInput).equals(ExtraFormService.normalize(extra.answer()));
-        }
-        boolean passed = wordCorrect && meaningCorrect && (extra == null || extraCorrect);
+        boolean passed = wordCorrect && meaningCorrect;
 
         LocalDate today = LocalDate.now();
         int box = p.getDictBox() == null ? 0 : p.getDictBox();
@@ -146,18 +138,15 @@ public class DictService {
         result.put("passed", passed);
         result.put("wordCorrect", wordCorrect);
         result.put("meaningCorrect", meaningCorrect);
-        result.put("extraCorrect", extraCorrect);
         result.put("word", w.getWord());
         result.put("meaning", w.getMeaning());
         result.put("pos", w.getPos());
         result.put("category", w.getCategory());
         result.put("irregular", tag);
-        result.put("extraLabel", extra == null ? null : extra.label());
-        result.put("extraAnswer", extra == null ? null : extra.answer());
         return result;
     }
 
-    /** 组装队列项：单词原文（TTS 用）+ 释义 4 选 1 选项 + 附加填写提示（不含附加答案） */
+    /** 组装队列项：单词原文（TTS 用）+ 释义 4 选 1 选项（不含答案） */
     private DictWordDTO toDTO(Word w) {
         DictWordDTO dto = new DictWordDTO();
         dto.setWordId(w.getId());
@@ -165,13 +154,7 @@ public class DictService {
         dto.setPos(w.getPos());
         dto.setCategory(w.getCategory());
         dto.setMeaningOptions(buildMeaningOptions(w));
-        String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
-        dto.setIrregular(tag);
-        ExtraFormService.Extra extra = extraFormService.resolve(w, tag);
-        if (extra != null) {
-            dto.setExtraType(extra.type());
-            dto.setExtraLabel(extra.label());
-        }
+        dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
         return dto;
     }
 
