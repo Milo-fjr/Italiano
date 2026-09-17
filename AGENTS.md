@@ -29,6 +29,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
 - **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
 - start.bat 固定在启动后 5 秒开浏览器——若后端还没就绪，那个标签页会一直转圈，**刷新即可**。但先看控制台有没有报错：渲染崩溃（TypeError）也会表现为"打不开"，两者别混淆
+- **白屏但标签页标题正常 + 控制台只有 `[Vue Router warn] Unexpected error when starting the router: {}`（错误对象序列化为空）**：不是代码崩了，是浏览器 HTTP 缓存被投毒——Vite 给 `node_modules/.vite/deps/*` 加了 `immutable` 一年缓存头，启动瞬间 Vite 未就绪时浏览器把一次失败的模块响应缓存了下来。特征：`fetch(该URL)` 返回 200 但 `import()` 失败，URL 加任意参数就活。**修复：Ctrl+F5 强刷一次即愈**，不用改任何代码（2026-09-17 实锤，axios.js?v=xxx 中招，所有 import axios 的视图全白，App 壳正常所以导航栏还在）
 - **往 MySQL 写含重音/中文的值**（如变位 JSON 里的 è/ò/à）：PowerShell 直接内联会乱码，用 `FROM_BASE64('<base64>')` 传值最稳——`node -e` 读 JSON 算出 `Buffer.from(str).toString('base64')`，喂 `UPDATE ... SET col=FROM_BASE64('...')`，全程纯 ASCII 无编码问题。临时脚本/输出命名 tmp_*，用完即删
 
 ## 架构地图
