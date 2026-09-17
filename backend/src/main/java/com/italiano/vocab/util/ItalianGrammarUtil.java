@@ -181,12 +181,12 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("videogioco", "videogiochi");
         IRREGULAR_PLURAL.put("pacco", "pacchi");
         IRREGULAR_PLURAL.put("bianco", "bianchi");
+        IRREGULAR_PLURAL.put("succo", "succhi"); // piana（SUC-co）加 h 锁硬音；2026-09-18 从"不加 h"组移正（原误写 succi）
         // -co/-go 不加 h（重音在前，软音 -ci/-gi）
         IRREGULAR_PLURAL.put("amico", "amici");
         IRREGULAR_PLURAL.put("medico", "medici");
         IRREGULAR_PLURAL.put("stomaco", "stomaci");
         IRREGULAR_PLURAL.put("farmaco", "farmaci");
-        IRREGULAR_PLURAL.put("succo", "succi");
         IRREGULAR_PLURAL.put("traffico", "traffici");
         IRREGULAR_PLURAL.put("meccanico", "meccanici");
         IRREGULAR_PLURAL.put("idraulico", "idraulici");
