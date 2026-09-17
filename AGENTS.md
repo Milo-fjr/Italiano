@@ -5,7 +5,7 @@
 ## 一句话概述
 
 意大利语 A2 词汇学习系统（用户为马可波罗计划生，明年 11 月出国）。Spring Boot 3 + Vue 3，本地单机运行，MySQL 8，词库约 1084 词。
-五种学习模式：学习 / 测验 / 拼写 / 听写 / 错题本。
+六种学习模式：学习 / 测验 / 拼写 / 听写 / 加练（认识/拼写/听写/不规则变化四题型）/ 错题本。
 启动：双击根目录 `start.bat`（后端 8080 + 前端 5173，会开两个 cmd 窗口 + 自动开浏览器）。数据库密码在 `backend/application-local.yml`（gitignored，不入库）。
 
 ## 高频操作
@@ -31,6 +31,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - start.bat 固定在启动后 5 秒开浏览器——若后端还没就绪，那个标签页会一直转圈，**刷新即可**。但先看控制台有没有报错：渲染崩溃（TypeError）也会表现为"打不开"，两者别混淆
 - **白屏但标签页标题正常 + 控制台只有 `[Vue Router warn] Unexpected error when starting the router: {}`（错误对象序列化为空）**：不是代码崩了，是浏览器 HTTP 缓存被投毒——Vite 给 `node_modules/.vite/deps/*` 加了 `immutable` 一年缓存头，启动瞬间 Vite 未就绪时浏览器把一次失败的模块响应缓存了下来。特征：`fetch(该URL)` 返回 200 但 `import()` 失败，URL 加任意参数就活。**修复：Ctrl+F5 强刷一次即愈**，不用改任何代码（2026-09-17 实锤，axios.js?v=xxx 中招，所有 import axios 的视图全白，App 壳正常所以导航栏还在）
 - **往 MySQL 写含重音/中文的值**（如变位 JSON 里的 è/ò/à）：PowerShell 直接内联会乱码，用 `FROM_BASE64('<base64>')` 传值最稳——`node -e` 读 JSON 算出 `Buffer.from(str).toString('base64')`，喂 `UPDATE ... SET col=FROM_BASE64('...')`，全程纯 ASCII 无编码问题。临时脚本/输出命名 tmp_*，用完即删
+- **查"某个行为/标记什么时候被谁改的"**：`git log -S "关键词" --oneline -- <文件>`（pickaxe，按字符串增删过滤提交）——排查"昨天还有今天没了"类问题的第一步（faccia 红标疑云用它 10 秒定位）
 
 ## 架构地图
 
@@ -42,12 +43,14 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
 | `backend/.../service/SpellService.java`          | **拼写模式**：中→意产出复习，独立 spell 盒子 + 防撞五条件队列                  |
 | `backend/.../service/DictService.java`            | **听写模式**：听音→意拼写，两段式（先选释义后拼写），独立 dict 盒子 + 防撞队列      |
+| `backend/.../service/PracticeService.java`        | **加练模式**：纯练习零 SRS，四题型 quiz/spell/dict/irregular（不规则考点枚举 + 现场推导判分，见陷阱 14） |
 | `backend/.../service/WordService.java`           | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
 | `backend/src/main/resources/data/vocab_data.json` | 1084 词导入源（首启导入用）                                  |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
 | `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、自反动词提示、结果对照）                  |
 | `frontend/src/views/DictView.vue`                | **听写模式**两段式答题页（听音选释义 → 听音拼写单词）                   |
+| `frontend/src/views/PracticeView.vue`            | **加练模式**四题型页（选题型 → 逐题作答 → 完成汇总）                     |
 | `frontend/src/views/NotebookView.vue`             | **错题本**：测验/拼写/听写答错自动进本，学会移出                      |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
@@ -58,7 +61,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 2. **`extract_count`** **是完成次数，不是抽取次数**。仅被抽进批次不计数，点"标记完成"才 +1，撤销 -1（可到 0）。
 3. **双数据源**：`vocab_data.json` 是导入源，DB 是运行数据。改 JSON **不会**同步已导入的 DB 行，反向同步用「设置 → 词库备份」按钮（POST /api/export，DB 全量写回 JSON 含语法字段/例句；导入端 JSON 值优先，重灌为全保真恢复）。**删词要两处同步**：DB 先删 `daily_extract` → `word_progress` → `word`（有外键依赖顺序），再删 JSON 对应条目并用 node 验证 JSON 合法。
 4. **irregularTag 标签哲学：红标 = 必须额外记，规则推导可得的一律不标**（标签通胀会让用户不再看红标）。已删除：「音变」（动词 -care/-gare/-iare、名词 -ca/-ga/-cia/-gia，拼写有规律）、「复数不变」（外来词/缩写词/月份，性质即规则）。保留：时态不规则（现在/近过去/未完成/将来）、不规则复数、阴阳性特殊、性别需记（-e 结尾）、冠词式变化（bello 型）、形容词不规则变化。名词多标签顿号叠加；月份不标性别。
-   注意：附加题判定已不依赖被删标签——名词复数附加题（banca→banche 类拼写陷阱）由 `ItalianGrammarUtil.isPluralTrapNoun` 词形判断兜底，改标签逻辑时别把这条断了。
+   注意：拼写陷阱类（-ca/-ga/-cia/-gia）复数规则见陷阱 15（已讲解给用户）；`isPluralTrapNoun` 在附加题下线（2026-09-17）后已无调用方，纯语法判定保留——将来若决定给拼写陷阱复数加考察（见陷阱 14 空档备注），可直接复用。
 5. **五套独立体系**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验只认 box/next_review_at（**不筛 box**，答错归 0 的词明天到期也回来）；拼写只认 spell_box/spell_next_review_at；听写只认 dict_box/dict_next_review_at；错题本只认 in_notebook。判分规则：拼写/听写全对升盒、有错归 0 明天回，服务端归一化容错（大小写/重音/空格）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段、听写只动 dict 字段**。
 6. **防撞规则**（同一词一天只出现在一种产出模式）：拼写/听写队列排除——当日认识测验欠账的词（测验优先级更高）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）、当日拼写/听写答过的词。**从未拼写/听写的词（对应 next_review_at 为 NULL）视为到期**，由防撞规则自然节流。撤销学习到 extract_count=0 会把词挡在产出池外（资格门槛 extract_count > 0）。
 7. **题目 DTO 防泄题设计**：拼写模式的题目接口**不返回意语单词**（word 字段不存在，只有 wordId/meaning/pos/category），答案只在判分结果里返回；听写/加练不规则模式的题目**含 word**（TTS 要播放 / 单词本身即不规则题面）。前端写 `current.xxx` 前先确认 DTO 里真有这个字段——2026-09-09 就是读了不存在的 `current.word` 导致渲染崩溃（见事故记录）。
@@ -68,7 +71,9 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 11. **双助动词有两处硬编码，必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS`（规则引擎）与 `ImportService.fixDualAuxV3` 内的动词列表（启动迁移）各自维护一份"双助动词"清单，改一处忘改另一处会导致启动迁移每次重复执行并打误导日志。camminare/nuotare 是"动作方式"动词（不表去向），只用 avere（ho camminato / ho nuotato，无 essere 形式、分词不变性数），永远别加回这两份清单；误加的回退逻辑在 `fixDualAuxV6`（幂等）。追加到双助动词清单前先确认该词真的是"avere 及物 / essere 不及物"两义都对（如 correre/vivere/volare），拿不准查权威词典。
 12. **错题本排序是稳定的**（按 `word_progress.id` 升序=进本先后），刻意不随机打乱——用户要求"翻账本"场景位置固定便于对照回忆（2026-09-15 改）。测验模式 SRS 是随机顺序（防位置记忆），两者不要混淆；也别在错题本加回 `Collections.shuffle`。
 13. **加练模式（PracticeView/PracticeService，2026-09-16）**：纯练习、零 SRS——从已学词（extract_count>0）随机抽，答错只进错题本，不碰任何盒子/次数/时间戳；中途退出无任何持久化。**新页面 UI 必须对齐同类型现有模式的交互惯例**（大喇叭、选项卡样式、确认条、快捷键全套、结果对照顺序），不要自造简化版——本次听写加练 UI 没对齐被用户直接点名。听写释义选错立即判错（`/practice/{id}/dict-check-meaning` 预检，只判断不落库不泄答案）。
-14. **不规则变化专考（加练第 4 题型 irregular，2026-09-17）**：拼写/听写/加练拼写/加练听写的**附加题已全部撤下**，不规则变化统一由本题型专考（用户拍板：保持连贯、防手滑）。考点由引擎枚举：动词现在时/将来时**逐人称**与规则推导比对（相同=规则形式不考，prendere 整表、andare 的 noi/voi 被自然过滤）+ 过去分词（考裸分词，避开 ho/sono 歧义）；名词不规则复数（DB plural，"/"双形式任答其一）；形容词 bello 型（`BELLO_PRACTICE` 固定语境名词推导唯一定语形式，`belloAttributive()` 规则式复数如 buoni 自动跳过）、-co/-go 硬软音阳性复数（DB adjForms.mp）、不变形容词复数=原词。**答案现场推导、题目 DTO 不含答案**（无状态判分，请求带考点描述 type/person/contextNoun）；DB 手动编辑值（变位/复数/adjForms JSON）优先，引擎推导兜底。整词入队一次练全全部考点。**TODO：未完成时（imperfetto）未考察**——用户还没学，学到后补（IRREGULAR_IMPERFETTO 表只有 essere/fare/dire/bere 四词）。
+14. **不规则变化专考（加练第 4 题型 irregular，2026-09-17）**：拼写/听写/加练拼写/加练听写的**附加题已全部撤下**，不规则变化统一由本题型专考（用户拍板：保持连贯、防手滑）。考点由引擎枚举：动词现在时/将来时**逐人称**与规则推导比对（相同=规则形式不考，prendere 整表、andare 的 noi/voi 被自然过滤）+ 过去分词（考裸分词，避开 ho/sono 歧义）；名词不规则复数（DB plural，"/"双形式任答其一）；形容词 bello 型（`BELLO_PRACTICE` 固定语境名词推导唯一定语形式，`belloAttributive()` 规则式复数如 buoni 自动跳过）、-co/-go 硬软音阳性复数（DB adjForms.mp）、不变形容词复数=原词。**答案现场推导、题目 DTO 不含答案**（无状态判分，请求带考点描述 type/person/contextNoun）；DB 手动编辑值（变位/复数/adjForms JSON）优先，引擎推导兜底。整词入队一次练全全部考点。**TODO：未完成时（imperfetto）未考察**——用户还没学，学到后补（IRREGULAR_IMPERFETTO 表只有 essere/fare/dire/bere 四词）。另：拼写陷阱类复数（faccia→facce、banca→banche）附加题撤下后**当前无任何模式考察**——用户已学过规则（见陷阱 15），是否纳入本题型待用户发话（2026-09-18 摆过一次，未拍板）。
+15. **拼写陷阱复数规则（-ca/-ga/-cia/-gia，2026-09-18 讲解给用户，词库 11 个 -cia/-gia + 18 个 -ca/-ga 词全核对无误）**：①**-ca/-ga → 加 h**（banca→banche、amica→amiche）——c/g 在 e/i 前发软音（/tʃ/ /dʒ/）、在 a/o/u 前发硬音，复数 -a 变 -e 后裸写 ce/ge 会变软音，加 h 锁硬音；与动词变位 cercare→cerchi、pagare→paghi 同一招。②**-cia/-gia → 看 c/g 紧挨着的前一个字母**：该 i 多数不发音，唯一任务是给 c/g 报"软音"信（同 ciao 的 i）；复数变 -e 后 ce/ge 本身即软音，i 冗余——**辅音前（含 -ccia/-ggia 双写，双写辅音自己就是那个"辅音前"）→ 去 i**（faccia→facce、arancia→arance、pioggia→piogge、spiaggia→spiagge、mancia→mance）；**元音后 → 保 i**（camicia→camicie、farmacia→farmacie、bugia→bugie、valigia→valigie、fiducia→fiducie、ciliegia→ciliegie）。代码实现 = `buildPlural` 的 `charAt(len-4)`（即 -cia/-gia 三字母簇前一字母），与判则完全等价。真不规则对照：braccio→braccia（复数性别漂移，无法推导）才标红——这也是「音变」标签被删的原因。
+   **规则延伸到 -co/-go 名词（2026-09-18 用户指出 lago 误标红）**：-co/-go 变复数 o→i 前同样加 h 锁硬音（lago→laghi、fuoco→fuochi），加 h 型共 12 词已从「不规则复数」红标移除（`irregularTag` 判定：`IRREGULAR_PLURAL` 表中复数 value 以 -chi/-ghi 结尾即视为规则加 h 型，不标红）——laghi/banchi 与 -ca/-ga 的 laghe 同一招。**软音型**（amico→amici、medico→medici、stomaco→stomaci、farmaco→farmaci、succo→succi、traffico→traffici、meccanico→meccanici、idraulico→idraulici，重音位置文本不可判）与**强不规则**（braccio→braccia 等）保留红标。注意 `buildPlural` 对 -co/-go 仍全量查 `IRREGULAR_PLURAL` 表（引擎推导不了重音），表照存、红标不照发——**改表别动红标判定，两者解耦**；移除红标后 lago 类词不进加练 irregular 队列（`buildIrregularPoints` 靠 tag 含「不规则复数」才出复数考点），与 -ca/-ga（faccia）一致，当前均无任何模式考察。
 
 ## 历史事故记录（血泪教训）
 
@@ -101,6 +106,11 @@ SRS 部署前完成的 11 个词曾滞留 box 0，已回填 box 1（`UPDATE ... 
 - **国内直连 github.com 不通**（`Connection was reset` / 连不上 443）。**遇到 github.com 连接/push 失败先检测本机有没有可用代理，别信写死的端口**：①查系统代理设置 `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings` 的 ProxyServer；②或 `Get-NetTCPConnection -State Listen` 扫常见代理端口；③本机加速器（AtlasCore）的本地端口可能变化，以实际检测为准，测通后配 `git config --global http.https://github.com.proxy http://<host>:<port>`（只对 github.com 生效，Gitee 仍直连）。代理客户端没开或端口失效时 push 会失败，按此流程重配。
 - **GCM 曾用错账号**：本地存有旧账号 fjr101 的 GitHub 凭据，push 到 Milo-fjr 的仓库被 403 拒。清凭据命令：`"protocol=https`nhost=github.com`n" | git credential reject`，然后重推，GCM 弹浏览器以 **Milo-fjr** 登录。
 - 现状：origin = https://github.com/Milo-fjr/Italiano.git（master 已推送，公开），Milo-fjr 凭据已由 GCM 保存。
+
+### faccia「红标消失」疑云（2026-09-18，虚惊，排障方法论沉淀）
+
+用户报"faccia 红色标记没了，昨天还有，不知道是不是 bug"。查证：不是 bug，用户记忆也真实——只是指向了另一个元素。①faccia 属「音变」类（-cia），该红标 2026-09-08（67800f1）就删了，昨天今天都不存在；②用户记忆中的"红"实为**前一天拼写卡片的复数附加题**（-cia 词出「复数形式」附加题，答错时对照行是红色删除线）——该附加题是用户前一天拍板撤下的，当天生效所以"消失"。DB 佐证：faccia last_spell_at=前一天、拼错进错题本。
+**教训：①用户报"某个元素/行为消失了"，第一步 `git log -S "关键词" --oneline -- <文件>` 拉时间线**（本次一步定位音变标签删于 9-08，直接排除"昨天改坏"）；②先确认用户看的页面——详情弹窗（WordDetailDialog）从来没有红标，红标只在模式卡片上；③word_progress 的 last_spell_at / last_quiz_at 等时间戳能还原用户昨天在哪个模式见过该词；④用户记忆通常有实物对应，只是可能指向另一个元素——把候选摆出来核实，别急着说"你记错了"。
 
 ## AI 工作守则
 

@@ -354,7 +354,13 @@ public final class ItalianGrammarUtil {
         if (isNounPos(pos)) {
             List<String> tags = new ArrayList<>();
             if (IRREGULAR_PLURAL.containsKey(w)) {
-                tags.add("不规则复数");
+                // 加 h 型 -co/-go（复数以 -chi/-ghi 结尾，重音在词干，如 lago→laghi/fuoco→fuochi）
+                // 与 -ca/-ga 同规则可推导，不标红（2026-09-18 用户指出，见 AGENTS 陷阱 15）；
+                // 仅软音型（amico→amici，重音位置文本不可判）与强不规则（-a 复数等）保留标签
+                String plural = IRREGULAR_PLURAL.get(w);
+                if (!plural.endsWith("chi") && !plural.endsWith("ghi")) {
+                    tags.add("不规则复数");
+                }
             }
             // 不变复数（外来词/缩写词/月份）不再打「复数不变」标签：性质即规则（外来词、缩写
             // 词复数不变），无需逐个标红提醒；仅真正不规则的复数（IRREGULAR_PLURAL）保留标签
