@@ -107,7 +107,7 @@ SRS 部署前完成的 11 个词曾滞留 box 0，已回填 box 1（`UPDATE ... 
 - **GitHub 连接器（TRAE 插件 MCP）无法建仓**：`create_repository` 持续 403 `Resource not accessible by integration`——GitHub App 签发的 token 权限里没有"建仓"这一项，重新授权/重启 TRAE 都补不上（Gitee 连接器默认就有建仓权限，所以 Gitee 一直正常）。**建仓只能网页手动**（github.com/new，Public、不勾 README）。
 - **国内直连 github.com 不通**（`Connection was reset` / 连不上 443）。**遇到 github.com 连接/push 失败先检测本机有没有可用代理，别信写死的端口**：①查系统代理设置 `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings` 的 ProxyServer；②或 `Get-NetTCPConnection -State Listen` 扫常见代理端口；③本机加速器（AtlasCore）的本地端口可能变化，以实际检测为准，测通后配 `git config --global http.https://github.com.proxy http://<host>:<port>`（只对 github.com 生效，Gitee 仍直连）。代理客户端没开或端口失效时 push 会失败，按此流程重配。
 - **GCM 曾用错账号**：本地存有旧账号 fjr101 的 GitHub 凭据，push 到 Milo-fjr 的仓库被 403 拒。清凭据命令：`"protocol=https`nhost=github.com`n" | git credential reject`，然后重推，GCM 弹浏览器以 **Milo-fjr** 登录。
-- 现状：origin = https://github.com/Milo-fjr/Italiano.git（master 已推送，公开），Milo-fjr 凭据已由 GCM 保存。
+- 现状：origin = https://github.com/Milo-fjr/Italiano.git（master 已推送，公开），Milo-fjr 凭据已由 GCM 保存。**2026-09-18 实测：代理客户端未开时直连 github.com 也能成功**（网络环境多变）——push 失败时先看报错里 proxy 是否连不上，连不上先试 `git -c http.https://github.com.proxy="" push` 直连，不行再按上面流程找代理。
 
 ### faccia「红标消失」疑云（2026-09-18，虚惊，排障方法论沉淀）
 
