@@ -31,6 +31,9 @@ public class WordDetailDTO {
     /** 名词复数形式 */
     private String plural;
 
+    /** 不规则标记（与卡片红标同源：动词为顿号拼接的时态清单，如"近过去时不规则、将来时不规则"） */
+    private String irregular;
+
     /** 动词变位：{present, passatoProssimo, imperfetto, futuro} → {io, tu, lui/lei, noi, voi, loro} */
     private Map<String, Map<String, String>> conjugation;
 

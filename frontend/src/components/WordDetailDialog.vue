@@ -99,9 +99,11 @@
             <el-tab-pane
               v-for="(forms, tense) in detail.conjugation"
               :key="tense"
-              :label="tenseLabel(tense)"
               :name="tense"
             >
+              <template #label>
+                <span :class="{ 'tense-irregular': isIrregularTense(tense) }">{{ tenseLabel(tense) }}</span>
+              </template>
               <el-table :data="conjugationRows(forms)" size="small" border>
                 <el-table-column prop="person" label="人称" width="120" />
                 <el-table-column label="变位">
@@ -281,6 +283,18 @@ const hasConjugation = computed(() => {
 
 function tenseLabel(key) {
   return tenseLabelMap[key] || key
+}
+
+// 弹窗 tab key → irregularTag 文案前缀（未完成时引擎叫"未完成时不规则"，弹窗叫"未完成过去时"）
+const tenseIrregularPrefix = {
+  present: '现在时',
+  passatoProssimo: '近过去时',
+  imperfetto: '未完成时',
+  futuro: '将来时'
+}
+const isIrregularTense = (tense) => {
+  const prefix = tenseIrregularPrefix[tense]
+  return !!prefix && !!detail.value?.irregular && detail.value.irregular.includes(prefix)
 }
 
 const conjugationRows = (forms) => {
@@ -506,6 +520,12 @@ defineExpose({ reload: load })
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* 不规则时态 tab 标签：红字加粗（与卡片红标同源，选中态主题绿会覆盖故用 !important） */
+.tense-irregular {
+  color: var(--it-red) !important;
+  font-weight: 600;
 }
 
 .noun-arrow {
