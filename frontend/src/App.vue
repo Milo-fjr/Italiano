@@ -8,9 +8,15 @@
         </div>
         <el-menu mode="horizontal" router :default-active="activePath" class="menu" :ellipsis="false">
           <el-menu-item index="/">学习模式</el-menu-item>
-          <el-menu-item index="/quiz">测验模式</el-menu-item>
-          <el-menu-item index="/spell">拼写模式</el-menu-item>
-          <el-menu-item index="/dict">听写模式</el-menu-item>
+          <el-menu-item index="/quiz">
+            测验模式<i v-if="store.stats && store.stats.dueReviewCount > 0" class="nav-dot" />
+          </el-menu-item>
+          <el-menu-item index="/spell">
+            拼写模式<i v-if="store.stats && store.stats.spellDueCount > 0" class="nav-dot" />
+          </el-menu-item>
+          <el-menu-item index="/dict">
+            听写模式<i v-if="store.stats && store.stats.dictDueCount > 0" class="nav-dot" />
+          </el-menu-item>
           <el-menu-item index="/practice">加练模式</el-menu-item>
           <el-menu-item index="/notebook">错题本</el-menu-item>
           <el-menu-item index="/library">单词库</el-menu-item>
@@ -26,11 +32,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useStatsStore } from './stores/stats'
 
 const route = useRoute()
 const activePath = computed(() => route.path)
+const store = useStatsStore()
+
+// 红点数据：启动加载 + 每次切页刷新（做题会改变到期状态）
+onMounted(() => store.load().catch(() => {}))
+watch(() => route.path, () => store.load().catch(() => {}))
 </script>
 
 <style>
@@ -133,6 +145,18 @@ body {
 .menu .el-menu-item {
   font-size: 15px;
   height: 100%;
+  position: relative;
+}
+
+/* 待做题红点：测验/拼写/听写有到期题时显示 */
+.nav-dot {
+  position: absolute;
+  top: 14px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--it-red);
 }
 
 .main {
