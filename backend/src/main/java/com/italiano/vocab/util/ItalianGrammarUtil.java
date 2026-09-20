@@ -63,8 +63,10 @@ public final class ItalianGrammarUtil {
     private static final Map<String, String> IRREGULAR_PP = new LinkedHashMap<>();
 
     static {
+        // avere→avuto / stare→stato / dare→dato 不收录：分词恰好规则（av+uto / st+ato / d+ato，
+        // -ere→uto / -are→ato 标准规则），2026-09-20 用户发现 avere 误标后全表核对移除。
+        // essere→stato 真不规则（规则推 essuto）保留。
         IRREGULAR_PP.put("essere", "stato");
-        IRREGULAR_PP.put("avere", "avuto");
         IRREGULAR_PP.put("fare", "fatto");
         IRREGULAR_PP.put("dire", "detto");
         IRREGULAR_PP.put("prendere", "preso");
@@ -93,8 +95,6 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PP.put("ridere", "riso");
         IRREGULAR_PP.put("succedere", "successo");
         IRREGULAR_PP.put("rompere", "rotto");
-        IRREGULAR_PP.put("dare", "dato");
-        IRREGULAR_PP.put("stare", "stato");
         // 全表排查补充（词库实存动词）
         IRREGULAR_PP.put("accendere", "acceso");
         IRREGULAR_PP.put("correggere", "corretto");
