@@ -52,7 +52,7 @@
             <SoundButton :text="w.word" />
           </div>
           <span class="head-tags">
-            <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
+            <el-tag v-if="w.irregular" size="small" :type="irregularTagType(w.irregular)">{{ w.irregular }}</el-tag>
             <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
           </span>
         </div>
@@ -81,6 +81,7 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTodayStore } from '../stores/today'
 import { posTagType } from '../utils/pos'
+import { irregularTagType } from '../utils/irregular'
 import { speakItalian } from '../utils/tts'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'

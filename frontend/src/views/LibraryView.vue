@@ -28,7 +28,7 @@
       <el-table-column prop="word" label="单词" width="150">
         <template #default="{ row }">
           <span class="table-word">{{ row.word }}</span>
-          <el-tag v-if="row.irregular" size="small" type="danger" class="irr-tag">
+          <el-tag v-if="row.irregular" size="small" :type="irregularTagType(row.irregular)" class="irr-tag">
             {{ row.irregular }}
           </el-tag>
         </template>
@@ -72,6 +72,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
+import { irregularTagType } from '../utils/irregular'
 import { useLibraryStore } from '../stores/library'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
 

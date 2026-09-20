@@ -83,7 +83,7 @@
                 <SoundButton :text="w.word" />
               </div>
               <span class="head-tags">
-                <el-tag v-if="w.irregular" size="small" type="danger">{{ w.irregular }}</el-tag>
+                <el-tag v-if="w.irregular" size="small" :type="irregularTagType(w.irregular)">{{ w.irregular }}</el-tag>
                 <el-tag size="small" :type="posTagType(w.pos)">{{ w.pos || '-' }}</el-tag>
               </span>
             </div>
@@ -107,7 +107,7 @@
       <el-card class="spell-card">
         <div class="prompt-tags">
           <span class="head-tags">
-            <el-tag v-if="spellCurrent.irregular" size="small" type="danger">{{ spellCurrent.irregular }}</el-tag>
+            <el-tag v-if="spellCurrent.irregular" size="small" :type="irregularTagType(spellCurrent.irregular)">{{ spellCurrent.irregular }}</el-tag>
             <el-tag size="small" :type="posTagType(spellCurrent.pos)">{{ spellCurrent.pos || '-' }}</el-tag>
             <el-tag size="small" type="info" effect="plain">{{ spellCurrent.category }}</el-tag>
           </span>
@@ -160,7 +160,7 @@
       <el-card class="spell-card">
         <div class="prompt-tags">
           <span class="head-tags">
-            <el-tag v-if="dictCurrent.irregular" size="small" type="danger">{{ dictCurrent.irregular }}</el-tag>
+            <el-tag v-if="dictCurrent.irregular" size="small" :type="irregularTagType(dictCurrent.irregular)">{{ dictCurrent.irregular }}</el-tag>
             <el-tag size="small" :type="posTagType(dictCurrent.pos)">{{ dictCurrent.pos || '-' }}</el-tag>
             <el-tag size="small" type="info" effect="plain">{{ dictCurrent.category }}</el-tag>
           </span>
@@ -264,7 +264,7 @@
       <el-card class="spell-card">
         <div class="prompt-tags">
           <span class="head-tags">
-            <el-tag v-if="irrCurrent.irregular" size="small" type="danger">{{ irrCurrent.irregular }}</el-tag>
+            <el-tag v-if="irrCurrent.irregular" size="small" :type="irregularTagType(irrCurrent.irregular)">{{ irrCurrent.irregular }}</el-tag>
             <el-tag size="small" :type="posTagType(irrCurrent.pos)">{{ irrCurrent.pos || '-' }}</el-tag>
             <el-tag size="small" type="info" effect="plain">{{ irrCurrent.category }}</el-tag>
           </span>
@@ -343,6 +343,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'v
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { irregularTagType } from '../utils/irregular'
 import { speakItalian } from '../utils/tts'
 import SoundButton from '../components/SoundButton.vue'
 

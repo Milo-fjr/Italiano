@@ -49,7 +49,7 @@
       <el-card v-if="current" class="spell-card">
         <div class="prompt-tags">
           <span class="head-tags">
-            <el-tag v-if="current.irregular" size="small" type="danger">{{ current.irregular }}</el-tag>
+            <el-tag v-if="current.irregular" size="small" :type="irregularTagType(current.irregular)">{{ current.irregular }}</el-tag>
             <el-tag size="small" :type="posTagType(current.pos)">{{ current.pos || '-' }}</el-tag>
             <el-tag size="small" type="info" effect="plain">{{ current.category }}</el-tag>
           </span>
@@ -112,6 +112,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import { posTagType } from '../utils/pos'
+import { irregularTagType } from '../utils/irregular'
 import { speakItalian } from '../utils/tts'
 import SoundButton from '../components/SoundButton.vue'
 

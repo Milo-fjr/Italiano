@@ -331,9 +331,8 @@ public final class ItalianGrammarUtil {
             if (IRREGULAR_PRESENT.containsKey(infinitive)) {
                 irregulars.add("现在时不规则");
             }
-            if (ISC_VERBS.contains(infinitive)) {
-                irregulars.add("现在时不规则"); // -isc 型：capisco 而非 capo
-            }
+            // -isc 型（capisco/pulisco 等）是 -ire 变位的规则子模式（2026-09-20 用户拍板不标"不规则"）；
+            // 完全规则的 -ire 动词改标变位模式（见下方 -ire 分支）
             if (IRREGULAR_PP.containsKey(infinitive)) {
                 irregulars.add("近过去时不规则");
             }
@@ -348,6 +347,11 @@ public final class ItalianGrammarUtil {
             }
             // 拼写音变类（-care/-gare 加 h、-ciare/-giare 去 i、-iare 避免双 i）不再打标签：
             // 卡片上冗余信息，且 io 形式均为规则变化（cerco/pago/studio），无附加题价值
+            // -ire 动词的变位模式归属原形推不出（-isc 是新词默认但常用词两派都多），
+            // 标注供记忆；仅完全规则者标（真不规则的 -ire 已有红标，不叠加）
+            if (infinitive.endsWith("ire")) {
+                return ISC_VERBS.contains(infinitive) ? "-isc 型" : "普通型";
+            }
             return null;
         }
         // 名词：复数特性与性别标签可叠加（顿号连接）
