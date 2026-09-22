@@ -63,5 +63,7 @@ export default {
   practiceSpellAnswer: (id, data) => http.post(`/practice/${id}/spell-answer`, data),
   practiceDictCheckMeaning: (id, data) => http.post(`/practice/${id}/dict-check-meaning`, data),
   practiceDictAnswer: (id, data) => http.post(`/practice/${id}/dict-answer`, data),
+  practiceIrregularCheckMeaning: (id, data) => http.post(`/practice/${id}/irregular-check-meaning`, data),
+  practiceIrregularCheckPerson: (id, data) => http.post(`/practice/${id}/irregular-check-person`, data),
   practiceIrregularAnswer: (id, data) => http.post(`/practice/${id}/irregular-answer`, data)
 }

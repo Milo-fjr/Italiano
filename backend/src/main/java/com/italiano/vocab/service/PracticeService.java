@@ -3,8 +3,10 @@ package com.italiano.vocab.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.italiano.vocab.dto.DictWordDTO;
+import com.italiano.vocab.dto.IrregularAnswerDTO;
 import com.italiano.vocab.dto.IrregularPointDTO;
 import com.italiano.vocab.dto.IrregularWordDTO;
+import com.italiano.vocab.dto.PersonTenseOptionDTO;
 import com.italiano.vocab.dto.SpellWordDTO;
 import com.italiano.vocab.dto.TodayWordDTO;
 import com.italiano.vocab.entity.Word;
@@ -21,19 +23,24 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * 加练模式：纯练习，不碰任何 SRS 盒子/完成次数。
- * 四题型：quiz（认识）、spell（拼写）、dict（听写）、irregular（不规则变化专考）。
+ * 四题型：quiz（认识）、spell（拼写）、dict（听写）、irregular（变化专考：听辨 + 不规则拼写）。
  * 选词范围：已学过的词（extract_count > 0），随机抽取。
  * 答错只进错题本，答对什么都不记——答到一半退出也没记录（零持久化负担）。
  * <p>
- * 不规则题型：考点由语法引擎枚举（例外表 ∪ -isc 型，逐人称与规则推导比对过滤规则形式），
- * 题面不含答案；判分时现场推导正确答案——DB 手动编辑值（变位/复数/形容词 JSON）优先，
- * 引擎推导兜底。未完成时不考（用户尚未学习，学后补，见 AGENTS.md TODO）。
- * 不规则变化已从拼写/听写/加练拼写/加练听写的附加题中撤下，统一由本题型专考。
+ * 变化专考（2026-09-22 听力改造，合并原「变位听写」构想）：题面藏词听形式——
+ * 流程 = 听形式 → 选释义（4 选 1）→ 选人称时态（4 选 1，仅 present/futuro 且无同形歧义）→ 拼写；
+ * 规则形式以「纯听辨点」入池（每词随机 1 个未被考点占用的时态人称，选对即过不拼——
+ * 规则变位拼写无产出价值，练的是音→词尾解码）；同形形式（如 essere 的 sono=io/loro）不出选人称关。
+ * 不规则考点由语法引擎枚举（例外表 ∪ -isc 型，逐人称与规则推导比对过滤规则形式）；
+ * 判分现场推导——DB 手动编辑值（变位/复数/形容词 JSON）优先，引擎推导兜底。
+ * 未完成时不考（用户尚未学习，学后补，见 AGENTS.md TODO）。
  */
 @Service
 @RequiredArgsConstructor
@@ -42,6 +49,9 @@ public class PracticeService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
     private final ObjectMapper objectMapper;
+
+    /** 选人称时态选项池（仅两种时态可听辨人称；未完成时未学不进池，学后随考点枚举一起补） */
+    private static final Map<String, String> TENSE_LABELS = Map.of("present", "现在时", "futuro", "简单将来时");
 
     /** 从已学词里随机抽 count 个，按题型组装 DTO */
     public Map<String, Object> draw(String type, int count) {
@@ -58,7 +68,7 @@ public class PracticeService {
         // 随机打乱
         Collections.shuffle(learned);
 
-        // 不规则题型：只有带不规则考点的词才有题，从全量已学词里筛够 count 个（整词入队，考点全出）
+        // 变化专考：动词必有听辨点（规则形式采样），从全量已学词里筛够 count 个（整词入队，考点全出）
         if ("irregular".equals(type)) {
             Map<Long, Word> wordById = wordMapper.selectBatchIds(
                             learned.stream().map(WordProgress::getWordId).toList()).stream()
@@ -79,7 +89,7 @@ public class PracticeService {
                 }
             }
             if (words.isEmpty()) {
-                return emptyResult(type, "已学词里还没有带不规则变化的词。");
+                return emptyResult(type, "已学词里还没有可考的变化形式。");
             }
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("total", words.size());
@@ -185,25 +195,40 @@ public class PracticeService {
     }
 
     /**
-     * 不规则加练判分：题目接口不含答案，此处按考点描述现场推导正确答案比对。
-     * 答错只进错题本，不碰任何 SRS 盒子/次数；返回正确答案供结果对照。
+     * 变化专考判分：题面藏词，三段判定——释义 + 人称时态（personChoice/listenOnly 点）+ 拼写（listenOnly 点无）。
+     * 考点描述与所选组合由请求回传，正确答案现场推导——DB 手动编辑值优先，引擎兜底。
+     * 答错只进错题本，不碰任何 SRS 盒子/次数；返回各关对错 + 正确答案供结果对照。
      */
     @Transactional
-    public Map<String, Object> answerIrregular(Long wordId, String type, String person,
-                                               String contextNoun, String contextGender,
-                                               Boolean contextPlural, String input) {
+    public Map<String, Object> answerIrregular(Long wordId, IrregularAnswerDTO body) {
         Word w = wordMapper.selectById(wordId);
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
         }
-        String answer = resolveIrregularAnswer(w, type, person, contextNoun, contextGender, contextPlural);
-        boolean passed = answer != null && matchesAny(input, answer);
+        String type = body.getType();
+        String person = body.getPerson();
+
+        boolean meaningCorrect = matchMeaning(body.getMeaning(), w.getMeaning());
+        boolean personChoice = Boolean.TRUE.equals(body.getPersonChoice());
+        boolean listenOnly = Boolean.TRUE.equals(body.getListenOnly());
+        boolean personCorrect = true;
+        if (personChoice || listenOnly) {
+            personCorrect = type != null && type.equals(body.getChosenTense())
+                    && person != null && person.equals(body.getChosenPerson());
+        }
+        String answer = resolveForm(w, type, person,
+                body.getContextNoun(), body.getContextGender(), body.getContextPlural());
+        boolean wordCorrect = listenOnly || (answer != null && matchesAny(body.getInput(), answer));
+        boolean passed = meaningCorrect && personCorrect && wordCorrect;
         if (!passed) {
             markNotebook(wordId);
         }
 
         Map<String, Object> r = new LinkedHashMap<>();
         r.put("passed", passed);
+        r.put("meaningCorrect", meaningCorrect);
+        r.put("personCorrect", personCorrect);
+        r.put("wordCorrect", wordCorrect);
         r.put("answer", answer);
         r.put("word", w.getWord());
         r.put("meaning", w.getMeaning());
@@ -213,11 +238,8 @@ public class PracticeService {
         return r;
     }
 
-    /**
-     * 听写第一关释义预检（与 DictService.checkMeaning 同口径）：只判断不落库、不返回正确答案，
-     * 选错由前端拿所选释义走正式 dict-answer 判错。
-     */
-    public boolean checkDictMeaning(Long wordId, String meaningInput) {
+    /** 听力第一关释义预检（听写/变化专考共用口径）：只判断不落库、不返回正确答案，选错由前端走正式判分 */
+    public boolean checkWordMeaning(Long wordId, String meaningInput) {
         Word w = wordMapper.selectById(wordId);
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
@@ -225,11 +247,17 @@ public class PracticeService {
         return matchMeaning(meaningInput, w.getMeaning());
     }
 
+    /** 「选人称时态」预检：所选组合与考点标识比对，只判断不落库 */
+    public boolean checkIrregularPerson(String type, String person, String chosenTense, String chosenPerson) {
+        return type != null && type.equals(chosenTense) && person != null && person.equals(chosenPerson);
+    }
+
     // ===== 不规则考点枚举与答案推导 =====
 
     /**
-     * 枚举一个词的全部不规则考点（不含答案）：
-     * - 动词：现在时逐人称、过去分词、简单将来时逐人称（与规则推导比对，规则形式不考）
+     * 枚举一个词的全部考点（不含判分答案，含听力题面字段）：
+     * - 动词：现在时逐人称、过去分词、简单将来时逐人称（与规则推导比对，规则形式不考；
+     *   present/futuro 无同形歧义者先出「选人称时态」关）+ 1 个纯听辨点（规则形式随机采样）
      * - 名词：不规则复数（-ca/-ga/-cia/-gia 拼写陷阱词不在此列，规则可推导）
      * - 形容词：bello 型定语形式（BELLO_PRACTICE 语境名词）、-co/-go 硬软音阳性复数、不变形容词复数
      * 不考：未完成时（未学）、阴阳性特殊/性别需记（非变形考点）
@@ -243,16 +271,21 @@ public class PracticeService {
             String infinitive = reflexive ? lw.substring(0, lw.length() - 2) + "e" : lw;
             addPersonPoints(points, "present", "现在时",
                     ItalianGrammarUtil.irregularPresent(infinitive),
-                    ItalianGrammarUtil.regularPresent(infinitive), reflexive);
+                    ItalianGrammarUtil.regularPresent(infinitive), reflexive, w);
             if (tag != null && tag.contains("近过去时不规则")) {
-                points.add(point("pp", "过去分词"));
+                IrregularPointDTO pp = point("pp", "过去分词");
+                fillListeningFields(pp, w);
+                points.add(pp);
             }
             addPersonPoints(points, "futuro", "简单将来时",
                     ItalianGrammarUtil.irregularFuturo(infinitive),
-                    ItalianGrammarUtil.regularFuturo(infinitive), reflexive);
+                    ItalianGrammarUtil.regularFuturo(infinitive), reflexive, w);
+            addListenOnlyPoint(points, w);
         } else if (ItalianGrammarUtil.isNounPos(w.getPos())) {
             if (tag != null && tag.contains("不规则复数")) {
-                points.add(point("plural", "复数形式"));
+                IrregularPointDTO p = point("plural", "复数形式");
+                fillListeningFields(p, w);
+                points.add(p);
             }
         } else if (w.getPos() != null && w.getPos().contains("agg.")) {
             if (tag != null && tag.contains("冠词式变化")) {
@@ -268,20 +301,25 @@ public class PracticeService {
                     p.setContextMeaning(ctx[1]);
                     p.setContextGender(ctx[2]);
                     p.setContextPlural(plural);
+                    fillListeningFields(p, w);
                     points.add(p);
                 }
             } else if (ItalianGrammarUtil.isInvariantAdjective(lw)) {
-                points.add(point("adjInv", "复数形式（性数不变）"));
+                IrregularPointDTO p = point("adjInv", "复数形式（性数不变）");
+                fillListeningFields(p, w);
+                points.add(p);
             } else if (tag != null && tag.contains("不规则变化")) {
-                points.add(point("adjMp", "阳性复数"));
+                IrregularPointDTO p = point("adjMp", "阳性复数");
+                fillListeningFields(p, w);
+                points.add(p);
             }
         }
         return points;
     }
 
-    /** 动词逐人称筛考点：不规则形式与规则推导相同的人称不考（prendere 整表、andare 的 noi/voi 被过滤） */
-    private static void addPersonPoints(List<IrregularPointDTO> points, String type, String tenseLabel,
-                                        String[] irregular, String[] regular, boolean reflexive) {
+    /** 动词逐人称筛考点：不规则形式与规则推导相同的人称不考（prendere 整表、andare 的 noi/voi 被过滤）；同形歧义降级见 fillListeningFields */
+    private void addPersonPoints(List<IrregularPointDTO> points, String type, String tenseLabel,
+                                 String[] irregular, String[] regular, boolean reflexive, Word w) {
         if (irregular == null || regular == null) {
             return;
         }
@@ -293,13 +331,110 @@ public class PracticeService {
                 if (reflexive) {
                     p.setLabel(p.getLabel() + "（含自反代词）");
                 }
+                fillListeningFields(p, w);
                 points.add(p);
             }
         }
     }
 
-    /** 现场推导考点正确答案：DB 手动编辑值（变位/复数/形容词 JSON）优先，缺失回退引擎推导 */
-    private String resolveIrregularAnswer(Word w, String type, String person,
+    /**
+     * 填充听力题面字段：播报形式 + present/futuro 的「选人称时态」关判定。
+     * 同形歧义（该形式在同一时态内与其他人称相同，如 essere 的 sono=io/loro）→ 不出选人称关，
+     * 降级为听形式直接拼写（形式照考，只是人称不可辨）。
+     */
+    private void fillListeningFields(IrregularPointDTO p, Word w) {
+        p.setForm(resolveForm(w, p.getType(), p.getPerson(),
+                p.getContextNoun(), p.getContextGender(), p.getContextPlural()));
+        if ("present".equals(p.getType()) || "futuro".equals(p.getType())) {
+            boolean homonym = isHomonymForm(w, p.getType(), p.getPerson(), p.getForm());
+            p.setPersonChoice(!homonym);
+            if (!homonym) {
+                p.setPersonTenseOptions(buildPersonTenseOptions(p.getType(), p.getPerson()));
+            }
+        }
+    }
+
+    /** 形式在该时态内是否与其他人称同形（form 已解析传入，避免重复推导） */
+    private boolean isHomonymForm(Word w, String tense, String person, String form) {
+        if (form == null || form.isBlank()) {
+            return false;
+        }
+        for (String other : ItalianGrammarUtil.PERSONS) {
+            if (other.equals(person)) {
+                continue;
+            }
+            if (form.equals(resolveForm(w, tense, other, null, null, null))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 纯听辨点：从未被本词考点占用的 (现在时/将来时, 人称) 组合里随机抽 1 个（排除同形歧义），
+     * 听形式选对人称时态即过、不拼写——规则变位拼写无产出价值，练的是音→词尾解码。
+     * 整表不规则的词（potere/essere 的 futuro 等）候选耗尽则自然不出。
+     */
+    private void addListenOnlyPoint(List<IrregularPointDTO> points, Word w) {
+        Set<String> occupied = points.stream()
+                .filter(p -> "present".equals(p.getType()) || "futuro".equals(p.getType()))
+                .map(p -> p.getType() + "|" + p.getPerson())
+                .collect(Collectors.toSet());
+        List<String[]> candidates = new ArrayList<>();
+        for (String tense : TENSE_LABELS.keySet()) {
+            for (String person : ItalianGrammarUtil.PERSONS) {
+                if (occupied.contains(tense + "|" + person)) {
+                    continue;
+                }
+                String form = resolveForm(w, tense, person, null, null, null);
+                if (form == null || form.isBlank() || "—".equals(form) || isHomonymForm(w, tense, person, form)) {
+                    continue;
+                }
+                candidates.add(new String[]{tense, person});
+            }
+        }
+        if (candidates.isEmpty()) {
+            return;
+        }
+        String[] pick = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
+        IrregularPointDTO p = point(pick[0], TENSE_LABELS.get(pick[0]) + " · " + pick[1]);
+        p.setPerson(pick[1]);
+        p.setListenOnly(true);
+        fillListeningFields(p, w);
+        points.add(p);
+    }
+
+    /** 「选人称时态」4 选 1：正确项 + 3 个随机干扰组合，整体打乱（不含正确项标识） */
+    private List<PersonTenseOptionDTO> buildPersonTenseOptions(String correctTense, String correctPerson) {
+        List<PersonTenseOptionDTO> options = new ArrayList<>();
+        options.add(tenseOption(correctTense, correctPerson));
+        List<String[]> pool = new ArrayList<>();
+        for (Map.Entry<String, String> e : TENSE_LABELS.entrySet()) {
+            for (String person : ItalianGrammarUtil.PERSONS) {
+                if (e.getKey().equals(correctTense) && person.equals(correctPerson)) {
+                    continue;
+                }
+                pool.add(new String[]{e.getKey(), person});
+            }
+        }
+        Collections.shuffle(pool);
+        for (int i = 0; i < Math.min(3, pool.size()); i++) {
+            options.add(tenseOption(pool.get(i)[0], pool.get(i)[1]));
+        }
+        Collections.shuffle(options);
+        return options;
+    }
+
+    private static PersonTenseOptionDTO tenseOption(String tense, String person) {
+        PersonTenseOptionDTO o = new PersonTenseOptionDTO();
+        o.setTense(tense);
+        o.setPerson(person);
+        o.setLabel(TENSE_LABELS.get(tense) + " · " + person);
+        return o;
+    }
+
+    /** 现场推导考点正确答案（播报文本同源）：DB 手动编辑值（变位/复数/形容词 JSON）优先，缺失回退引擎推导 */
+    private String resolveForm(Word w, String type, String person,
                                           String contextNoun, String contextGender, Boolean contextPlural) {
         boolean plural = Boolean.TRUE.equals(contextPlural);
         return switch (type) {
@@ -413,6 +548,7 @@ public class PracticeService {
         dto.setMeaning(w.getMeaning());
         dto.setCategory(w.getCategory());
         dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
+        dto.setMeaningOptions(buildIrregularMeaningOptions(w));
         dto.setPoints(points);
         return dto;
     }
@@ -454,18 +590,62 @@ public class PracticeService {
     private List<String> buildMeaningOptions(Word w) {
         List<String> options = new ArrayList<>();
         options.add(w.getMeaning());
-        List<Word> candidates = wordMapper.selectList(new LambdaQueryWrapper<Word>()
+        appendMeaningDistractors(options, wordMapper.selectList(new LambdaQueryWrapper<Word>()
                 .select(Word::getMeaning)
                 .ne(Word::getId, w.getId())
-                .last("ORDER BY RAND() LIMIT 20"));
+                .last("ORDER BY RAND() LIMIT 20")));
+        Collections.shuffle(options);
+        return options;
+    }
+
+    /**
+     * 变化专考听力第一关释义 4 选 1：同词性优先取干扰项（动词题从动词抽，听辨才有辨析价值），
+     * 同词性不足 4 个回退全库随机；归一化去重同上。
+     */
+    private List<String> buildIrregularMeaningOptions(Word w) {
+        List<String> options = new ArrayList<>();
+        options.add(w.getMeaning());
+        String prefix = meaningPoolPrefix(w);
+        if (prefix != null) {
+            appendMeaningDistractors(options, wordMapper.selectList(new LambdaQueryWrapper<Word>()
+                    .select(Word::getMeaning)
+                    .ne(Word::getId, w.getId())
+                    .likeRight(Word::getPos, prefix)
+                    .last("ORDER BY RAND() LIMIT 20")));
+        }
+        if (options.size() < 4) {
+            appendMeaningDistractors(options, wordMapper.selectList(new LambdaQueryWrapper<Word>()
+                    .select(Word::getMeaning)
+                    .ne(Word::getId, w.getId())
+                    .last("ORDER BY RAND() LIMIT 20")));
+        }
+        Collections.shuffle(options);
+        return options;
+    }
+
+    /** 同词性干扰项查询前缀：动词 v* / 形容词 agg* / 名词 s* */
+    private static String meaningPoolPrefix(Word w) {
+        String pos = w.getPos() == null ? "" : w.getPos();
+        if (pos.startsWith("v")) {
+            return "v";
+        }
+        if (pos.contains("agg")) {
+            return "agg";
+        }
+        if (ItalianGrammarUtil.isNounPos(w.getPos())) {
+            return "s";
+        }
+        return null;
+    }
+
+    /** 追加释义干扰项：归一化后与已有选项及彼此不重复，补到 4 个为止 */
+    private void appendMeaningDistractors(List<String> options, List<Word> candidates) {
         for (Word c : candidates) {
-            if (options.size() >= 4) break;
+            if (options.size() >= 4) return;
             String m = c.getMeaning();
             boolean dup = options.stream().anyMatch(o -> normMeaning(o).equals(normMeaning(m)));
             if (!dup) options.add(m);
         }
-        Collections.shuffle(options);
-        return options;
     }
 
     private static boolean matchMeaning(String input, String answer) {

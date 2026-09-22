@@ -259,7 +259,7 @@
       </el-card>
     </div>
 
-    <!-- 不规则变化（irregular）：单卡逐考点，单词即题面 -->
+    <!-- 变化专考（irregular）：题面藏词，听形式 → 选释义 → 选人称时态 → 不规则拼写（纯听辨点选对即过） -->
     <div v-else-if="selectedType === 'irregular' && irrCurrent" v-loading="loading" class="spell-stage">
       <el-card class="spell-card">
         <div class="prompt-tags">
@@ -269,48 +269,142 @@
             <el-tag size="small" type="info" effect="plain">{{ irrCurrent.category }}</el-tag>
           </span>
         </div>
-        <div class="word-line">
-          <span class="word">{{ irrCurrent.word }}</span>
-          <SoundButton :text="irrCurrent.word" />
+
+        <!-- 听音区：大喇叭播放（词面与释义藏起，听音辨词辨形式） -->
+        <div class="audio-prompt">
+          <button class="play-btn" type="button" title="播放形式发音" @click="playIrrForm">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+          </button>
+          <span class="play-hint">点击喇叭或按空格播放 · 可反复听</span>
         </div>
-        <div class="meaning-prompt">{{ irrCurrent.meaning }}</div>
-        <div class="point-label">{{ irrCurrent.point.label }}</div>
-        <div v-if="irrCurrent.point.type === 'bello'" class="bello-context">
-          ___ {{ irrCurrent.point.contextNoun }}（{{ irrCurrent.point.contextMeaning }}{{ irrCurrent.point.contextPlural ? '，复数' : '' }}）
+
+        <div class="stage-hint">
+          <template v-if="irrStage === 1">先听发音，选出这个形式属于哪个词</template>
+          <template v-else-if="irrStage === 2 && irrCurrent.point.listenOnly">听辨：这个形式是什么人称和时态？</template>
+          <template v-else-if="irrStage === 2">释义选对了！这个形式是什么人称和时态？</template>
+          <template v-else>听写：写出听到的形式</template>
         </div>
-        <div class="hint-line">写出上方考点的正确形式（重音符号可不带；多形式任写其一）</div>
-        <div class="inputs">
+
+        <!-- 第一关：释义 4 选 1 -->
+        <div v-if="irrStage === 1 && !irrResult" class="inputs">
           <div class="input-item">
-            <label class="input-label">{{ irrCurrent.point.label }} <span class="label-hint">（0 不会 · Enter 提交）</span></label>
+            <label class="input-label">这个形式属于哪个词？ <span class="label-hint">（1-4 选释义 · 0 不会 · Enter 确认）</span></label>
+            <div class="meaning-options">
+              <button
+                v-for="(opt, idx) in irrCurrent.meaningOptions"
+                :key="opt"
+                type="button"
+                class="option-btn"
+                :class="{ selected: pickedMeaning === opt }"
+                @click="pickedMeaning = opt"
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第二关：人称时态 4 选 1 -->
+        <div v-else-if="irrStage === 2 && !irrResult" class="inputs">
+          <div class="input-item">
+            <label class="input-label">中文释义（已选对）</label>
+            <div class="meaning-confirmed">{{ pickedMeaning }}</div>
+          </div>
+          <div class="input-item">
+            <label class="input-label">这个形式的人称和时态？ <span class="label-hint">（1-4 选 · 0 不会 · Enter 确认）</span></label>
+            <div class="meaning-options">
+              <button
+                v-for="(opt, idx) in irrCurrent.point.personTenseOptions"
+                :key="opt.label"
+                type="button"
+                class="option-btn"
+                :class="{ selected: pickedTense === opt }"
+                @click="pickedTense = opt"
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt.label }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第三关：拼写（纯听辨点无此关） -->
+        <div v-else-if="!irrResult" class="inputs">
+          <div class="input-item">
+            <label class="input-label">中文释义（已选对）</label>
+            <div class="meaning-confirmed">{{ pickedMeaning }}</div>
+          </div>
+          <div v-if="irrCurrent.point.personChoice" class="input-item">
+            <label class="input-label">人称时态（已选对）</label>
+            <div class="meaning-confirmed">{{ pickedTense.label }}</div>
+          </div>
+          <div v-if="irrCurrent.point.type === 'bello'" class="bello-context">
+            ___ {{ irrCurrent.point.contextNoun }}（{{ irrCurrent.point.contextMeaning }}{{ irrCurrent.point.contextPlural ? '，复数' : '' }}）
+          </div>
+          <div v-if="irrCurrent.point.label && !irrCurrent.point.personChoice" class="point-label">{{ irrCurrent.point.label }}</div>
+          <div class="input-item">
+            <label class="input-label">听到的形式 <span class="label-hint">（空格重听 · 0 不会 · Enter 提交）</span></label>
             <el-input
               ref="wordInputRef"
               v-model="inputWord"
               size="large"
-              placeholder="输入正确形式（重音符号可不带）"
+              placeholder="写出听到的形式（重音符号可不带）"
               :disabled="!!irrResult"
-              @keydown.enter="irrSubmit(false)"
+              @keydown.enter="irrSpellSubmit(false)"
             />
           </div>
         </div>
+
+        <!-- 结果对照：词 → 释义 → 人称时态 → 形式 -->
         <div v-if="irrResult" class="result">
           <div class="verdict" :class="irrResult.passed ? 'ok' : 'bad'">
-            {{ irrResult.passed ? '✓ 答对了' : gaveUp ? '✗ 不会' : '✗ 答错了' }}
+            {{ irrResult.passed ? '✓ 答对了' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
           </div>
-          <div class="compare-row" :class="irrResult.passed ? 'ok' : 'bad'">
-            <span class="compare-label">{{ irrCurrent.point.label }}</span>
-            <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
+          <div class="compare-row">
+            <span class="compare-label">单词</span>
+            <span class="compare-answer">
+              {{ irrResult.word }}
+              <SoundButton :text="irrResult.word" small />
+            </span>
+          </div>
+          <div class="compare-row" :class="irrResult.meaningCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">中文释义</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : pickedMeaning || '（未选）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">{{ irrResult.meaning }}</span>
+          </div>
+          <div v-if="irrHadPersonChoice" class="compare-row" :class="irrResult.personCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">人称时态</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : pickedTense ? pickedTense.label : '（未选）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">{{ irrCurrent.point.label }}</span>
+          </div>
+          <div v-if="!irrCurrent.point.listenOnly" class="compare-row" :class="irrResult.wordCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">形式</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : irrReachedSpell ? (inputWord || '（未输入）') : '（未到拼写）' }}</span>
             <span class="arrow">→</span>
             <span class="compare-answer">
               {{ irrResult.answer }}
               <SoundButton :text="(irrResult.answer || '').split('/')[0]" small />
             </span>
           </div>
+          <div v-else class="compare-row">
+            <span class="compare-label">形式</span>
+            <span class="compare-answer">
+              {{ irrResult.answer }}
+              <SoundButton :text="(irrResult.answer || '').split('/')[0]" small />
+            </span>
+          </div>
         </div>
+
         <div class="card-btns">
           <el-button v-if="!irrResult" type="danger" plain round size="large" :loading="submitting" @click="irrGiveUp">
             不会（0）
           </el-button>
-          <el-button v-if="!irrResult" type="primary" round size="large" :loading="submitting" @click="irrSubmit(false)">
+          <el-button v-if="!irrResult && irrStage === 1" type="primary" round size="large" :loading="submitting" @click="confirmIrrMeaning">
+            确认释义（Enter）
+          </el-button>
+          <el-button v-else-if="!irrResult && irrStage === 2" type="primary" round size="large" :loading="submitting" @click="confirmIrrPerson">
+            确认人称时态（Enter）
+          </el-button>
+          <el-button v-else-if="!irrResult" type="primary" round size="large" :loading="submitting" @click="irrSpellSubmit(false)">
             提交（Enter）
           </el-button>
           <el-button v-else type="primary" round size="large" @click="irrNext">
@@ -351,7 +445,7 @@ const typeOptions = [
   { value: 'quiz', label: '认识翻卡', icon: '🔄', desc: '意→中翻卡核对，练眼熟' },
   { value: 'spell', label: '中→意拼写', icon: '✍️', desc: '给中文拼意语，练手速' },
   { value: 'dict', label: '听音写词', icon: '🎧', desc: '先选释义再拼写，练听力' },
-  { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '专练变位/复数/变形，一词多考点' }
+  { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '听形式辨人称时态，不规则形式专拼，一词多考点' }
 ]
 
 const loading = ref(false)
@@ -399,14 +493,21 @@ const dictIsReflexive = computed(
   () => !!dictCurrent.value && (dictCurrent.value.pos || '').startsWith('v.rifl')
 )
 
-// irregular 专属：整词入队后按考点摊平成逐题队列（一个词的不规则点一次练全）
+// irregular 专属：整词入队后按考点摊平成逐题队列（一词多考点一次练全；题面藏词听形式）
 const irregularQueue = ref([])
 const irrIndex = ref(0)
 const irrResult = ref(null)
+const irrStage = ref(1) // 1=选释义 2=选人称时态 3=拼写
+const pickedTense = ref(null)
 const irrCurrent = computed(() => {
   if (selectedType.value !== 'irregular') return null
   return irregularQueue.value[irrIndex.value] || null
 })
+const irrHadPersonChoice = computed(() => {
+  const p = irrCurrent.value?.point
+  return !!(p && (p.personChoice || p.listenOnly))
+})
+const irrReachedSpell = computed(() => irrStage.value === 3)
 
 async function start() {
   loading.value = true
@@ -439,8 +540,10 @@ async function start() {
     dictStage.value = 1
     pickedMeaning.value = ''
     irrResult.value = null
+    irrStage.value = 1
+    pickedTense.value = null
     gaveUp.value = false
-    if (selectedType.value === 'spell' || selectedType.value === 'irregular') {
+    if (selectedType.value === 'spell') {
       focusWord()
     }
   } finally {
@@ -511,13 +614,77 @@ function spellNext() {
   focusWord()
 }
 
-// ===== Irregular（不规则变化专考）=====
-async function irrSubmit(gaveUpFlag = false) {
-  if (!irrCurrent.value || irrResult.value || submitting.value) return
-  if (!gaveUpFlag && !inputWord.value.trim()) {
-    ElMessage.warning('还没输入呢：写下答案再按 Enter，或点「不会」')
+// ===== Irregular（变化专考：听形式 → 选释义 → 选人称时态 → 不规则拼写）=====
+function playIrrForm() {
+  const f = irrCurrent.value?.point?.form
+  if (f) speakItalian(f.split('/')[0]) // 多形式（colleghi/colleghe）播第一个
+}
+
+/** 第一关：确认释义——选对进下一关，选错整题判错（预检不落库，判错走正式 irregular-answer） */
+async function confirmIrrMeaning() {
+  if (irrStage.value !== 1 || !irrCurrent.value || irrResult.value || submitting.value) return
+  if (!pickedMeaning.value) {
+    ElMessage.warning('先按 1-4 选一个释义')
     return
   }
+  submitting.value = true
+  try {
+    const r = await api.practiceIrregularCheckMeaning(irrCurrent.value.wordId, { meaning: pickedMeaning.value })
+    if (r.correct) {
+      irrStage.value = irrHadPersonChoice.value ? 2 : 3
+      if (irrStage.value === 3) focusWord()
+    } else {
+      await irrFinalize()
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+/** 第二关：确认人称时态——纯听辨点选对即判过；拼写点选对进拼写关，选错整题判错 */
+async function confirmIrrPerson() {
+  if (irrStage.value !== 2 || !irrCurrent.value || irrResult.value || submitting.value) return
+  if (!pickedTense.value) {
+    ElMessage.warning('先按 1-4 选一个人称时态')
+    return
+  }
+  submitting.value = true
+  try {
+    const p = irrCurrent.value.point
+    if (p.listenOnly) {
+      await irrFinalize()
+    } else {
+      const r = await api.practiceIrregularCheckPerson(irrCurrent.value.wordId, {
+        type: p.type,
+        person: p.person,
+        chosenTense: pickedTense.value.tense,
+        chosenPerson: pickedTense.value.person
+      })
+      if (r.correct) {
+        irrStage.value = 3
+        focusWord()
+      } else {
+        await irrFinalize()
+      }
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+/** 第三关：拼写提交（纯听辨点无此关） */
+async function irrSpellSubmit(gaveUpFlag = false) {
+  if (!irrCurrent.value || irrStage.value !== 3 || irrResult.value || submitting.value) return
+  if (!gaveUpFlag && !inputWord.value.trim()) {
+    ElMessage.warning('还没写呢：写下听到的形式再按 Enter，或点「不会」')
+    return
+  }
+  await irrFinalize(gaveUpFlag)
+}
+
+/** 正式判分（各关收口共用）：释义 + 人称时态（若有）+ 拼写（听辨点无），答错进错题本 */
+async function irrFinalize(gaveUpFlag = false) {
+  if (!irrCurrent.value) return
   submitting.value = true
   try {
     const p = irrCurrent.value.point
@@ -527,11 +694,17 @@ async function irrSubmit(gaveUpFlag = false) {
       contextNoun: p.contextNoun,
       contextGender: p.contextGender,
       contextPlural: p.contextPlural,
-      input: inputWord.value
+      personChoice: irrHadPersonChoice.value,
+      listenOnly: !!p.listenOnly,
+      chosenTense: pickedTense.value?.tense || '',
+      chosenPerson: pickedTense.value?.person || '',
+      meaning: pickedMeaning.value || '',
+      input: irrStage.value === 3 ? inputWord.value : ''
     })
     gaveUp.value = gaveUpFlag
-    // 多形式（colleghi/colleghe）读第一个
-    speakItalian((irrResult.value.answer || '').split('/')[0])
+    if (irrResult.value.answer) {
+      speakItalian(irrResult.value.answer.split('/')[0])
+    }
     if (irrResult.value.passed) rightCount.value++
     else wrongCount.value++
   } finally {
@@ -540,7 +713,7 @@ async function irrSubmit(gaveUpFlag = false) {
 }
 
 function irrGiveUp() {
-  irrSubmit(true)
+  irrFinalize(true)
 }
 
 function irrNext() {
@@ -548,8 +721,10 @@ function irrNext() {
   irrResult.value = null
   gaveUp.value = false
   inputWord.value = ''
+  pickedMeaning.value = ''
+  pickedTense.value = null
+  irrStage.value = 1
   irrIndex.value++
-  focusWord()
 }
 
 // ===== Dict =====
@@ -700,10 +875,49 @@ function onKeydown(e) {
     spellGiveUp()
   }
 
-  // 不规则：0 = 不会（Enter 提交由输入框 @keydown.enter 处理）
-  if (e.key === '0' && selectedType.value === 'irregular' && irrCurrent.value && !irrResult.value) {
-    e.preventDefault()
-    irrGiveUp()
+  // 不规则（变化专考）：阶段化——阶段1 1-4 选释义 + Enter；阶段2 1-4 选人称时态 + Enter；
+  // 阶段3 0 不会（Enter 提交由输入框 @keydown.enter 处理）；空格播放三关通用
+  if (selectedType.value === 'irregular' && irrCurrent.value && !irrResult.value) {
+    if (e.key === ' ') {
+      const el = document.activeElement
+      const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value.trim().length > 0
+      if (typing) return
+      e.preventDefault()
+      playIrrForm()
+      return
+    }
+    if (e.key === '0') {
+      e.preventDefault()
+      irrGiveUp()
+      return
+    }
+    if (irrStage.value === 1) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        confirmIrrMeaning()
+        return
+      }
+      const idx = ['1', '2', '3', '4'].indexOf(e.key)
+      if (idx >= 0 && irrCurrent.value.meaningOptions && idx < irrCurrent.value.meaningOptions.length) {
+        e.preventDefault()
+        pickedMeaning.value = irrCurrent.value.meaningOptions[idx]
+      }
+      return
+    }
+    if (irrStage.value === 2) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        confirmIrrPerson()
+        return
+      }
+      const idx = ['1', '2', '3', '4'].indexOf(e.key)
+      const opts = irrCurrent.value.point.personTenseOptions || []
+      if (idx >= 0 && idx < opts.length) {
+        e.preventDefault()
+        pickedTense.value = opts[idx]
+      }
+    }
+    return
   }
 }
 

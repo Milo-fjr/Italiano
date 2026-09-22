@@ -44,14 +44,14 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
 | `backend/.../service/SpellService.java`          | **拼写模式**：中→意产出复习，独立 spell 盒子 + 防撞五条件队列                  |
 | `backend/.../service/DictService.java`            | **听写模式**：听音→意拼写，两段式（先选释义后拼写），独立 dict 盒子 + 防撞队列      |
-| `backend/.../service/PracticeService.java`        | **加练模式**：纯练习零 SRS，四题型 quiz/spell/dict/irregular（不规则考点枚举 + 现场推导判分，见陷阱 14） |
+| `backend/.../service/PracticeService.java`        | **加练模式**：纯练习零 SRS，四题型 quiz/spell/dict/irregular（变化专考：听形式辨人称时态 + 不规则拼写，现场推导判分，见陷阱 14） |
 | `backend/.../service/WordService.java`           | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
 | `backend/src/main/resources/data/vocab_data.json` | 1084 词导入源（首启导入用）                                  |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
 | `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、自反动词提示、结果对照）                  |
 | `frontend/src/views/DictView.vue`                | **听写模式**两段式答题页（听音选释义 → 听音拼写单词）                   |
-| `frontend/src/views/PracticeView.vue`            | **加练模式**四题型页（选题型 → 逐题作答 → 完成汇总）                     |
+| `frontend/src/views/PracticeView.vue`            | **加练模式**四题型页（选题型 → 逐题作答 → 完成汇总；irregular 题卡为听辨三段式，见陷阱 14） |
 | `frontend/src/views/NotebookView.vue`             | **错题本**：测验/拼写/听写答错自动进本，学会移出                      |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
@@ -75,6 +75,13 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 12. **错题本排序是稳定的**（按 `word_progress.id` 升序=进本先后），刻意不随机打乱——用户要求"翻账本"场景位置固定便于对照回忆（2026-09-15 改）。测验模式 SRS 是随机顺序（防位置记忆），两者不要混淆；也别在错题本加回 `Collections.shuffle`。
 13. **加练模式（PracticeView/PracticeService，2026-09-16）**：纯练习、零 SRS——从已学词（extract_count>0）随机抽，答错只进错题本，不碰任何盒子/次数/时间戳；中途退出无任何持久化。**新页面 UI 必须对齐同类型现有模式的交互惯例**（大喇叭、选项卡样式、确认条、快捷键全套、结果对照顺序），不要自造简化版——本次听写加练 UI 没对齐被用户直接点名。听写释义选错立即判错（`/practice/{id}/dict-check-meaning` 预检，只判断不落库不泄答案）。
 14. **不规则变化专考（加练第 4 题型 irregular，2026-09-17）**：拼写/听写/加练拼写/加练听写的**附加题已全部撤下**，不规则变化统一由本题型专考（用户拍板：保持连贯、防手滑）。考点由引擎枚举：动词现在时/将来时**逐人称**与规则推导比对（相同=规则形式不考，prendere 整表、andare 的 noi/voi 被自然过滤）+ 过去分词（考裸分词，避开 ho/sono 歧义）；名词不规则复数（DB plural，"/"双形式任答其一）；形容词 bello 型（`BELLO_PRACTICE` 固定语境名词推导唯一定语形式，`belloAttributive()` 规则式复数如 buoni 自动跳过）、-co/-go 硬软音阳性复数（DB adjForms.mp）、不变形容词复数=原词。**答案现场推导、题目 DTO 不含答案**（无状态判分，请求带考点描述 type/person/contextNoun）；DB 手动编辑值（变位/复数/adjForms JSON）优先，引擎推导兜底。整词入队一次练全全部考点。**TODO：未完成时（imperfetto）未考察**——用户还没学，学到后补（IRREGULAR_IMPERFETTO 表只有 essere/fare/dire/bere 四词）。另：拼写陷阱类复数（faccia→facce、banca→banche）附加题撤下后**当前无任何模式考察**——用户已学过规则（见陷阱 15），是否纳入本题型待用户发话（2026-09-18 摆过一次，未拍板）。
+   **变位听写合并进本题型（2026-09-22，用户拍板"合到一起"）**：题面**藏词**，流程 = 听形式（TTS 播 `point.form`）→ 选释义（4 选 1，**同词性优先**取干扰项，不足回退全库）→ 选人称时态（4 选 1，仅 present/futuro）→ 拼写。三段全对才 passed，任一关选错即整题判错（对齐听写防猜惯例；预检 `irregular-check-meaning` / `irregular-check-person` 只判断不落库）。关键设计：
+   - **规则形式 = 纯听辨点（listenOnly）**：每动词随机抽 1 个未被考点占用的 (present/futuro, person) 组合，选对人称时态即过、**不拼**（用户拍板：规则变位拼写无产出价值，练的是音→词尾解码）；整表不规则词（volere 全人称已占）候选耗尽自然不出。
+   - **同形歧义降级**：形式在同一时态内与其他人称相同（essere 的 sono=io/loro）→ 不出选人称关（`personChoice=false`），降级为听形式直接拼——形式照考只是人称不可辨；听辨点候选排除同形组合。过滤实现在 `fillListeningFields`/`isHomonymForm`。
+   - pp/名词/形容词考点**无人称关**（两段：听→释义→拼）；pp 念裸分词不念完整短语（ho mangiato 会引入性数配合歧义，且与 `participleFromDb` 真值口径冲突）。名词/形容词考点保留（用户拍板——它们是规则推不出的必须记项，与"规则变位拼了没意义"不同理）。
+   - **DTO 口径变化**：`IrregularPointDTO.form` = 播报文本 = 拼写答案（前端答题阶段不渲染，先例 DictWordDTO.word）；personChoice 点的 `label` 含答案人称（「现在时 · io」就是答案），前端必须隐藏 label——防泄题口径从"DTO 不含答案"演进为"DTO 含但 UI 不渲染"。
+   - 判分请求回传 listenOnly/personChoice 标志（服务端无状态，靠回传区分考点路径）；`conjugationForm` 引擎兜底让**全规则动词也入队**（每词 1 听辨点），空队列文案改为「已学词里还没有可考的变化形式」。
+   - TODO 不变：未完成时未考察——进考点枚举时记得同步加 `TENSE_LABELS` 选项池和听辨点候选池，两处一起改。
 15. **拼写陷阱复数规则（-ca/-ga/-cia/-gia，2026-09-18 讲解给用户，词库 11 个 -cia/-gia + 18 个 -ca/-ga 词全核对无误）**：①**-ca/-ga → 加 h**（banca→banche、amica→amiche）——c/g 在 e/i 前发软音（/tʃ/ /dʒ/）、在 a/o/u 前发硬音，复数 -a 变 -e 后裸写 ce/ge 会变软音，加 h 锁硬音；与动词变位 cercare→cerchi、pagare→paghi 同一招。②**-cia/-gia → 看 c/g 紧挨着的前一个字母**：该 i 多数不发音，唯一任务是给 c/g 报"软音"信（同 ciao 的 i）；复数变 -e 后 ce/ge 本身即软音，i 冗余——**辅音前（含 -ccia/-ggia 双写，双写辅音自己就是那个"辅音前"）→ 去 i**（faccia→facce、arancia→arance、pioggia→piogge、spiaggia→spiagge、mancia→mance）；**元音后 → 保 i**（camicia→camicie、farmacia→farmacie、bugia→bugie、valigia→valigie、fiducia→fiducie、ciliegia→ciliegie）。代码实现 = `buildPlural` 的 `charAt(len-4)`（即 -cia/-gia 三字母簇前一字母），与判则完全等价。真不规则对照：braccio→braccia（复数性别漂移，无法推导）才标红——这也是「音变」标签被删的原因。
    **规则延伸到 -co/-go 名词（2026-09-18 用户指出 lago 误标红）**：-co/-go 变复数 o→i 前同样加 h 锁硬音（lago→laghi、fuoco→fuochi），加 h 型共 12 词已从「不规则复数」红标移除（`irregularTag` 判定：`IRREGULAR_PLURAL` 表中复数 value 以 -chi/-ghi 结尾即视为规则加 h 型，不标红）——laghi/banchi 与 -ca/-ga 的 laghe 同一招。**软音型**（amico→amici、medico→medici、stomaco→stomaci、farmaco→farmaci、traffico→traffici、meccanico→meccanici、idraulico→idraulici，重音位置文本不可判）与**强不规则**（braccio→braccia 等）保留红标。注意 `buildPlural` 对 -co/-go 仍全量查 `IRREGULAR_PLURAL` 表（引擎推导不了重音），表照存、红标不照发——**改表别动红标判定，两者解耦**；移除红标后 lago 类词不进加练 irregular 队列（`buildIrregularPoints` 靠 tag 含「不规则复数」才出复数考点），与 -ca/-ga（faccia）一致，当前均无任何模式考察。
    **succo 数据修正（2026-09-18，用户批评"发现了就要查证"）**：查证 succo 实为**加 h 型 piana（SUC-co）→ i succhi**（Collins/多词典确认），原 IRREGULAR_PLURAL 表、DB plural、vocab_data.json 三处均误写 `succi` 且错放「不加 h」组——已全部修正并移组。核对判则：**piana（重音倒数第二，如 cuoco/lago/succo）→ 加 h；sdrucciola（重音倒数第三，如 medico/stomaco/traffico/meccanico/idraulico/farmaco）→ 不加 h；amico→amici 是 piana 不加 h 的著名例外（同 porco→porci），保留标红**。教训：AI 发现数据疑点必须主动查权威词典并修正，不能只口头提醒用户。

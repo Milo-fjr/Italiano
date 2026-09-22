@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  * 加练模式：纯练习，不碰 SRS 盒子，答错只进错题本。
- * type: quiz（认识翻卡）/ spell（中→意拼写）/ dict（听音写词）/ irregular（不规则变化专考）
+ * type: quiz（认识翻卡）/ spell（中→意拼写）/ dict（听音写词）/ irregular（变化专考：听辨 + 不规则拼写）
  */
 @RestController
 @RequestMapping("/api/practice")
@@ -47,7 +47,7 @@ public class PracticeController {
     @PostMapping("/{id}/dict-check-meaning")
     public ApiResponse<Map<String, Object>> dictCheckMeaning(@PathVariable Long id,
                                                              @RequestBody DictAnswerDTO body) {
-        return ApiResponse.ok(Map.of("correct", practiceService.checkDictMeaning(id, body.getMeaning())));
+        return ApiResponse.ok(Map.of("correct", practiceService.checkWordMeaning(id, body.getMeaning())));
     }
 
     /** 听写判分（dict 模式） */
@@ -58,11 +58,24 @@ public class PracticeController {
                 body.getWord(), body.getMeaning(), false));
     }
 
-    /** 不规则变化判分（irregular 模式）：考点描述 + 用户输入，现场推导答案比对 */
+    /** 变化专考第一关释义预检（与 dict-check-meaning 同口径：只判断不落库，选错由前端走正式判分） */
+    @PostMapping("/{id}/irregular-check-meaning")
+    public ApiResponse<Map<String, Object>> irregularCheckMeaning(@PathVariable Long id,
+                                                                  @RequestBody IrregularAnswerDTO body) {
+        return ApiResponse.ok(Map.of("correct", practiceService.checkWordMeaning(id, body.getMeaning())));
+    }
+
+    /** 变化专考第二关人称时态预检（所选组合与考点标识比对，只判断不落库） */
+    @PostMapping("/{id}/irregular-check-person")
+    public ApiResponse<Map<String, Object>> irregularCheckPerson(@RequestBody IrregularAnswerDTO body) {
+        return ApiResponse.ok(Map.of("correct", practiceService.checkIrregularPerson(
+                body.getType(), body.getPerson(), body.getChosenTense(), body.getChosenPerson())));
+    }
+
+    /** 变化专考判分：释义 + 人称时态（可选）+ 拼写（纯听辨点无），现场推导答案比对 */
     @PostMapping("/{id}/irregular-answer")
     public ApiResponse<Map<String, Object>> irregularAnswer(@PathVariable Long id,
                                                             @RequestBody IrregularAnswerDTO body) {
-        return ApiResponse.ok(practiceService.answerIrregular(id, body.getType(), body.getPerson(),
-                body.getContextNoun(), body.getContextGender(), body.getContextPlural(), body.getInput()));
+        return ApiResponse.ok(practiceService.answerIrregular(id, body));
     }
 }
