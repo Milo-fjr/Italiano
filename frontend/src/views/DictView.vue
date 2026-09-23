@@ -348,6 +348,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 答题卡共享样式（spell-stage/card、喇叭、选项卡、result 对照、汇总等），新增答题题型一律引它 */
+@import '../styles/answer-card.css';
 .today-header {
   display: flex;
   align-items: center;
@@ -393,20 +395,6 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* 单卡顺序流：打字需要焦点，一次只出一题 */
-.spell-stage {
-  display: flex;
-  justify-content: center;
-  min-height: 120px;
-}
-
-.spell-card {
-  width: 100%;
-  max-width: 620px;
-  border: 1px solid #e8ecf0;
-  padding: 6px 4px;
-}
-
 .head-tags {
   display: flex;
   align-items: center;
@@ -414,78 +402,11 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
-/* 听音区：大喇叭居中 */
-.audio-prompt {
-  margin-top: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-.play-btn {
-  width: 76px;
-  height: 76px;
-  padding: 0;
-  border: 2px solid #00934d;
-  border-radius: 50%;
-  background: #f0f9f3;
-  color: #00934d;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.play-btn:hover {
-  background: #d9f0e3;
-}
-
-.play-btn:active {
-  transform: scale(0.94);
-}
-
-.play-hint {
-  font-size: 13px;
-  color: #98a2ac;
-}
-
 .hint-line {
   margin-top: 14px;
   font-size: 14px;
   color: #55606a;
   text-align: center;
-  font-weight: 600;
-}
-
-.inputs {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.input-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: #55606a;
-}
-
-.label-hint {
-  color: #98a2ac;
-  font-weight: 400;
-  font-size: 12px;
-}
-
-/* 第二关顶部：已选对的释义（绿色确认条，拼写时知道自己在写什么） */
-.meaning-confirmed {
-  padding: 10px 12px;
-  border: 1px solid #00934d;
-  border-radius: 8px;
-  background: #eef8f2;
-  color: #00934d;
-  font-size: 14px;
   font-weight: 600;
 }
 
@@ -501,124 +422,6 @@ onBeforeUnmount(() => {
   }
 }
 
-/* 释义 4 选 1 选项：两列卡片，点选高亮，序号角标对应键盘 1-4 */
-.meaning-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.option-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid #d9dee3;
-  border-radius: 8px;
-  background: #fff;
-  color: #1e3a2b;
-  font-size: 14px;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-}
-
-.option-idx {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #eef0f2;
-  color: #55606a;
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.option-btn.selected .option-idx {
-  background: #00934d;
-  color: #fff;
-}
-
-.option-btn:hover:not(:disabled) {
-  border-color: #00934d;
-}
-
-.option-btn.selected {
-  border-color: #00934d;
-  background: #eef8f2;
-  color: #00934d;
-  font-weight: 600;
-}
-
-.option-btn:disabled {
-  cursor: default;
-  opacity: 1;
-}
-
-/* 结果对照 */
-.result {
-  margin-top: 20px;
-  border-top: 1px solid #e4e7ed;
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.verdict {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.verdict.ok {
-  color: #00934d;
-}
-
-.verdict.bad {
-  color: #cd212a;
-}
-
-.compare-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  flex-wrap: wrap;
-}
-
-.compare-label {
-  min-width: 92px;
-  color: #98a2ac;
-  font-size: 13px;
-}
-
-.compare-input {
-  color: #55606a;
-}
-
-.compare-row.ok .compare-input {
-  color: #00934d;
-}
-
-.compare-row.bad .compare-input {
-  color: #cd212a;
-  text-decoration: line-through;
-}
-
-.arrow {
-  color: #c0c6cd;
-}
-
-.compare-answer {
-  font-weight: 700;
-  color: #1e3a2b;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .card-btns {
   margin-top: 20px;
   display: flex;
@@ -628,24 +431,5 @@ onBeforeUnmount(() => {
 /* 结束汇总卡 */
 .summary-card {
   margin-bottom: 24px;
-}
-
-.summary-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.wrong-note {
-  color: #55606a;
-  font-size: 14px;
-  padding: 8px 0;
-}
-
-.all-right {
-  color: #00934d;
-  font-size: 15px;
-  padding: 8px 0;
 }
 </style>

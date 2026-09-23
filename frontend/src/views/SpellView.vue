@@ -236,6 +236,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 答题卡共享样式（spell-stage/card、inputs、result 对照、汇总等），新增答题题型一律引它 */
+@import '../styles/answer-card.css';
 .today-header {
   display: flex;
   align-items: center;
@@ -281,33 +283,11 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-/* 单卡顺序流：打字需要焦点，一次只出一题 */
-.spell-stage {
-  display: flex;
-  justify-content: center;
-  min-height: 120px;
-}
-
-.spell-card {
-  width: 100%;
-  max-width: 620px;
-  border: 1px solid #e8ecf0;
-  padding: 6px 4px;
-}
-
 .head-tags {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-}
-
-.meaning-prompt {
-  margin-top: 14px;
-  font-size: 26px;
-  font-weight: 700;
-  color: #1e3a2b;
-  line-height: 1.4;
 }
 
 .reflexive-note {
@@ -328,82 +308,6 @@ onBeforeUnmount(() => {
   color: #98a2ac;
 }
 
-.inputs {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.input-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: #55606a;
-}
-
-/* 结果对照 */
-.result {
-  margin-top: 20px;
-  border-top: 1px solid #e4e7ed;
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.verdict {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.verdict.ok {
-  color: #00934d;
-}
-
-.verdict.bad {
-  color: #cd212a;
-}
-
-.compare-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  flex-wrap: wrap;
-}
-
-.compare-label {
-  min-width: 92px;
-  color: #98a2ac;
-  font-size: 13px;
-}
-
-.compare-input {
-  color: #55606a;
-}
-
-.compare-row.ok .compare-input {
-  color: #00934d;
-}
-
-.compare-row.bad .compare-input {
-  color: #cd212a;
-  text-decoration: line-through;
-}
-
-.arrow {
-  color: #c0c6cd;
-}
-
-.compare-answer {
-  font-weight: 700;
-  color: #1e3a2b;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .card-btns {
   margin-top: 20px;
   display: flex;
@@ -413,24 +317,5 @@ onBeforeUnmount(() => {
 /* 结束汇总卡 */
 .summary-card {
   margin-bottom: 24px;
-}
-
-.summary-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.wrong-note {
-  color: #55606a;
-  font-size: 14px;
-  padding: 8px 0;
-}
-
-.all-right {
-  color: #00934d;
-  font-size: 15px;
-  padding: 8px 0;
 }
 </style>
