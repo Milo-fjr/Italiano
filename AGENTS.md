@@ -17,6 +17,9 @@ cd backend && mvn spring-boot:run
 # 编译验证（不动服务）
 cd backend && mvn compile -q
 
+# 单元测试（纯逻辑回归网：语法引擎/判分归一化，42 用例秒级，不起 Spring 不连 DB；改语法引擎/例外表/判分前必跑）
+cd backend && mvn test
+
 # 前端（Vite 热更新，改 .vue 不用重启）
 cd frontend && npm run dev
 
@@ -24,7 +27,7 @@ cd frontend && npm run dev
 mysql -u root -p<密码> italian_vocab -e "SQL..."
 ```
 
-- 验证 API：`Invoke-RestMethod -Uri "http://localhost:8080/api/..."`（中文输出会乱码，可写临时文件用 Read 看；临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore）
+- 验证 API：**含中文的请求/响应必须用 node fetch（tmp_*.js），不能用 PowerShell Invoke-RestMethod**——后者把 UTF-8 响应按 Latin-1 解码，中文在内存里就变乱码，回传判分必 false（2026-09-23 判分回归实测踩坑，差点误诊为重构回归）；中文输出写临时文件用 Read 看仍会乱码时同理。临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore
 - 表名是 `word`（不是 words）、`word_progress`、`daily_extract`、`setting`
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
 - **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
@@ -39,7 +42,8 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | 文件                                                | 职责                                               |
 | ------------------------------------------------- | ------------------------------------------------ |
 | `backend/.../util/ItalianGrammarUtil.java`        | **语法引擎**：例外表（例外优先）+ 规则推导，所有变位/复数/冠词/不规则标签的单一事实来源 |
-| `backend/.../service/ExtraFormService.java`       | **各产出型模式共用输入归一化**（重音/大小写/空格容错，静态方法）；原附加题判定已下线（不规则改由加练第 4 题型专考） |
+| `backend/.../service/ExtraFormService.java`       | **各产出型模式共用归一化与中文释义判分**（normalize 意语容错 + matchMeaning/normalizeMeaning 点选判分与选项去重，静态方法；判分 2026-09-23 由 Dict/Practice 两份私有拷贝上收至此，单测锁定）；原附加题判定已下线（不规则改由加练第 4 题型专考） |
+| `backend/src/test/java/.../`                      | **单元测试回归网**（2026-09-23 新建）：ItalianGrammarUtilTest 锁语法引擎全部已查证结论（succo/lago/avere/camminare 等事故值）、ExtraFormServiceTest 锁判分归一化与点选判分、PracticeServiceMatchesAnyTest 锁多形式判分；`mvn test` 秒级跑完 |
 | `backend/.../service/ExtractService.java`         | **学习模式**批次抽取：完成次数流转（零遍随机 > 完成次数升序+冷却）          |
 | `backend/.../service/QuizService.java`            | **测验模式**：SRS 到期词查询（next_review_at <= 今天，随机排序）            |
 | `backend/.../service/SpellService.java`          | **拼写模式**：中→意产出复习，独立 spell 盒子 + 防撞五条件队列                  |

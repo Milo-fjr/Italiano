@@ -95,7 +95,7 @@ public class DictService {
             throw new IllegalArgumentException("单词不存在");
         }
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("correct", matchMeaning(meaningInput, w.getMeaning()));
+        result.put("correct", ExtraFormService.matchMeaning(meaningInput, w.getMeaning()));
         return result;
     }
 
@@ -117,7 +117,7 @@ public class DictService {
 
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
         boolean wordCorrect = ExtraFormService.normalize(wordInput).equals(ExtraFormService.normalize(w.getWord()));
-        boolean meaningCorrect = matchMeaning(meaningInput, w.getMeaning());
+        boolean meaningCorrect = ExtraFormService.matchMeaning(meaningInput, w.getMeaning());
         boolean passed = wordCorrect && meaningCorrect;
 
         LocalDate today = LocalDate.now();
@@ -174,46 +174,12 @@ public class DictService {
                 break;
             }
             String m = c.getMeaning();
-            boolean dup = options.stream().anyMatch(o -> normalizeMeaning(o).equals(normalizeMeaning(m)));
+            boolean dup = options.stream().anyMatch(o -> ExtraFormService.normalizeMeaning(o).equals(ExtraFormService.normalizeMeaning(m)));
             if (!dup) {
                 options.add(m);
             }
         }
         Collections.shuffle(options);
         return options;
-    }
-
-    /**
-     * 中文释义判分：输入与答案都按「；」拆成子段，任一子段归一化命中任一答案子段即对。
-     * 点选传入整个选项文本（如「一对；情侣」）也能正确命中；括号注解（「（非正式）」等）剔除；
-     * 尾部口语虚词容错（好 ≡ 好的、再见 ≡ 再见啦）。
-     */
-    private static boolean matchMeaning(String input, String answer) {
-        for (String in : input.split("[；;]")) {
-            String normalizedInput = normalizeMeaning(in);
-            if (normalizedInput.isEmpty()) {
-                continue;
-            }
-            for (String alt : answer.split("[；;]")) {
-                if (normalizeMeaning(alt).equals(normalizedInput)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /** 释义归一化：trim + 剔除中英文括号注解 + 折叠空格 + 剥掉尾部口语虚词（好/好的） */
-    private static String normalizeMeaning(String s) {
-        if (s == null) {
-            return "";
-        }
-        String t = s.trim()
-                .replaceAll("（[^）]*）|\\([^)]*\\)", "")
-                .replaceAll("\\s+", "");
-        while (!t.isEmpty() && "的了呀啊吧呢吗地".indexOf(t.charAt(t.length() - 1)) >= 0) {
-            t = t.substring(0, t.length() - 1);
-        }
-        return t;
     }
 }

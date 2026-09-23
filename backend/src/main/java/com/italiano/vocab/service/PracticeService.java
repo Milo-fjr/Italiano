@@ -171,7 +171,7 @@ public class PracticeService {
             }
             case "dict" -> {
                 wordCorrect = ExtraFormService.normalize(wordInput).equals(ExtraFormService.normalize(w.getWord()));
-                meaningCorrect = matchMeaning(meaningInput, w.getMeaning());
+                meaningCorrect = ExtraFormService.matchMeaning(meaningInput, w.getMeaning());
                 passed = wordCorrect && meaningCorrect;
             }
             default -> throw new IllegalArgumentException("未知题型：" + type);
@@ -208,7 +208,7 @@ public class PracticeService {
         String type = body.getType();
         String person = body.getPerson();
 
-        boolean meaningCorrect = matchMeaning(body.getMeaning(), w.getMeaning());
+        boolean meaningCorrect = ExtraFormService.matchMeaning(body.getMeaning(), w.getMeaning());
         boolean personChoice = Boolean.TRUE.equals(body.getPersonChoice());
         boolean listenOnly = Boolean.TRUE.equals(body.getListenOnly());
         boolean personCorrect = true;
@@ -244,7 +244,7 @@ public class PracticeService {
         if (w == null) {
             throw new IllegalArgumentException("单词不存在");
         }
-        return matchMeaning(meaningInput, w.getMeaning());
+        return ExtraFormService.matchMeaning(meaningInput, w.getMeaning());
     }
 
     /** 「选人称时态」预检：所选组合与考点标识比对，只判断不落库 */
@@ -514,8 +514,8 @@ public class PracticeService {
         return forms == null ? null : forms.get(key);
     }
 
-    /** 判分：输入归一化后与答案比对；"/" 分隔的多形式（colleghi/colleghe、piloti/pilote）任一命中即对 */
-    private static boolean matchesAny(String input, String answer) {
+    /** 判分：输入归一化后与答案比对；"/" 分隔的多形式（colleghi/colleghe、piloti/pilote）任一命中即对（包可见供单测） */
+    static boolean matchesAny(String input, String answer) {
         String normalized = ExtraFormService.normalize(input);
         if (normalized.isEmpty()) {
             return false;
@@ -643,32 +643,9 @@ public class PracticeService {
         for (Word c : candidates) {
             if (options.size() >= 4) return;
             String m = c.getMeaning();
-            boolean dup = options.stream().anyMatch(o -> normMeaning(o).equals(normMeaning(m)));
+            boolean dup = options.stream().anyMatch(o -> ExtraFormService.normalizeMeaning(o).equals(ExtraFormService.normalizeMeaning(m)));
             if (!dup) options.add(m);
         }
-    }
-
-    private static boolean matchMeaning(String input, String answer) {
-        if (input == null) return false;
-        for (String in : input.split("[；;]")) {
-            String ni = normMeaning(in);
-            if (ni.isEmpty()) continue;
-            for (String alt : answer.split("[；;]")) {
-                if (normMeaning(alt).equals(ni)) return true;
-            }
-        }
-        return false;
-    }
-
-    private static String normMeaning(String s) {
-        if (s == null) return "";
-        String t = s.trim()
-                .replaceAll("（[^）]*）|\\([^)]*\\)", "")
-                .replaceAll("\\s+", "");
-        while (!t.isEmpty() && "的了呀啊吧呢吗地".indexOf(t.charAt(t.length() - 1)) >= 0) {
-            t = t.substring(0, t.length() - 1);
-        }
-        return t;
     }
 
     private Map<String, Object> emptyResult(String type, String msg) {
