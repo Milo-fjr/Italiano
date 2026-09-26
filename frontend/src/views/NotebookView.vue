@@ -5,7 +5,7 @@
       <div class="today-info">
         <h2 class="page-title today-title">
           错题本
-          <span class="date">答错自动进本 · 学会了移出 · SRS 明天照常回流</span>
+          <span class="date">{{ bookSubtitle }}</span>
         </h2>
         <div class="progress-line">
           <el-progress
@@ -25,11 +25,16 @@
       </div>
     </div>
 
+    <!-- 双本切换：词本（不认识/不会拼）/ 变位本（加练变位答错） -->
+    <div class="book-tabs">
+      <el-radio-group v-model="activeBook" @change="onBookChange">
+        <el-radio-button value="main">词本（不认识 / 不会拼）</el-radio-button>
+        <el-radio-button value="conj">变位本（变位错了）</el-radio-button>
+      </el-radio-group>
+    </div>
+
     <!-- 空状态 -->
-    <el-empty
-      v-if="!loading && words.length === 0"
-      description="没有错词——测验/拼写答错的词会自动出现在这里"
-    >
+    <el-empty v-if="!loading && words.length === 0" :description="emptyText">
       <el-button round :loading="loading" @click="load">重新加载</el-button>
     </el-empty>
 
@@ -84,6 +89,8 @@ import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'
 
 const loading = ref(false)
+/** 当前本（main=词本：不认识/不会拼；conj=变位本：加练变位答错） */
+const activeBook = ref('main')
 /** 本内词（服务端按进本先后稳定排序；学会的先置灰留卡防手滑，重新加载后消失） */
 const words = ref([])
 const total = ref(0)
@@ -93,11 +100,21 @@ const dialogVisible = ref(false)
 const activeId = ref(null)
 
 const learnedCount = computed(() => learnedIds.size)
+const bookSubtitle = computed(() =>
+  activeBook.value === 'conj'
+    ? '加练「不规则变化」答错自动进本 · 点卡片看变位表复习 · 学会了移出'
+    : '答错自动进本 · 学会了移出 · SRS 明天照常回流'
+)
+const emptyText = computed(() =>
+  activeBook.value === 'conj'
+    ? '没有变位错词——加练「不规则变化」答错的词会自动出现在这里'
+    : '没有错词——测验/拼写答错的词会自动出现在这里'
+)
 
 async function load() {
   loading.value = true
   try {
-    const r = await api.getNotebook()
+    const r = await api.getNotebook(activeBook.value)
     words.value = r.words
     total.value = r.total
     learnedIds.clear()
@@ -106,34 +123,40 @@ async function load() {
   }
 }
 
+/** 切换本：重载列表（learnedIds 一并清空，两本的置灰状态互不串） */
+function onBookChange() {
+  load()
+}
+
 /** 学会了：朗读该词强化记忆后移出错题本（卡片置灰留卡，重新加载后消失） */
 async function onLearn(id) {
   const w = words.value.find((x) => x.wordId === id)
   if (w) speakItalian(w.word)
-  await api.notebookLearn(id)
+  await api.notebookLearn(id, activeBook.value)
   learnedIds.add(id)
 }
 
 /** 放回去：撤销手滑（恢复进本） */
 async function onUndo(id) {
-  await api.notebookUndo(id)
+  await api.notebookUndo(id, activeBook.value)
   learnedIds.delete(id)
 }
 
-/** 全部学会：一键清空（防误触二次确认） */
+/** 全部学会：一键清空当前本（防误触二次确认） */
 async function onLearnAll() {
+  const bookName = activeBook.value === 'conj' ? '变位本' : '词本'
   const remaining = total.value - learnedIds.size
   try {
     await ElMessageBox.confirm(
-      `将本内剩余 ${remaining} 个错词全部标记为学会并清空错题本。确定吗？`,
+      `将${bookName}内剩余 ${remaining} 个错词全部标记为学会并清空。确定吗？`,
       '全部学会',
       { confirmButtonText: '全部学会', cancelButtonText: '取消', type: 'warning' }
     )
   } catch {
     return
   }
-  const count = await api.notebookLearnAll()
-  ElMessage.success(`已清空错题本（${count} 个）`)
+  const count = await api.notebookLearnAll(activeBook.value)
+  ElMessage.success(`已清空${bookName}（${count} 个）`)
   await load()
 }
 
@@ -189,6 +212,11 @@ onMounted(load)
   font-size: 12px;
   color: #98a2ac;
   white-space: nowrap;
+}
+
+/* 双本切换行 */
+.book-tabs {
+  margin-bottom: 20px;
 }
 
 .card-grid {

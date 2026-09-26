@@ -424,7 +424,7 @@
           </div>
         </template>
         <div v-if="wrongCount > 0" class="wrong-note">
-          答错的 {{ wrongCount }} 个词已自动进错题本，去错题本复习吧
+          {{ wrongNote }}
         </div>
         <div v-else class="all-right">全部答对，一个都没错 🎉</div>
       </el-card>
@@ -459,6 +459,11 @@ const rightCount = ref(0)
 const wrongCount = ref(0)
 const answered = computed(() => rightCount.value + wrongCount.value)
 const finished = computed(() => started.value && answered.value >= total.value)
+const wrongNote = computed(() =>
+  selectedType.value === 'irregular'
+    ? `答错的 ${wrongCount.value} 个词已自动进变位错题本，去错题本「变位本」复习吧`
+    : `答错的 ${wrongCount.value} 个词已自动进错题本，去错题本复习吧`
+)
 
 // quiz 专属
 const flippedSet = reactive(new Set())

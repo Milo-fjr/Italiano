@@ -58,6 +58,9 @@ public class WordProgress {
     /** 错题本标记：测验答错/拼写判错自动置 true，背熟后手动移出；与三套复习体系零耦合 */
     private Boolean inNotebook;
 
+    /** 变位错题本标记：加练变位题型答错自动置 true（独立于词本，一个词可同时在两本） */
+    private Boolean inConjNotebook;
+
     /** 听写盒子级别 0-5（独立体系：听音写词，全对升盒/有错归 0，不动认识盒和拼写盒） */
     private Integer dictBox;
 

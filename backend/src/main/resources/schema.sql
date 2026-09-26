@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `word_progress` (
     `spell_next_review_at` DATE  NULL COMMENT '下次拼写复习日期（NULL=从未拼过，视为到期）',
     `last_quiz_at`       DATE    NULL COMMENT '最近一次认识测验答题日期（拼写防撞用）',
     `in_notebook`        TINYINT NOT NULL DEFAULT 0 COMMENT '错题本标记（1=测验答错/拼写判错进本，学会后手动移出）',
+    `in_conj_notebook`   TINYINT NOT NULL DEFAULT 0 COMMENT '变位错题本标记（1=加练变位题型答错进本，学会后手动移出）',
     `dict_box`           INT     NOT NULL DEFAULT 0 COMMENT '听写盒子级别0-5（独立于认识盒和拼写盒）',
     `dict_next_review_at` DATE   NULL COMMENT '下次听写复习日期（NULL=从未听写过，视为到期）',
     `last_spell_at`      DATE    NULL COMMENT '最近一次拼写答题日期（听写防撞用）',
@@ -126,6 +127,16 @@ SET @ddl = (SELECT IF(COUNT(*) = 0,
     'SELECT 1')
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'in_notebook');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+-- word_progress.in_conj_notebook（变位错题本标记，2026-09-26 拆本：加练变位题型答错进本）
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `word_progress` ADD COLUMN `in_conj_notebook` TINYINT NOT NULL DEFAULT 0 COMMENT ''变位错题本标记（1=加练变位题型答错进本，学会后手动移出）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'in_conj_notebook');
 PREPARE migrate_stmt FROM @ddl;
 EXECUTE migrate_stmt;
 DEALLOCATE PREPARE migrate_stmt;

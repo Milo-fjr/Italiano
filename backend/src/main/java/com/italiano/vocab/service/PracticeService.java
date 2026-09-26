@@ -221,7 +221,7 @@ public class PracticeService {
         boolean wordCorrect = listenOnly || (answer != null && matchesAny(body.getInput(), answer));
         boolean passed = meaningCorrect && personCorrect && wordCorrect;
         if (!passed) {
-            markNotebook(wordId);
+            markConjNotebook(wordId); // 变位答错进变位本（2026-09-26 拆本：与词本分离）
         }
 
         Map<String, Object> r = new LinkedHashMap<>();
@@ -555,12 +555,22 @@ public class PracticeService {
 
     // ===== 通用工具（quiz/spell/dict 三题型）=====
 
-    /** 答错进错题本（幂等：已在本的词保持不动） */
+    /** 答错进错题本（幂等：已在本的词保持不动）——quiz/spell/dict 三题型用词本 */
     private void markNotebook(Long wordId) {
         WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
                 .eq(WordProgress::getWordId, wordId));
         if (p != null && !Boolean.TRUE.equals(p.getInNotebook())) {
             p.setInNotebook(true);
+            progressMapper.updateById(p);
+        }
+    }
+
+    /** 变位答错进变位本（幂等；与词本独立标记，quiz/spell/dict 的 markNotebook 互不影响） */
+    private void markConjNotebook(Long wordId) {
+        WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getWordId, wordId));
+        if (p != null && !Boolean.TRUE.equals(p.getInConjNotebook())) {
+            p.setInConjNotebook(true);
             progressMapper.updateById(p);
         }
     }

@@ -50,13 +50,14 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/.../service/DictService.java`            | **听写模式**：听音→意拼写，两段式（先选释义后拼写），独立 dict 盒子 + 防撞队列      |
 | `backend/.../service/PracticeService.java`        | **加练模式**：纯练习零 SRS，四题型 quiz/spell/dict/irregular（变化专考：听形式辨人称时态 + 不规则拼写，现场推导判分，见陷阱 14） |
 | `backend/.../service/WordService.java`           | 完成/撤销/编辑/测验答题，SRS 升盒降盒逻辑                              |
+| `backend/.../service/NotebookService.java`       | **错题本双本制**：词本 in_notebook（测验/拼写/听写答错）+ 变位本 in_conj_notebook（加练变位题型答错，2026-09-26 拆本）；book 参数 main/conj 切字段，进本出本零 SRS 耦合 |
 | `backend/src/main/resources/data/vocab_data.json` | 1084 词导入源（首启导入用）                                  |
 | `frontend/src/views/TodayView.vue`                | **学习模式**卡片页（背新词：标记完成/撤销/换一批）                    |
 | `frontend/src/views/QuizView.vue`                 | **测验模式**卡片页（SRS 到期：翻卡核对、认识/不认识）                 |
 | `frontend/src/views/SpellView.vue`                | **拼写模式**单卡答题页（中→意拼写、自反动词提示、结果对照）                  |
 | `frontend/src/views/DictView.vue`                | **听写模式**两段式答题页（听音选释义 → 听音拼写单词）                   |
 | `frontend/src/views/PracticeView.vue`            | **加练模式**四题型页（选题型 → 逐题作答 → 完成汇总；irregular 题卡为听辨三段式，见陷阱 14） |
-| `frontend/src/views/NotebookView.vue`             | **错题本**：测验/拼写/听写答错自动进本，学会移出                      |
+| `frontend/src/views/NotebookView.vue`             | **错题本**双本 tab（词本=不认识/不会拼 / 变位本=加练变位答错）：卡片、详情弹窗看变位表、学会了/放回去/全部学会全套按 book 参数复用 |
 | `frontend/src/components/WordDetailDialog.vue`    | 详情弹窗（变位表、单复数、朗读按钮）                               |
 | `frontend/src/utils/tts.js`                       | Web Speech API 朗读（调 Windows 系统意语语音包 Elsa）        |
 
@@ -69,7 +70,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
    **-ire 动词变位模式标注（2026-09-20 新增，替代 -isc 红标）**：完全规则的 -ire 动词标「-isc 型」或「普通型」（capire→capisco / dormire→dormo，归属原形推不出，需连 io 形式一起记；-isc 是新词 productive default 但常用词两派都多）。真不规则的 -ire（uscire/dire/venire/salire/riuscire/morire 及 offrire/aprire 等 PP 红标词）**不叠加**模式 tag。前端渲染经 `utils/irregular.js` 的 `irregularTagType()` 分级：含「不规则」→ danger 红标，模式提示 → primary 浅绿（7 个视图 9 处 tag 调用）。**加练 irregular 现在时考点不依赖 tag**（`buildIrregularPoints` 直接逐人称比对 irregularPresent vs regularPresent，-isc 词 pulire 照常抽考）。
    **IRREGULAR_PP 冗余清理（2026-09-20 用户问 avere 为何标「近过去时不规则」）**：avuto=av+uto、stato(stare)=st+ato、dato(dare)=d+ato 都恰好符合规则后缀（-ere→uto / -are→ato），已从 `IRREGULAR_PP` 移除——avere/stare/dare 红标变为「现在时不规则、将来时不规则」（其不规则在现在时 ho/sto/do 与将来词干 avr-/star-/dar-，分词规则）。essere→stato 保留（规则推 essuto）。全表其余 30+ 词逐个核对均为真不规则。**灰点备忘**：perdere 的规则分词 perduto 也合法（双形式 perso/perduto，表取更常用的 perso），vedere 同（visto/veduto）——加练 pp 考点答另一合法形式会判错，是否支持"/"双形式待用户发话。
    注意：拼写陷阱类（-ca/-ga/-cia/-gia）复数规则见陷阱 15（已讲解给用户）；`isPluralTrapNoun` 在附加题下线（2026-09-17）后已无调用方，纯语法判定保留——将来若决定给拼写陷阱复数加考察（见陷阱 14 空档备注），可直接复用。
-5. **五套独立体系**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验只认 box/next_review_at（**不筛 box**，答错归 0 的词明天到期也回来）；拼写只认 spell_box/spell_next_review_at；听写只认 dict_box/dict_next_review_at；错题本只认 in_notebook。判分规则：拼写/听写全对升盒、有错归 0 明天回，服务端归一化容错（大小写/重音/空格）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段、听写只动 dict 字段**。
+5. **六套独立体系**：学习模式按 extract_count 流转抽词（零遍随机覆盖全库 → 完成次数升序循环，不看盒子）；测验只认 box/next_review_at（**不筛 box**，答错归 0 的词明天到期也回来）；拼写只认 spell_box/spell_next_review_at；听写只认 dict_box/dict_next_review_at；错题本**双本制**（2026-09-26 拆分）：词本只认 in_notebook（测验不认识/拼写/听写/加练 quiz-spell-dict 答错进）、变位本只认 in_conj_notebook（加练 irregular 题型答错进），两标记独立可并存，进本不记原因/时间——**历史条目无法反推来源**，拆分前的旧条目不能按词性批量搬（venire 等动词是测验"不认识"进的本，搬错会错位），只搬用户点名的词。判分规则：拼写/听写全对升盒、有错归 0 明天回，服务端归一化容错（大小写/重音/空格）。交汇点：学习「标记完成」= 次数 +1 且盒 +1；测验「认识」盒 +1 不动次数、「不认识」盒归 0；**拼写答题只动 spell 字段、听写只动 dict 字段**。
 6. **防撞规则**（同一词一天只出现在一种产出模式）：拼写/听写队列排除——当日认识测验欠账的词（测验优先级更高）、当日测验答过的词（last_quiz_at）、当日学习完成的词（completed_at）、当日拼写/听写答过的词。**从未拼写/听写的词（对应 next_review_at 为 NULL）视为到期**，由防撞规则自然节流。撤销学习到 extract_count=0 会把词挡在产出池外（资格门槛 extract_count > 0）。
 7. **题目 DTO 防泄题设计**：拼写模式的题目接口**不返回意语单词**（word 字段不存在，只有 wordId/meaning/pos/category），答案只在判分结果里返回；听写/加练不规则模式的题目**含 word**（TTS 要播放 / 单词本身即不规则题面）。前端写 `current.xxx` 前先确认 DTO 里真有这个字段——2026-09-09 就是读了不存在的 `current.word` 导致渲染崩溃（见事故记录）。
 8. **自动朗读**：五模式统一"标记过了就读一遍"——学习「标记完成」、错题本「学会了」、测验认识/不认识、拼写提交/不会、听写判分落库后调 `speakItalian(该词)`。批量操作（全部完成/全部学会）不播，避免音频叠加。

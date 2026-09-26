@@ -45,11 +45,11 @@ export default {
   getDictDue: () => http.get('/dict'),
   dictCheckMeaning: (id, data) => http.post(`/dict/${id}/check-meaning`, data),
   dictAnswer: (id, data) => http.post(`/dict/${id}/answer`, data),
-  // 错题本（测验/拼写答错的词，背熟后手动移出）
-  getNotebook: () => http.get('/notebook'),
-  notebookLearn: (id) => http.post(`/notebook/${id}/learn`),
-  notebookUndo: (id) => http.post(`/notebook/${id}/undo`),
-  notebookLearnAll: () => http.post('/notebook/learn-all'),
+  // 错题本（双本制：词本 main=测验/拼写/听写答错；变位本 conj=加练变位题型答错；学会后手动移出）
+  getNotebook: (book = 'main') => http.get('/notebook', { params: { book } }),
+  notebookLearn: (id, book = 'main') => http.post(`/notebook/${id}/learn`, null, { params: { book } }),
+  notebookUndo: (id, book = 'main') => http.post(`/notebook/${id}/undo`, null, { params: { book } }),
+  notebookLearnAll: (book = 'main') => http.post('/notebook/learn-all', null, { params: { book } }),
   // 统计 / 设置 / 导入
   getStats: () => http.get('/stats'),
   getSettings: () => http.get('/settings'),
