@@ -39,11 +39,15 @@ public class SpellService {
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
+    private final SettingService settingService;
 
-    /** 到期拼写队列（随机排序，不含答案）+ 最近未来拼写到期日（空状态提示） */
+    /** 到期拼写队列（不含答案）+ 最近未来拼写到期日（空状态提示）。
+     * 每日上限（setting.spell_daily_limit，0=不限制）：超限时最欠账优先（到期日最早先出，
+     * 同日随机；从未拼过的 NULL 池垫底），没抽到的保持到期状态明天自然回来。
+     * 返回 poolTotal = 到期池全量（供前端提示剩余与「再来一批」）。 */
     public Map<String, Object> getDueWords() {
         LocalDate today = LocalDate.now();
-        List<WordProgress> due = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
+        long poolTotal = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .gt(WordProgress::getExtractCount, 0)
                 .and(q -> q.isNull(WordProgress::getSpellNextReviewAt)
                         .or().le(WordProgress::getSpellNextReviewAt, today))
@@ -55,6 +59,26 @@ public class SpellService {
                         .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
                 .and(q -> q.isNull(WordProgress::getLastDictAt)
                         .or().lt(WordProgress::getLastDictAt, today)));
+
+        Integer spellLimit = settingService.getSetting().getSpellDailyLimit();
+        int limit = spellLimit == null ? 0 : spellLimit;
+        LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
+                .gt(WordProgress::getExtractCount, 0)
+                .and(q -> q.isNull(WordProgress::getSpellNextReviewAt)
+                        .or().le(WordProgress::getSpellNextReviewAt, today))
+                .and(q -> q.isNull(WordProgress::getNextReviewAt)
+                        .or().gt(WordProgress::getNextReviewAt, today))
+                .and(q -> q.isNull(WordProgress::getLastQuizAt)
+                        .or().lt(WordProgress::getLastQuizAt, today))
+                .and(q -> q.isNull(WordProgress::getCompletedAt)
+                        .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
+                .and(q -> q.isNull(WordProgress::getLastDictAt)
+                        .or().lt(WordProgress::getLastDictAt, today));
+        if (limit > 0) {
+            // 最欠账优先：NULL 池（从未拼过）垫底，有到期日的按日期升序，同日随机
+            query.last("ORDER BY spell_next_review_at IS NULL ASC, spell_next_review_at ASC, RAND() LIMIT " + limit);
+        }
+        List<WordProgress> due = progressMapper.selectList(query);
 
         List<SpellWordDTO> words = new ArrayList<>();
         if (!due.isEmpty()) {
@@ -69,7 +93,9 @@ public class SpellService {
                 words.add(toDTO(w));
             }
         }
-        Collections.shuffle(words); // 拼写顺序随机，避免按位置记忆
+        if (limit <= 0) {
+            Collections.shuffle(words); // 拼写顺序随机，避免按位置记忆（限流时已按欠账排序、同日随机）
+        }
 
         WordProgress next = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
                         .gt(WordProgress::getSpellNextReviewAt, today)
@@ -79,6 +105,7 @@ public class SpellService {
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", words.size());
+        result.put("poolTotal", poolTotal);
         result.put("nextDueAt", next == null ? null : next.getSpellNextReviewAt().toString());
         result.put("words", words);
         return result;

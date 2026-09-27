@@ -28,12 +28,16 @@ public class SettingController {
     /** 修改设置 */
     @PutMapping
     public ApiResponse<Setting> update(@RequestBody UpdateSettingBody body) {
-        return ApiResponse.ok(settingService.updateSetting(body.getDailyCount(), body.getCooldownDays()));
+        return ApiResponse.ok(settingService.updateSetting(body.getDailyCount(), body.getCooldownDays(),
+                body.getQuizDailyLimit(), body.getSpellDailyLimit(), body.getDictDailyLimit()));
     }
 
     @Data
     public static class UpdateSettingBody {
         private Integer dailyCount;
         private Integer cooldownDays;
+        private Integer quizDailyLimit;
+        private Integer spellDailyLimit;
+        private Integer dictDailyLimit;
     }
 }

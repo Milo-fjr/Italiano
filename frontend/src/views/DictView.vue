@@ -14,7 +14,10 @@
             :stroke-width="18"
             :format="() => `${answered} / ${total}`"
           />
-          <span class="progress-hint">已听 / 到期总数 · 听对 {{ rightCount }} · 听错 {{ wrongCount }}</span>
+          <span class="progress-hint">
+            已听 / 本批 {{ total }} 题<template v-if="poolTotal > total"> · 池中共 {{ poolTotal }} 题</template>
+            · 听对 {{ rightCount }} · 听错 {{ wrongCount }}
+          </span>
         </div>
       </div>
       <div class="header-actions">
@@ -28,6 +31,9 @@
         <template #header>
           <div class="summary-head">
             <span>今日听写完成：听对 {{ rightCount }} 个 · 听错 {{ wrongCount }} 个（错的明天回来）</span>
+            <el-button v-if="poolTotal > total" type="primary" round @click="load">
+              再来一批（池中还有约 {{ poolTotal - total }} 题）
+            </el-button>
             <el-button round @click="load">重新加载</el-button>
           </div>
         </template>
@@ -166,6 +172,8 @@ const words = ref([])
 const total = ref(0)
 /** 最近一次未来听写到期日（无到期词时的提示） */
 const nextDueAt = ref(null)
+/** 到期池全量（每日上限截断前的池子大小；> total 时显示「再来一批」） */
+const poolTotal = ref(0)
 const currentIndex = ref(0)
 const rightCount = ref(0)
 const wrongCount = ref(0)
@@ -201,6 +209,7 @@ async function load() {
     const r = await api.getDictDue()
     words.value = r.words
     total.value = r.total
+    poolTotal.value = r.poolTotal ?? r.total
     nextDueAt.value = r.nextDueAt
     currentIndex.value = 0
     rightCount.value = 0

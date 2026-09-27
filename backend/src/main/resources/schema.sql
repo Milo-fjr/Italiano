@@ -50,9 +50,12 @@ CREATE TABLE IF NOT EXISTS `daily_extract` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '每日抽取记录表';
 
 CREATE TABLE IF NOT EXISTS `setting` (
-    `id`            BIGINT NOT NULL COMMENT '主键（固定为1，单行）',
-    `daily_count`   INT    NOT NULL DEFAULT 35 COMMENT '每日抽取数量',
-    `cooldown_days` INT    NOT NULL DEFAULT 7 COMMENT '冷却天数',
+    `id`                 BIGINT NOT NULL COMMENT '主键（固定为1，单行）',
+    `daily_count`        INT    NOT NULL DEFAULT 35 COMMENT '每日抽取数量',
+    `cooldown_days`      INT    NOT NULL DEFAULT 7 COMMENT '冷却天数',
+    `quiz_daily_limit`   INT    NOT NULL DEFAULT 80 COMMENT '测验模式每日抽题上限（0=不限制）',
+    `spell_daily_limit`  INT    NOT NULL DEFAULT 80 COMMENT '拼写模式每日抽题上限（0=不限制）',
+    `dict_daily_limit`   INT    NOT NULL DEFAULT 80 COMMENT '听写模式每日抽题上限（0=不限制）',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '设置表';
 
@@ -137,6 +140,34 @@ SET @ddl = (SELECT IF(COUNT(*) = 0,
     'SELECT 1')
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'word_progress' AND COLUMN_NAME = 'in_conj_notebook');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+-- setting 三个每日上限列（2026-09-26 拆本后新增：测验/拼写/听写每日抽题上限）
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `setting` ADD COLUMN `quiz_daily_limit` INT NOT NULL DEFAULT 80 COMMENT ''测验模式每日抽题上限（0=不限制）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'setting' AND COLUMN_NAME = 'quiz_daily_limit');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `setting` ADD COLUMN `spell_daily_limit` INT NOT NULL DEFAULT 80 COMMENT ''拼写模式每日抽题上限（0=不限制）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'setting' AND COLUMN_NAME = 'spell_daily_limit');
+PREPARE migrate_stmt FROM @ddl;
+EXECUTE migrate_stmt;
+DEALLOCATE PREPARE migrate_stmt;
+
+SET @ddl = (SELECT IF(COUNT(*) = 0,
+    'ALTER TABLE `setting` ADD COLUMN `dict_daily_limit` INT NOT NULL DEFAULT 80 COMMENT ''听写模式每日抽题上限（0=不限制）''',
+    'SELECT 1')
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'setting' AND COLUMN_NAME = 'dict_daily_limit');
 PREPARE migrate_stmt FROM @ddl;
 EXECUTE migrate_stmt;
 DEALLOCATE PREPARE migrate_stmt;

@@ -18,4 +18,13 @@ public class Setting {
 
     /** 冷却天数，默认 7 */
     private Integer cooldownDays;
+
+    /** 测验模式每日抽题上限（0=不限制），默认 80 */
+    private Integer quizDailyLimit;
+
+    /** 拼写模式每日抽题上限（0=不限制），默认 80 */
+    private Integer spellDailyLimit;
+
+    /** 听写模式每日抽题上限（0=不限制），默认 80 */
+    private Integer dictDailyLimit;
 }

@@ -30,16 +30,30 @@ public class QuizService {
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
+    private final SettingService settingService;
 
     /**
      * 到期测验词（next_review_at <= 今天，不筛 box——测验答错的词归 0 后明天到期也能回来），
      * 服务端随机排序；附带最近一次未来到期日（无到期词时的空状态提示）。
+     * 每日上限（setting.quiz_daily_limit，0=不限制）：超限时按最欠账优先抽取
+     * （到期日最早先出，同日随机），没抽到的词保持到期状态明天自然回来。
+     * 返回 poolTotal = 到期池全量（供前端提示剩余与「再来一批」）。
      */
     public Map<String, Object> getDueWords() {
         LocalDate today = LocalDate.now();
-        List<WordProgress> due = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
+        long poolTotal = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .isNotNull(WordProgress::getNextReviewAt)
                 .le(WordProgress::getNextReviewAt, today));
+
+        Integer quizLimit = settingService.getSetting().getQuizDailyLimit();
+        int limit = quizLimit == null ? 0 : quizLimit;
+        LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
+                .isNotNull(WordProgress::getNextReviewAt)
+                .le(WordProgress::getNextReviewAt, today);
+        if (limit > 0) {
+            query.last("ORDER BY next_review_at ASC, RAND() LIMIT " + limit); // 最欠账优先，同日随机
+        }
+        List<WordProgress> due = progressMapper.selectList(query);
 
         List<TodayWordDTO> words = new ArrayList<>();
         if (!due.isEmpty()) {
@@ -61,7 +75,9 @@ public class QuizService {
                 words.add(dto);
             }
         }
-        Collections.shuffle(words); // 测验顺序随机，避免按位置记忆
+        if (limit <= 0) {
+            Collections.shuffle(words); // 测验顺序随机，避免按位置记忆（限流时已按到期日排序、同日随机）
+        }
 
         WordProgress next = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
                         .gt(WordProgress::getNextReviewAt, today)
@@ -71,6 +87,7 @@ public class QuizService {
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", words.size());
+        result.put("poolTotal", poolTotal);
         result.put("nextDueAt", next == null ? null : next.getNextReviewAt().toString());
         result.put("words", words);
         return result;

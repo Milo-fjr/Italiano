@@ -14,7 +14,10 @@
             :stroke-width="18"
             :format="() => `${total - words.length} / ${total}`"
           />
-          <span class="progress-hint">已测 / 到期总数 · 认识 {{ knowCount }} · 不认识 {{ forgotCount }}</span>
+          <span class="progress-hint">
+            已测 / 本批 {{ total }} 题<template v-if="poolTotal > total"> · 池中共 {{ poolTotal }} 题</template>
+            · 认识 {{ knowCount }} · 不认识 {{ forgotCount }}
+          </span>
         </div>
       </div>
       <div class="header-actions">
@@ -27,6 +30,9 @@
       v-if="!loading && words.length === 0 && (knowCount > 0 || forgotCount > 0)"
       :description="`今日测验完成：认识 ${knowCount} 个 · 不认识 ${forgotCount} 个（不认识的明天回来）`"
     >
+      <el-button v-if="poolTotal > total" type="primary" round @click="load">
+        再来一批（池中还有约 {{ poolTotal - total }} 题）
+      </el-button>
       <el-button round @click="load">重新加载</el-button>
     </el-empty>
 
@@ -90,6 +96,8 @@ const loading = ref(false)
 const words = ref([])
 /** 本次会话的到期总数（进度分母，重新加载后按剩余量重置） */
 const total = ref(0)
+/** 到期池全量（每日上限截断前的池子大小；> total 时显示「再来一批」） */
+const poolTotal = ref(0)
 /** 最近一次未来到期日（无到期词时的提示） */
 const nextDueAt = ref(null)
 const knowCount = ref(0)
@@ -109,6 +117,7 @@ async function load() {
     const r = await api.getQuizDue()
     words.value = r.words
     total.value = r.total
+    poolTotal.value = r.poolTotal ?? r.total
     nextDueAt.value = r.nextDueAt
     knowCount.value = 0
     forgotCount.value = 0

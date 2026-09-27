@@ -12,6 +12,18 @@
           <el-input-number v-model="store.cooldownDays" :min="0" :max="90" />
           <span class="tip">最近 N 天内已抽取过的单词不再重复抽取（默认 7）</span>
         </el-form-item>
+        <el-form-item label="测验每日上限">
+          <el-input-number v-model="store.quizDailyLimit" :min="0" :max="500" />
+          <span class="tip">每天最多抽多少到期词（默认 80，0 = 不限制）；超出部分最欠账优先明天继续</span>
+        </el-form-item>
+        <el-form-item label="拼写每日上限">
+          <el-input-number v-model="store.spellDailyLimit" :min="0" :max="500" />
+          <span class="tip">每天最多抽多少拼写题（默认 80，0 = 不限制）；练完可点「再来一批」加量</span>
+        </el-form-item>
+        <el-form-item label="听写每日上限">
+          <el-input-number v-model="store.dictDailyLimit" :min="0" :max="500" />
+          <span class="tip">每天最多抽多少听写题（默认 80，0 = 不限制）；练完可点「再来一批」加量</span>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="saving" @click="save">保存设置</el-button>
         </el-form-item>
