@@ -31,16 +31,27 @@
         <template #header>
           <div class="summary-head">
             <span>今日拼写完成：拼对 {{ rightCount }} 个 · 拼错 {{ wrongCount }} 个（错的明天回来）</span>
-            <el-button v-if="poolTotal > total" type="primary" round @click="load">
+            <el-button v-if="poolTotal > total && !quotaReached" type="primary" round @click="load">
               再来一批（池中还有约 {{ poolTotal - total }} 题）
             </el-button>
             <el-button round @click="load">重新加载</el-button>
           </div>
         </template>
+        <div v-if="quotaReached && poolTotal > 0" class="quota-note">
+          今日上限 {{ dailyLimit }} 题已答满，剩余 {{ poolTotal }} 题明天继续
+        </div>
         <div v-if="wrongCount" class="wrong-note">拼错的 {{ wrongCount }} 个词已自动进错题本，去错题本复习吧</div>
         <div v-else class="all-right">全部拼对，没有一个错词 🎉</div>
       </el-card>
     </div>
+
+    <!-- 空状态：进页时今日配额已满（之前答够了） -->
+    <el-empty
+      v-else-if="!loading && !current && quotaReached && poolTotal > 0"
+      :description="`今日拼写已完成 ${answeredToday} / ${dailyLimit} 题，剩余 ${poolTotal} 题明天继续`"
+    >
+      <el-button round @click="load">重新加载</el-button>
+    </el-empty>
 
     <!-- 空状态：没有到期词 -->
     <el-empty
@@ -131,6 +142,10 @@ const total = ref(0)
 const nextDueAt = ref(null)
 /** 到期池全量（每日上限截断前的池子大小；> total 时显示「再来一批」） */
 const poolTotal = ref(0)
+/** 每日配额状态（后端按 last_spell_at=今天 计数） */
+const quotaReached = ref(false)
+const answeredToday = ref(0)
+const dailyLimit = ref(0)
 const currentIndex = ref(0)
 const rightCount = ref(0)
 const wrongCount = ref(0)
@@ -163,6 +178,9 @@ async function load() {
     words.value = r.words
     total.value = r.total
     poolTotal.value = r.poolTotal ?? r.total
+    quotaReached.value = !!r.quotaReached
+    answeredToday.value = r.answeredToday ?? 0
+    dailyLimit.value = r.dailyLimit ?? 0
     nextDueAt.value = r.nextDueAt
     currentIndex.value = 0
     rightCount.value = 0

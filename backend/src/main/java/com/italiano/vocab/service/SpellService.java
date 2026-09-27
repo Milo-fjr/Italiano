@@ -2,6 +2,7 @@ package com.italiano.vocab.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.italiano.vocab.dto.SpellWordDTO;
+import com.italiano.vocab.entity.Setting;
 import com.italiano.vocab.entity.Word;
 import com.italiano.vocab.entity.WordProgress;
 import com.italiano.vocab.mapper.WordMapper;
@@ -42,11 +43,17 @@ public class SpellService {
     private final SettingService settingService;
 
     /** 到期拼写队列（不含答案）+ 最近未来拼写到期日（空状态提示）。
-     * 每日上限（setting.spell_daily_limit，0=不限制）：超限时最欠账优先（到期日最早先出，
-     * 同日随机；从未拼过的 NULL 池垫底），没抽到的保持到期状态明天自然回来。
-     * 返回 poolTotal = 到期池全量（供前端提示剩余与「再来一批」）。 */
+     * 每日配额（setting.spell_daily_limit，0=不限制）：按「今天已答数」（last_spell_at = 今天）计，
+     * 答满 limit 即返回空队列——剩余到期词保持到期状态明天继续（真·每日配额，不是每次抽题上限）；
+     * 未答满时按最欠账优先抽取（到期日最早先出，同日随机；从未拼过的 NULL 池垫底）。
+     * 返回 poolTotal / answeredToday / dailyLimit / quotaReached，供前端提示与导航红点同口径。 */
     public Map<String, Object> getDueWords() {
         LocalDate today = LocalDate.now();
+        Setting cfg = settingService.getSetting();
+        int limit = cfg.getSpellDailyLimit() == null ? 0 : cfg.getSpellDailyLimit();
+        long answeredToday = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getLastSpellAt, today));
+        boolean quotaReached = limit > 0 && answeredToday >= limit;
         long poolTotal = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .gt(WordProgress::getExtractCount, 0)
                 .and(q -> q.isNull(WordProgress::getSpellNextReviewAt)
@@ -60,25 +67,29 @@ public class SpellService {
                 .and(q -> q.isNull(WordProgress::getLastDictAt)
                         .or().lt(WordProgress::getLastDictAt, today)));
 
-        Integer spellLimit = settingService.getSetting().getSpellDailyLimit();
-        int limit = spellLimit == null ? 0 : spellLimit;
-        LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
-                .gt(WordProgress::getExtractCount, 0)
-                .and(q -> q.isNull(WordProgress::getSpellNextReviewAt)
-                        .or().le(WordProgress::getSpellNextReviewAt, today))
-                .and(q -> q.isNull(WordProgress::getNextReviewAt)
-                        .or().gt(WordProgress::getNextReviewAt, today))
-                .and(q -> q.isNull(WordProgress::getLastQuizAt)
-                        .or().lt(WordProgress::getLastQuizAt, today))
-                .and(q -> q.isNull(WordProgress::getCompletedAt)
-                        .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
-                .and(q -> q.isNull(WordProgress::getLastDictAt)
-                        .or().lt(WordProgress::getLastDictAt, today));
-        if (limit > 0) {
-            // 最欠账优先：NULL 池（从未拼过）垫底，有到期日的按日期升序，同日随机
-            query.last("ORDER BY spell_next_review_at IS NULL ASC, spell_next_review_at ASC, RAND() LIMIT " + limit);
+        List<WordProgress> due;
+        if (quotaReached || poolTotal == 0) {
+            due = List.of();
+        } else {
+            int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
+            LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
+                    .gt(WordProgress::getExtractCount, 0)
+                    .and(q -> q.isNull(WordProgress::getSpellNextReviewAt)
+                            .or().le(WordProgress::getSpellNextReviewAt, today))
+                    .and(q -> q.isNull(WordProgress::getNextReviewAt)
+                            .or().gt(WordProgress::getNextReviewAt, today))
+                    .and(q -> q.isNull(WordProgress::getLastQuizAt)
+                            .or().lt(WordProgress::getLastQuizAt, today))
+                    .and(q -> q.isNull(WordProgress::getCompletedAt)
+                            .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
+                    .and(q -> q.isNull(WordProgress::getLastDictAt)
+                            .or().lt(WordProgress::getLastDictAt, today));
+            if (remaining < poolTotal) {
+                // 最欠账优先：NULL 池（从未拼过）垫底，有到期日的按日期升序，同日随机
+                query.last("ORDER BY spell_next_review_at IS NULL ASC, spell_next_review_at ASC, RAND() LIMIT " + remaining);
+            }
+            due = progressMapper.selectList(query);
         }
-        List<WordProgress> due = progressMapper.selectList(query);
 
         List<SpellWordDTO> words = new ArrayList<>();
         if (!due.isEmpty()) {
@@ -106,6 +117,9 @@ public class SpellService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", words.size());
         result.put("poolTotal", poolTotal);
+        result.put("answeredToday", answeredToday);
+        result.put("dailyLimit", limit);
+        result.put("quotaReached", quotaReached);
         result.put("nextDueAt", next == null ? null : next.getSpellNextReviewAt().toString());
         result.put("words", words);
         return result;

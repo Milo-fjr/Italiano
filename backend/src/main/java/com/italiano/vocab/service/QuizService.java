@@ -2,6 +2,7 @@ package com.italiano.vocab.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.italiano.vocab.dto.TodayWordDTO;
+import com.italiano.vocab.entity.Setting;
 import com.italiano.vocab.entity.Word;
 import com.italiano.vocab.entity.WordProgress;
 import com.italiano.vocab.mapper.WordMapper;
@@ -33,27 +34,37 @@ public class QuizService {
     private final SettingService settingService;
 
     /**
-     * 到期测验词（next_review_at <= 今天，不筛 box——测验答错的词归 0 后明天到期也能回来），
-     * 服务端随机排序；附带最近一次未来到期日（无到期词时的空状态提示）。
-     * 每日上限（setting.quiz_daily_limit，0=不限制）：超限时按最欠账优先抽取
-     * （到期日最早先出，同日随机），没抽到的词保持到期状态明天自然回来。
-     * 返回 poolTotal = 到期池全量（供前端提示剩余与「再来一批」）。
+     * 到期测验词（next_review_at <= 今天，不筛 box——测验答错的词归 0 后明天到期也能回来）；
+     * 附带最近一次未来到期日（无到期词时的空状态提示）。
+     * 每日配额（setting.quiz_daily_limit，0=不限制）：按「今天已答数」（last_quiz_at = 今天）计，
+     * 答满 limit 即返回空队列——剩余到期词保持到期状态明天继续（真·每日配额，不是每次抽题上限）；
+     * 未答满时按最欠账优先抽取（到期日最早先出，同日随机）。
+     * 返回 poolTotal（到期池全量）/ answeredToday（今日已答）/ dailyLimit / quotaReached，供前端提示与导航红点同口径。
      */
     public Map<String, Object> getDueWords() {
         LocalDate today = LocalDate.now();
+        Setting cfg = settingService.getSetting();
+        int limit = cfg.getQuizDailyLimit() == null ? 0 : cfg.getQuizDailyLimit();
+        long answeredToday = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getLastQuizAt, today));
+        boolean quotaReached = limit > 0 && answeredToday >= limit;
         long poolTotal = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .isNotNull(WordProgress::getNextReviewAt)
                 .le(WordProgress::getNextReviewAt, today));
 
-        Integer quizLimit = settingService.getSetting().getQuizDailyLimit();
-        int limit = quizLimit == null ? 0 : quizLimit;
-        LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
-                .isNotNull(WordProgress::getNextReviewAt)
-                .le(WordProgress::getNextReviewAt, today);
-        if (limit > 0) {
-            query.last("ORDER BY next_review_at ASC, RAND() LIMIT " + limit); // 最欠账优先，同日随机
+        List<WordProgress> due;
+        if (quotaReached || poolTotal == 0) {
+            due = List.of();
+        } else {
+            int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
+            LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
+                    .isNotNull(WordProgress::getNextReviewAt)
+                    .le(WordProgress::getNextReviewAt, today);
+            if (remaining < poolTotal) {
+                query.last("ORDER BY next_review_at ASC, RAND() LIMIT " + remaining); // 最欠账优先，同日随机
+            }
+            due = progressMapper.selectList(query);
         }
-        List<WordProgress> due = progressMapper.selectList(query);
 
         List<TodayWordDTO> words = new ArrayList<>();
         if (!due.isEmpty()) {
@@ -88,6 +99,9 @@ public class QuizService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("total", words.size());
         result.put("poolTotal", poolTotal);
+        result.put("answeredToday", answeredToday);
+        result.put("dailyLimit", limit);
+        result.put("quotaReached", quotaReached);
         result.put("nextDueAt", next == null ? null : next.getNextReviewAt().toString());
         result.put("words", words);
         return result;

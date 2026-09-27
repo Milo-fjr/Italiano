@@ -247,3 +247,10 @@
   font-size: 15px;
   padding: 8px 0;
 }
+
+/* 每日配额已满提示（完成汇总内） */
+.quota-note {
+  color: #8b6d1c;
+  font-size: 14px;
+  padding: 8px 0;
+}

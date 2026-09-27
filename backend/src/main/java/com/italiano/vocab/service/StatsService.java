@@ -3,6 +3,7 @@ package com.italiano.vocab.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.italiano.vocab.dto.StatsDTO;
 import com.italiano.vocab.entity.DailyExtract;
+import com.italiano.vocab.entity.Setting;
 import com.italiano.vocab.entity.Word;
 import com.italiano.vocab.entity.WordProgress;
 import com.italiano.vocab.mapper.DailyExtractMapper;
@@ -26,6 +27,7 @@ public class StatsService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
     private final DailyExtractMapper dailyExtractMapper;
+    private final SettingService settingService;
 
     public StatsDTO getStats() {
         List<Word> words = wordMapper.selectList(null);
@@ -44,31 +46,44 @@ public class StatsService {
         dto.setTotalExtractCount(progresses.stream()
                 .mapToLong(p -> p.getExtractCount() == null ? 0 : p.getExtractCount()).sum());
 
-        // SRS：今日到期复习数（next_review_at <= 今天，含测验答错归 0 的词）= 测验模式实际题量
+        // 三模式到期数与每日配额同口径（导航红点 = 今天还能做几题）：
+        // 配额内 = min(到期池, 上限 - 今日已答)；答满即 0（红点消失，剩余的明天继续）
         LocalDate today = LocalDate.now();
-        dto.setDueReviewCount(progresses.stream()
+        Setting cfg = settingService.getSetting();
+
+        // SRS：今日到期复习数（next_review_at <= 今天，含测验答错归 0 的词）= 测验模式实际题量
+        long dueReview = progresses.stream()
                 .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
-                .count());
+                .count();
+        long quizAnsweredToday = progresses.stream()
+                .filter(p -> today.equals(p.getLastQuizAt())).count();
+        dto.setDueReviewCount(clampToQuota(dueReview, cfg.getQuizDailyLimit(), quizAnsweredToday));
 
         // 今日到期拼写数（与拼写队列同口径：学过 + 拼写到期 + 当日未被学习/测验/听写接触）
-        dto.setSpellDueCount(progresses.stream()
+        long spellDue = progresses.stream()
                 .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
                 .filter(p -> p.getSpellNextReviewAt() == null || !p.getSpellNextReviewAt().isAfter(today))
                 .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
                 .filter(p -> p.getLastQuizAt() == null || p.getLastQuizAt().isBefore(today))
                 .filter(p -> p.getCompletedAt() == null || p.getCompletedAt().isBefore(today.atStartOfDay()))
                 .filter(p -> p.getLastDictAt() == null || p.getLastDictAt().isBefore(today))
-                .count());
+                .count();
+        long spellAnsweredToday = progresses.stream()
+                .filter(p -> today.equals(p.getLastSpellAt())).count();
+        dto.setSpellDueCount(clampToQuota(spellDue, cfg.getSpellDailyLimit(), spellAnsweredToday));
 
         // 今日到期听写数（与听写队列同口径：学过 + 听写到期 + 当日未被学习/测验/拼写接触）
-        dto.setDictDueCount(progresses.stream()
+        long dictDue = progresses.stream()
                 .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
                 .filter(p -> p.getDictNextReviewAt() == null || !p.getDictNextReviewAt().isAfter(today))
                 .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
                 .filter(p -> p.getLastQuizAt() == null || p.getLastQuizAt().isBefore(today))
                 .filter(p -> p.getCompletedAt() == null || p.getCompletedAt().isBefore(today.atStartOfDay()))
                 .filter(p -> p.getLastSpellAt() == null || p.getLastSpellAt().isBefore(today))
-                .count());
+                .count();
+        long dictAnsweredToday = progresses.stream()
+                .filter(p -> today.equals(p.getLastDictAt())).count();
+        dto.setDictDueCount(clampToQuota(dictDue, cfg.getDictDailyLimit(), dictAnsweredToday));
 
         // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
         long inSrs = progresses.stream()
@@ -147,6 +162,14 @@ public class StatsService {
         dist.add(bucket("4 次及以上", progresses.stream().filter(p -> p.getExtractCount() != null && p.getExtractCount() >= 4).count()));
         dto.setExtractCountDistribution(dist);
         return dto;
+    }
+
+    /** 配额钳制：今日还能做的题数 = min(到期池, 上限 - 今日已答)；上限 0=不限制时原样返回池量 */
+    private static long clampToQuota(long pool, Integer limit, long answeredToday) {
+        if (limit == null || limit <= 0) {
+            return pool;
+        }
+        return Math.max(0, Math.min(pool, limit - answeredToday));
     }
 
     private StatsDTO.CountBucket bucket(String label, long count) {
