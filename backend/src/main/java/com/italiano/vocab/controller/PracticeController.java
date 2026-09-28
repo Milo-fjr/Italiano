@@ -4,6 +4,7 @@ import com.italiano.vocab.dto.ApiResponse;
 import com.italiano.vocab.dto.DictAnswerDTO;
 import com.italiano.vocab.dto.IrregularAnswerDTO;
 import com.italiano.vocab.dto.SpellAnswerDTO;
+import com.italiano.vocab.dto.TypoFixDTO;
 import com.italiano.vocab.service.PracticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -77,5 +78,13 @@ public class PracticeController {
     public ApiResponse<Map<String, Object>> irregularAnswer(@PathVariable Long id,
                                                             @RequestBody IrregularAnswerDTO body) {
         return ApiResponse.ok(practiceService.answerIrregular(id, body));
+    }
+
+    /** 误触改判（加练拼写/听写）：无 SRS，仅把这次误触塞进错题本的词按快照还原 */
+    @PostMapping("/{id}/typo-fix")
+    public ApiResponse<Map<String, Object>> typoFix(@PathVariable Long id,
+                                                    @RequestParam String type,
+                                                    @RequestBody TypoFixDTO body) {
+        return ApiResponse.ok(practiceService.typoFix(type, id, body.getNotebookBefore()));
     }
 }

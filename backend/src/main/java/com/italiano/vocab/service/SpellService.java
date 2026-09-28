@@ -147,6 +147,8 @@ public class SpellService {
 
         LocalDate today = LocalDate.now();
         int box = p.getSpellBox() == null ? 0 : p.getSpellBox();
+        int boxBefore = box; // 答错前快照（供「手滑了，改判对」完全恢复）
+        boolean notebookBefore = Boolean.TRUE.equals(p.getInNotebook());
         if (passed) {
             int next = Math.min(box + 1, WordService.REVIEW_INTERVALS.length);
             p.setSpellBox(next);
@@ -167,6 +169,45 @@ public class SpellService {
         result.put("pos", w.getPos());
         result.put("category", w.getCategory());
         result.put("irregular", tag);
+        result.put("boxBefore", boxBefore);
+        result.put("notebookBefore", notebookBefore);
+        return result;
+    }
+
+    /**
+     * 误触改判：把一次「手滑打错」的判错恢复成答对——盒子按答错前等级 +1、下次复习按新等级排期、
+     * 错题本还原到答错前状态（原本不在本里的撤出，原本在的保持）。快照值来自判错响应（零历史表）。
+     */
+    @Transactional
+    public Map<String, Object> typoFix(Long id, Integer boxBefore, Boolean notebookBefore) {
+        Word w = wordMapper.selectById(id);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getWordId, id));
+        if (p == null) {
+            throw new IllegalArgumentException("该单词还没有学习记录");
+        }
+
+        LocalDate today = LocalDate.now();
+        int box = Math.min((boxBefore == null ? 0 : boxBefore) + 1, WordService.REVIEW_INTERVALS.length);
+        p.setSpellBox(box);
+        p.setSpellNextReviewAt(today.plusDays(WordService.REVIEW_INTERVALS[box - 1]));
+        if (notebookBefore != null) {
+            p.setInNotebook(notebookBefore);
+        }
+        p.setLastSpellAt(today); // 今天答过的既成事实保留（防撞口径不变）
+        progressMapper.updateById(p);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("passed", true);
+        result.put("wordCorrect", true);
+        result.put("word", w.getWord());
+        result.put("meaning", w.getMeaning());
+        result.put("pos", w.getPos());
+        result.put("category", w.getCategory());
+        result.put("irregular", ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
         return result;
     }
 

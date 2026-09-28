@@ -158,6 +158,9 @@ public class PracticeService {
             throw new IllegalArgumentException("单词不存在");
         }
         String tag = ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender());
+        WordProgress progress = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                .eq(WordProgress::getWordId, wordId));
+        boolean notebookBefore = progress != null && Boolean.TRUE.equals(progress.getInNotebook()); // 答错前快照（供「手滑了，改判对」）
 
         boolean passed;
         boolean wordCorrect = true;
@@ -191,6 +194,38 @@ public class PracticeService {
         r.put("pos", w.getPos());
         r.put("category", w.getCategory());
         r.put("irregular", tag);
+        r.put("notebookBefore", notebookBefore);
+        return r;
+    }
+
+    /**
+     * 误触改判（加练拼写/听写）：加练无 SRS，判错的唯一副作用是进错题本——
+     * 按判错响应里的快照还原错题本状态（原本不在本里的撤出，原本在的保持）。
+     */
+    @Transactional
+    public Map<String, Object> typoFix(String type, Long wordId, Boolean notebookBefore) {
+        Word w = wordMapper.selectById(wordId);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        if (notebookBefore != null) {
+            WordProgress p = progressMapper.selectOne(new LambdaQueryWrapper<WordProgress>()
+                    .eq(WordProgress::getWordId, wordId));
+            if (p != null && !notebookBefore.equals(p.getInNotebook())) {
+                p.setInNotebook(notebookBefore);
+                progressMapper.updateById(p);
+            }
+        }
+
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("passed", true);
+        r.put("wordCorrect", true);
+        r.put("meaningCorrect", true);
+        r.put("word", w.getWord());
+        r.put("meaning", w.getMeaning());
+        r.put("pos", w.getPos());
+        r.put("category", w.getCategory());
+        r.put("irregular", ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
         return r;
     }
 

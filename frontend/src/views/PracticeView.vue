@@ -148,7 +148,10 @@
           <el-button v-if="!spellResult" type="primary" round size="large" :loading="submitting" @click="spellSubmit(false)">
             提交（Enter）
           </el-button>
-          <el-button v-else type="primary" round size="large" @click="spellNext">
+          <el-button v-if="spellResult && !spellResult.passed && !gaveUp" round :loading="fixing" @click="fixSpellTypo">
+            手滑了，改判对
+          </el-button>
+          <el-button v-if="spellResult" type="primary" round size="large" @click="spellNext">
             下一个（Enter）
           </el-button>
         </div>
@@ -252,7 +255,10 @@
           <el-button v-else-if="!dictResult" type="primary" round size="large" :loading="submitting" @click="dictSubmit(false)">
             提交（Enter）
           </el-button>
-          <el-button v-else type="primary" round size="large" @click="dictNext">
+          <el-button v-if="dictResult && !dictResult.passed && !gaveUp && dictResult.meaningCorrect" round :loading="fixing" @click="fixDictTypo">
+            手滑了，改判对
+          </el-button>
+          <el-button v-if="dictResult" type="primary" round size="large" @click="dictNext">
             下一个（Enter）
           </el-button>
         </div>
@@ -475,6 +481,8 @@ const inputWord = ref('')
 const gaveUp = ref(false)
 const submitting = ref(false)
 const wordInputRef = ref(null)
+/** 误触改判请求中 */
+const fixing = ref(false)
 
 // spell 专属
 const spellResult = ref(null)
@@ -617,6 +625,23 @@ function spellNext() {
   inputWord.value = ''
   currentIndex.value++
   focusWord()
+}
+
+/** 误触改判（加练拼写）：无 SRS，仅把这次误触塞进错题本的词按快照还原；结果翻绿、统计如实翻转 */
+async function fixSpellTypo() {
+  if (!spellResult.value || spellResult.value.passed || gaveUp.value || fixing.value) return
+  fixing.value = true
+  try {
+    const r = await api.practiceTypoFix(spellCurrent.value.wordId, 'spell', {
+      notebookBefore: spellResult.value.notebookBefore
+    })
+    spellResult.value = r
+    wrongCount.value--
+    rightCount.value++
+    speakItalian(r.word)
+  } finally {
+    fixing.value = false
+  }
 }
 
 // ===== Irregular（变化专考：听形式 → 选释义 → 选人称时态 → 不规则拼写）=====
@@ -811,6 +836,23 @@ function dictNext() {
   pickedMeaning.value = ''
   dictStage.value = 1
   currentIndex.value++
+}
+
+/** 误触改判（加练听写）：仅限拼写关误触（释义点选不存在误触）；错题本按快照还原，结果翻绿 */
+async function fixDictTypo() {
+  if (!dictResult.value || dictResult.value.passed || gaveUp.value || fixing.value) return
+  fixing.value = true
+  try {
+    const r = await api.practiceTypoFix(dictCurrent.value.wordId, 'dict', {
+      notebookBefore: dictResult.value.notebookBefore
+    })
+    dictResult.value = r
+    wrongCount.value--
+    rightCount.value++
+    speakItalian(r.word)
+  } finally {
+    fixing.value = false
+  }
 }
 
 // ===== 通用 =====

@@ -2,6 +2,7 @@ package com.italiano.vocab.controller;
 
 import com.italiano.vocab.dto.ApiResponse;
 import com.italiano.vocab.dto.SpellAnswerDTO;
+import com.italiano.vocab.dto.TypoFixDTO;
 import com.italiano.vocab.service.SpellService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,5 +32,11 @@ public class SpellController {
     @PostMapping("/{id}/answer")
     public ApiResponse<Map<String, Object>> answer(@PathVariable Long id, @RequestBody SpellAnswerDTO body) {
         return ApiResponse.ok(spellService.answer(id, body.getWord()));
+    }
+
+    /** 误触改判：手滑打错的判错恢复成答对（盒子=答错前+1、错题本还原），快照值来自判错响应 */
+    @PostMapping("/{id}/typo-fix")
+    public ApiResponse<Map<String, Object>> typoFix(@PathVariable Long id, @RequestBody TypoFixDTO body) {
+        return ApiResponse.ok(spellService.typoFix(id, body.getBoxBefore(), body.getNotebookBefore()));
     }
 }

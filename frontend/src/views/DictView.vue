@@ -158,7 +158,10 @@
           <el-button v-else-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
           </el-button>
-          <el-button v-else type="primary" round size="large" @click="next">
+          <el-button v-if="result && !result.passed && !gaveUp && result.meaningCorrect" round :loading="fixing" @click="fixTypo">
+            手滑了，改判对
+          </el-button>
+          <el-button v-if="result" type="primary" round size="large" @click="next">
             下一个（Enter）
           </el-button>
         </div>
@@ -202,6 +205,8 @@ const result = ref(null)
 /** 本题是否点了「不会」（结果页显示区别于听错） */
 const gaveUp = ref(false)
 const submitting = ref(false)
+/** 误触改判请求中 */
+const fixing = ref(false)
 const wordInputRef = ref(null)
 
 const current = computed(() => words.value[currentIndex.value])
@@ -321,6 +326,25 @@ function next() {
   inputWord.value = ''
   selectedMeaning.value = ''
   currentIndex.value++
+}
+
+/** 误触改判：拼写关手滑打错的判错恢复成答对——盒子按答错前等级+1、错题本还原（快照随判错响应回传）。
+ * 仅限释义选对的场景（释义是点选不存在误触）；结果就地翻绿，统计如实翻转 */
+async function fixTypo() {
+  if (!result.value || result.value.passed || gaveUp.value || fixing.value) return
+  fixing.value = true
+  try {
+    const r = await api.dictTypoFix(current.value.wordId, {
+      boxBefore: result.value.boxBefore,
+      notebookBefore: result.value.notebookBefore
+    })
+    result.value = r
+    wrongCount.value--
+    rightCount.value++
+    speakItalian(r.word)
+  } finally {
+    fixing.value = false
+  }
 }
 
 /** 全局键盘：出结果后 Enter 切题；第一关 1-4 选释义 + Enter 确认；0 = 不会（两关通用）；空格 = 播放发音

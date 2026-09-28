@@ -115,7 +115,10 @@
           <el-button v-if="!result" type="primary" round size="large" :loading="submitting" @click="submit(false)">
             提交（Enter）
           </el-button>
-          <el-button v-else type="primary" round size="large" @click="next">
+          <el-button v-if="result && !result.passed && !gaveUp" round :loading="fixing" @click="fixTypo">
+            手滑了，改判对
+          </el-button>
+          <el-button v-if="result" type="primary" round size="large" @click="next">
             下一个（Enter）
           </el-button>
         </div>
@@ -156,6 +159,8 @@ const result = ref(null)
 const gaveUp = ref(false)
 const submitting = ref(false)
 const wordInputRef = ref(null)
+/** 误触改判请求中 */
+const fixing = ref(false)
 
 const current = computed(() => words.value[currentIndex.value])
 const answered = computed(() => rightCount.value + wrongCount.value)
@@ -223,6 +228,25 @@ async function submit(gaveUpFlag = false) {
 /** 不会：放弃作答判错（归 0 明天再拼），保留输入框内容仅作展示 */
 function giveUp() {
   submit(true)
+}
+
+/** 误触改判：手滑打错的判错恢复成答对——盒子按答错前等级+1、错题本还原（快照随判错响应回传）。
+ * 结果就地翻绿，统计如实翻转（本次是打字题，答错必已计数） */
+async function fixTypo() {
+  if (!result.value || result.value.passed || gaveUp.value || fixing.value) return
+  fixing.value = true
+  try {
+    const r = await api.spellTypoFix(current.value.wordId, {
+      boxBefore: result.value.boxBefore,
+      notebookBefore: result.value.notebookBefore
+    })
+    result.value = r
+    wrongCount.value--
+    rightCount.value++
+    speakItalian(r.word)
+  } finally {
+    fixing.value = false
+  }
 }
 
 /** 下一题 */

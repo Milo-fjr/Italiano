@@ -41,10 +41,12 @@ export default {
   // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则）
   getSpellDue: () => http.get('/spell'),
   spellAnswer: (id, data) => http.post(`/spell/${id}/answer`, data),
+  spellTypoFix: (id, data) => http.post(`/spell/${id}/typo-fix`, data),
   // 听写模式（听音→写词，独立听写盒子 + 防撞规则；两段式：先选释义再拼写）
   getDictDue: () => http.get('/dict'),
   dictCheckMeaning: (id, data) => http.post(`/dict/${id}/check-meaning`, data),
   dictAnswer: (id, data) => http.post(`/dict/${id}/answer`, data),
+  dictTypoFix: (id, data) => http.post(`/dict/${id}/typo-fix`, data),
   // 错题本（双本制：词本 main=测验/拼写/听写答错；变位本 conj=加练变位题型答错；学会后手动移出）
   getNotebook: (book = 'main') => http.get('/notebook', { params: { book } }),
   notebookLearn: (id, book = 'main') => http.post(`/notebook/${id}/learn`, null, { params: { book } }),
@@ -63,6 +65,7 @@ export default {
   practiceSpellAnswer: (id, data) => http.post(`/practice/${id}/spell-answer`, data),
   practiceDictCheckMeaning: (id, data) => http.post(`/practice/${id}/dict-check-meaning`, data),
   practiceDictAnswer: (id, data) => http.post(`/practice/${id}/dict-answer`, data),
+  practiceTypoFix: (id, type, data) => http.post(`/practice/${id}/typo-fix`, data, { params: { type } }),
   practiceIrregularCheckMeaning: (id, data) => http.post(`/practice/${id}/irregular-check-meaning`, data),
   practiceIrregularCheckPerson: (id, data) => http.post(`/practice/${id}/irregular-check-person`, data),
   practiceIrregularAnswer: (id, data) => http.post(`/practice/${id}/irregular-answer`, data)
