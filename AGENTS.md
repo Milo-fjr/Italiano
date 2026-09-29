@@ -28,6 +28,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 ```
 
 - 验证 API：**含中文的请求/响应必须用 node fetch（tmp_*.js），不能用 PowerShell Invoke-RestMethod**——后者把 UTF-8 响应按 Latin-1 解码，中文在内存里就变乱码，回传判分必 false（2026-09-23 判分回归实测踩坑，差点误诊为重构回归）；中文输出写临时文件用 Read 看仍会乱码时同理。临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore
+- **所有 API 响应是 `{code, message, data}` 包装结构**（前端 axios 拦截器已自动拆包，所以前端代码里直接拿业务字段）。裸 node fetch 验证接口时必须取 `j.data.xxx`——直接 `j.total` 全是 undefined，序列化出来是空 `{}`，别误判成接口坏了（2026-09-30 注入测试实测绕了一圈）
 - 表名是 `word`（不是 words）、`word_progress`、`daily_extract`、`setting`
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
 - **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
