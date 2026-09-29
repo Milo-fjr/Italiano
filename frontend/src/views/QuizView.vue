@@ -15,7 +15,7 @@
             :format="() => `${total - words.length} / ${total}`"
           />
           <span class="progress-hint">
-            已测 / 本批 {{ total }} 题<template v-if="poolTotal > total"> · 池中共 {{ poolTotal }} 题</template>
+            已测 / 本批 {{ total }} 题 · 剩余池子中有 {{ poolTotal - total }} 个词
             · 认识 {{ knowCount }} · 不认识 {{ forgotCount }}
           </span>
         </div>

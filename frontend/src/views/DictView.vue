@@ -15,7 +15,7 @@
             :format="() => `${answered} / ${total}`"
           />
           <span class="progress-hint">
-            已听 / 本批 {{ total }} 题<template v-if="poolTotal > total"> · 池中共 {{ poolTotal }} 题</template>
+            已听 / 本批 {{ total }} 题 · 剩余池子中有 {{ poolTotal - total }} 个词
             · 听对 {{ rightCount }} · 听错 {{ wrongCount }}
           </span>
         </div>
