@@ -85,6 +85,10 @@ public class StatsService {
                 .filter(p -> today.equals(p.getLastDictAt())).count();
         dto.setDictDueCount(clampToQuota(dictDue, cfg.getDictDailyLimit(), dictAnsweredToday));
 
+        // 错题本双本在册数（导航红点 + 错题本页签计数；错题本无到期/配额概念，直接报在册数量）
+        dto.setNotebookCount(progresses.stream().filter(p -> Boolean.TRUE.equals(p.getInNotebook())).count());
+        dto.setConjNotebookCount(progresses.stream().filter(p -> Boolean.TRUE.equals(p.getInConjNotebook())).count());
+
         // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
         long inSrs = progresses.stream()
                 .filter(p -> p.getBox() != null && p.getBox() > 0).count();

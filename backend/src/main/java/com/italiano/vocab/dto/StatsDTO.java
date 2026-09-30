@@ -41,6 +41,12 @@ public class StatsDTO {
     /** 已听写词数（至少听写过一次，进入过听写体系） */
     private long dictCoveredWords;
 
+    /** 错题本词本在册数（in_notebook=1；导航红点与错题本页签计数用） */
+    private long notebookCount;
+
+    /** 错题本变位本在册数（in_conj_notebook=1） */
+    private long conjNotebookCount;
+
     /** SRS 盒子分布（Box 0-5） */
     private List<CountBucket> boxDistribution;
 

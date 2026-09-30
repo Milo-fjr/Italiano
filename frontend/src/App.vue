@@ -18,7 +18,9 @@
             听写模式<i v-if="store.stats && store.stats.dictDueCount > 0" class="nav-dot" />
           </el-menu-item>
           <el-menu-item index="/practice">加练模式</el-menu-item>
-          <el-menu-item index="/notebook">错题本</el-menu-item>
+          <el-menu-item index="/notebook">
+            错题本<i v-if="store.stats && (store.stats.notebookCount > 0 || store.stats.conjNotebookCount > 0)" class="nav-dot" />
+          </el-menu-item>
           <el-menu-item index="/library">单词库</el-menu-item>
           <el-menu-item index="/stats">统计</el-menu-item>
           <el-menu-item index="/settings">设置</el-menu-item>

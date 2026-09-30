@@ -28,8 +28,8 @@
     <!-- 双本切换：词本（不认识/不会拼）/ 变位本（加练变位答错） -->
     <div class="book-tabs">
       <el-radio-group v-model="activeBook" @change="onBookChange">
-        <el-radio-button value="main">词本（不认识 / 不会拼）</el-radio-button>
-        <el-radio-button value="conj">变位本（变位错了）</el-radio-button>
+        <el-radio-button value="main">词本（不认识 / 不会拼）· {{ stats?.notebookCount ?? 0 }}</el-radio-button>
+        <el-radio-button value="conj">变位本（变位错了）· {{ stats?.conjNotebookCount ?? 0 }}</el-radio-button>
       </el-radio-group>
     </div>
 
@@ -87,6 +87,11 @@ import { irregularTagType } from '../utils/irregular'
 import { speakItalian } from '../utils/tts'
 import WordDetailDialog from '../components/WordDetailDialog.vue'
 import SoundButton from '../components/SoundButton.vue'
+import { useStatsStore } from '../stores/stats'
+
+const statsStore = useStatsStore()
+/** 双本在册数（红点与页签计数口径，学会了/放回去后即时刷新） */
+const stats = computed(() => statsStore.stats)
 
 const loading = ref(false)
 /** 当前本（main=词本：不认识/不会拼；conj=变位本：加练变位答错） */
@@ -134,12 +139,14 @@ async function onLearn(id) {
   if (w) speakItalian(w.word)
   await api.notebookLearn(id, activeBook.value)
   learnedIds.add(id)
+  statsStore.load().catch(() => {})
 }
 
 /** 放回去：撤销手滑（恢复进本） */
 async function onUndo(id) {
   await api.notebookUndo(id, activeBook.value)
   learnedIds.delete(id)
+  statsStore.load().catch(() => {})
 }
 
 /** 全部学会：一键清空当前本（防误触二次确认） */
@@ -158,6 +165,7 @@ async function onLearnAll() {
   const count = await api.notebookLearnAll(activeBook.value)
   ElMessage.success(`已清空${bookName}（${count} 个）`)
   await load()
+  statsStore.load().catch(() => {})
 }
 
 function openDetail(id) {
