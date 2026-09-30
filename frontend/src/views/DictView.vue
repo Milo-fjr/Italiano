@@ -131,6 +131,7 @@
           <div class="verdict" :class="result.passed ? 'ok' : 'bad'">
             {{ result.passed ? '✓ 全部听对' : gaveUp ? '✗ 不会（明天再听）' : '✗ 有错误（明天再听）' }}
           </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
             <span class="compare-input">{{ gaveUp ? '（不会）' : stage === 1 ? '（未到拼写）' : inputWord || '（未输入）' }}</span>
@@ -239,6 +240,7 @@ async function load() {
     wrongCount.value = 0
     result.value = null
     gaveUp.value = false
+    reviewReminded.value = false
     stage.value = 1
     inputWord.value = ''
     selectedMeaning.value = ''
@@ -320,6 +322,7 @@ async function giveUp() {
 /** 下一题 */
 function next() {
   if (!result.value) return
+  reviewReminded.value = false
   result.value = null
   gaveUp.value = false
   stage.value = 1
@@ -332,6 +335,7 @@ function next() {
  * 仅限释义选对的场景（释义是点选不存在误触）；结果就地翻绿，统计如实翻转 */
 async function fixTypo() {
   if (!result.value || result.value.passed || gaveUp.value || fixing.value) return
+  reviewReminded.value = false
   fixing.value = true
   try {
     const r = await api.dictTypoFix(current.value.wordId, {
@@ -347,11 +351,19 @@ async function fixTypo() {
   }
 }
 
+/** 判错复盘拦截：判错（非「不会」）后第一次回车只提醒不切题——防惯性回车跳过对照区，第二次回车才切 */
+const reviewReminded = ref(false)
+
 /** 全局键盘：出结果后 Enter 切题；第一关 1-4 选释义 + Enter 确认；0 = 不会（两关通用）；空格 = 播放发音
  * 空格不跟打字冲突：焦点在任一输入框且已有内容时放行（a presto / mi siedo 需打空格），输入框空着时按空格播放 */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
+    if (!result.value.passed && !gaveUp.value && !reviewReminded.value) {
+      reviewReminded.value = true
+      return
+    }
+    reviewReminded.value = false
     next()
     return
   }

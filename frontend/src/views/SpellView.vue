@@ -97,6 +97,7 @@
           <div class="verdict" :class="result.passed ? 'ok' : 'bad'">
             {{ result.passed ? '✓ 拼对了' : gaveUp ? '✗ 不会（明天再拼）' : '✗ 拼错了（明天再拼）' }}
           </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
           <div class="compare-row" :class="result.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
             <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
@@ -192,6 +193,7 @@ async function load() {
     wrongCount.value = 0
     result.value = null
     gaveUp.value = false
+    reviewReminded.value = false
     inputWord.value = ''
     focusWord()
   } finally {
@@ -234,6 +236,7 @@ function giveUp() {
  * 结果就地翻绿，统计如实翻转（本次是打字题，答错必已计数） */
 async function fixTypo() {
   if (!result.value || result.value.passed || gaveUp.value || fixing.value) return
+  reviewReminded.value = false
   fixing.value = true
   try {
     const r = await api.spellTypoFix(current.value.wordId, {
@@ -252,6 +255,7 @@ async function fixTypo() {
 /** 下一题 */
 function next() {
   if (!result.value) return
+  reviewReminded.value = false
   result.value = null
   gaveUp.value = false
   inputWord.value = ''
@@ -259,10 +263,18 @@ function next() {
   focusWord()
 }
 
+/** 判错复盘拦截：拼错（非「不会」）后第一次回车只提醒不切题——防惯性回车跳过对照区，第二次回车才切 */
+const reviewReminded = ref(false)
+
 /** 全局键盘：出结果后 Enter 切题；答题阶段按 0 = 不会（数字键不跟意语打字冲突，选 0 避免 N 撞字母 n） */
 function onKeydown(e) {
   if (e.key === 'Enter' && result.value && !loading.value) {
     e.preventDefault()
+    if (!result.value.passed && !gaveUp.value && !reviewReminded.value) {
+      reviewReminded.value = true
+      return
+    }
+    reviewReminded.value = false
     next()
     return
   }

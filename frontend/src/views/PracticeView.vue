@@ -134,6 +134,7 @@
           <div class="verdict" :class="spellResult.passed ? 'ok' : 'bad'">
             {{ spellResult.passed ? '✓ 拼对了' : gaveUp ? '✗ 不会' : '✗ 拼错了' }}
           </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
           <div class="compare-row" :class="spellResult.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
             <span class="compare-input">{{ gaveUp ? '（不会）' : inputWord || '（未输入）' }}</span>
@@ -228,6 +229,7 @@
           <div class="verdict" :class="dictResult.passed ? 'ok' : 'bad'">
             {{ dictResult.passed ? '✓ 全部听对' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
           </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
           <div class="compare-row" :class="dictResult.wordCorrect ? 'ok' : 'bad'">
             <span class="compare-label">单词</span>
             <span class="compare-input">{{ gaveUp ? '（不会）' : dictStage === 1 ? '（未到拼写）' : inputWord || '（未输入）' }}</span>
@@ -363,6 +365,7 @@
           <div class="verdict" :class="irrResult.passed ? 'ok' : 'bad'">
             {{ irrResult.passed ? '✓ 答对了' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
           </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
           <div class="compare-row">
             <span class="compare-label">单词</span>
             <span class="compare-answer">
@@ -556,6 +559,7 @@ async function start() {
     irrStage.value = 1
     pickedTense.value = null
     gaveUp.value = false
+    reviewReminded.value = false
     if (selectedType.value === 'spell') {
       focusWord()
     }
@@ -621,6 +625,7 @@ function spellGiveUp() {
 function spellNext() {
   if (!spellResult.value) return
   spellResult.value = null
+  reviewReminded.value = false
   gaveUp.value = false
   inputWord.value = ''
   currentIndex.value++
@@ -630,6 +635,7 @@ function spellNext() {
 /** 误触改判（加练拼写）：无 SRS，仅把这次误触塞进错题本的词按快照还原；结果翻绿、统计如实翻转 */
 async function fixSpellTypo() {
   if (!spellResult.value || spellResult.value.passed || gaveUp.value || fixing.value) return
+  reviewReminded.value = false
   fixing.value = true
   try {
     const r = await api.practiceTypoFix(spellCurrent.value.wordId, 'spell', {
@@ -749,6 +755,7 @@ function irrGiveUp() {
 function irrNext() {
   if (!irrResult.value) return
   irrResult.value = null
+  reviewReminded.value = false
   gaveUp.value = false
   inputWord.value = ''
   pickedMeaning.value = ''
@@ -831,6 +838,7 @@ async function dictFinalize(gaveUpFlag) {
 function dictNext() {
   if (!dictResult.value) return
   dictResult.value = null
+  reviewReminded.value = false
   gaveUp.value = false
   inputWord.value = ''
   pickedMeaning.value = ''
@@ -841,6 +849,7 @@ function dictNext() {
 /** 误触改判（加练听写）：仅限拼写关误触（释义点选不存在误触）；错题本按快照还原，结果翻绿 */
 async function fixDictTypo() {
   if (!dictResult.value || dictResult.value.passed || gaveUp.value || fixing.value) return
+  reviewReminded.value = false
   fixing.value = true
   try {
     const r = await api.practiceTypoFix(dictCurrent.value.wordId, 'dict', {
@@ -860,25 +869,40 @@ function focusWord() {
   nextTick(() => wordInputRef.value?.focus())
 }
 
+/** 判错复盘拦截：判错（非「不会」）后第一次回车只提醒不切题——防惯性回车跳过对照区，第二次回车才切 */
+const reviewReminded = ref(false)
+function reviewRemindGuard() {
+  const r = spellResult.value || dictResult.value || irrResult.value
+  if (r.passed || gaveUp.value || reviewReminded.value) {
+    reviewReminded.value = false
+    return false
+  }
+  reviewReminded.value = true
+  return true
+}
+
 // 全局键盘：与普通拼写/听写同口径——出结果后 Enter 切题；0 = 不会；
 // 听写：空格播放（两关通用，输入框已有内容时放行避免打断打字）、阶段1 1-4 选释义 + Enter 确认
 function onKeydown(e) {
   if (!started.value || loading.value) return
 
-  // 出结果后 Enter 下一题（spell/dict/irregular）
+  // 出结果后 Enter 下一题（spell/dict/irregular）；判错（非「不会」）首次回车提醒复盘
   if (e.key === 'Enter') {
     if (selectedType.value === 'spell' && spellResult.value) {
       e.preventDefault()
+      if (reviewRemindGuard()) return
       spellNext()
       return
     }
     if (selectedType.value === 'dict' && dictResult.value) {
       e.preventDefault()
+      if (reviewRemindGuard()) return
       dictNext()
       return
     }
     if (selectedType.value === 'irregular' && irrResult.value) {
       e.preventDefault()
+      if (reviewRemindGuard()) return
       irrNext()
       return
     }

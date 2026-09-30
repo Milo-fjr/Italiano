@@ -29,6 +29,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 
 - 验证 API：**含中文的请求/响应必须用 node fetch（tmp_*.js），不能用 PowerShell Invoke-RestMethod**——后者把 UTF-8 响应按 Latin-1 解码，中文在内存里就变乱码，回传判分必 false（2026-09-23 判分回归实测踩坑，差点误诊为重构回归）；中文输出写临时文件用 Read 看仍会乱码时同理。临时文件命名 `tmp_*.txt` / `tmp_*.js`，已 gitignore
 - **所有 API 响应是 `{code, message, data}` 包装结构**（前端 axios 拦截器已自动拆包，所以前端代码里直接拿业务字段）。裸 node fetch 验证接口时必须取 `j.data.xxx`——直接 `j.total` 全是 undefined，序列化出来是空 `{}`，别误判成接口坏了（2026-09-30 注入测试实测绕了一圈）
+- **PowerShell `>` 重定向的文件喂 node 读要先剥 BOM + 打行数自证**：BOM 挂在首行首字段上会把 `row.id` 变 undefined，Map 键全塌成 NaN 只剩最后一行——对账 diff 会**静默输出空结果**（2026-09-30 快照还原踩坑：第一版脚本报 0 差异，加 BOM 剥离 + 行数日志后立刻现出 10 行真实差异）。diff 为空这种"符合预期的坏结果"必须先证明解析没坏再相信
 - 表名是 `word`（不是 words）、`word_progress`、`daily_extract`、`setting`
 - **PowerShell 不支持 bash 风格 heredoc**（`$(cat <<'EOF'` 会报错）；**不支持 `&&`/`||` 语句分隔**（用 `;` 串联）；`cmd /c` 被安全策略拦截（要跑 .bat 用 `Start-Process`）；git commit 多段信息用多个 `-m` 参数
 - **Git 远程已切到 GitHub**（origin → github.com/Milo-fjr/Italiano，公开，作品集用）。本机访问 GitHub 走本地代理 `127.0.0.1:6450`（AtlasCore），出网慢；超时已固化进 git 全局配置（`http.https://github.com.timeout=120`、lowSpeedLimit=0、lowSpeedTime=120），直接 `git push` 即可，无需加 `-c` 参数。若报代理连不上，先确认 6450 端口有进程监听
@@ -92,6 +93,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
    **规则延伸到 -co/-go 名词（2026-09-18 用户指出 lago 误标红）**：-co/-go 变复数 o→i 前同样加 h 锁硬音（lago→laghi、fuoco→fuochi），加 h 型共 12 词已从「不规则复数」红标移除（`irregularTag` 判定：`IRREGULAR_PLURAL` 表中复数 value 以 -chi/-ghi 结尾即视为规则加 h 型，不标红）——laghi/banchi 与 -ca/-ga 的 laghe 同一招。**软音型**（amico→amici、medico→medici、stomaco→stomaci、farmaco→farmaci、traffico→traffici、meccanico→meccanici、idraulico→idraulici，重音位置文本不可判）与**强不规则**（braccio→braccia 等）保留红标。注意 `buildPlural` 对 -co/-go 仍全量查 `IRREGULAR_PLURAL` 表（引擎推导不了重音），表照存、红标不照发——**改表别动红标判定，两者解耦**；移除红标后 lago 类词不进加练 irregular 队列（`buildIrregularPoints` 靠 tag 含「不规则复数」才出复数考点），与 -ca/-ga（faccia）一致，当前均无任何模式考察。
    **succo 数据修正（2026-09-18，用户批评"发现了就要查证"）**：查证 succo 实为**加 h 型 piana（SUC-co）→ i succhi**（Collins/多词典确认），原 IRREGULAR_PLURAL 表、DB plural、vocab_data.json 三处均误写 `succi` 且错放「不加 h」组——已全部修正并移组。核对判则：**piana（重音倒数第二，如 cuoco/lago/succo）→ 加 h；sdrucciola（重音倒数第三，如 medico/stomaco/traffico/meccanico/idraulico/farmaco）→ 不加 h；amico→amici 是 piana 不加 h 的著名例外（同 porco→porci），保留标红**。教训：AI 发现数据疑点必须主动查权威词典并修正，不能只口头提醒用户。
 16. **误触改判「手滑了，改判对」（2026-09-28，拼写/听写/加练拼写/加练听写四场景）**：打字题判错后结果区出现次要按钮，点击 = 当答对处理——盒子按**答错前等级 +1**、下次复习按新等级排期、错题本还原到答错前状态。机制：判错时服务端**先快照后变更**，响应携带 `boxBefore`/`notebookBefore`，改判请求原样回传（`POST /{id}/typo-fix`，TypoFixDTO）——零历史表零新字段；加练无 SRS 只还原错题本。边界：**「不会」主动放弃不提供改判**（那是放弃不是手滑）；**听写选错释义不提供**（点选不存在误触，前端按 `meaningCorrect` 条件渲染按钮）；改判后 `last_X_at` 保持今天（防撞既成事实）。统计翻转：改判时前端 wrongCount-- rightCount++。加练 irregular 题型的拼写关**暂无改判**（用户拍板范围是四场景；变位误触想加随时说）。
+   **判错复盘拦截（2026-09-30）**：拼写/听写/加练拼写/加练听写判错后（「不会」与答对**不拦**），首次回车只拦截不切题，第二次回车才切——防惯性回车跳过对照区（用户拍板的两段式设计）。提醒载体 = 结果区内嵌琥珀脉冲横幅 `.review-hint`（样式在 answer-card.css 三视图统一，`v-if="reviewReminded"` 持续显示到切题），**不用 ElMessage toast**——用户实测反馈 3 秒小黄条不醒目。状态 `reviewReminded` 的重置点必须齐全：next()/fixTypo/load()/practice 的 switchType 清空块——漏一处就会出现「下个错词首次回车被静默放行」。
 
 ## 历史事故记录（血泪教训）
 
