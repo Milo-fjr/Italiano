@@ -40,6 +40,18 @@ class ExtraFormServiceTest {
                 ExtraFormService.normalize("MI SONO SVEGLIATO"));
     }
 
+    @Test
+    void 归一化_撇号变体容错() {
+        // d'accordo 是全库唯一带撇号的词；中文输入法打出的弯引号 ‘’、法式重音 ´、反引号 ` 都应视为直撇号 '
+        assertEquals("d'accordo", ExtraFormService.normalize("d'accordo"));
+        assertEquals(ExtraFormService.normalize("d'accordo"), ExtraFormService.normalize("d’accordo"));
+        assertEquals(ExtraFormService.normalize("d'accordo"), ExtraFormService.normalize("d‘accordo"));
+        assertEquals(ExtraFormService.normalize("d'accordo"), ExtraFormService.normalize("d´accordo"));
+        assertEquals(ExtraFormService.normalize("d'accordo"), ExtraFormService.normalize("d`accordo"));
+        // 大小写/空格与撇号容错叠加
+        assertEquals(ExtraFormService.normalize("d'accordo"), ExtraFormService.normalize(" D’ACCORDO "));
+    }
+
     // ===== matchMeaning：释义点选判分 =====
 
     @Test

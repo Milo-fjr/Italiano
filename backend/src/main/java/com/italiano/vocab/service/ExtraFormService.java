@@ -12,12 +12,12 @@ import java.text.Normalizer;
 @Service
 public class ExtraFormService {
 
-    /** 输入归一化：trim + 小写 + NFD 去重音（è→e、à→a）+ 折叠连续空格——中文键盘打不出重音符号 */
+    /** 输入归一化：trim + 小写 + 撇号变体归一（弯引号 ‘’/法式 ´/反引号 ` → 直撇号 '，中文输入法打不出直撇号；d'accordo 全库唯一带撇词）+ NFD 去重音（è→e、à→a）+ 折叠连续空格——中文键盘打不出重音符号。撇号替换必须在 NFD 之前：´ 会被 NFD 分解成空格+组合符而逃过后置处理 */
     public static String normalize(String s) {
         if (s == null) {
             return "";
         }
-        return Normalizer.normalize(s.trim().toLowerCase(), Normalizer.Form.NFD)
+        return Normalizer.normalize(s.trim().toLowerCase().replaceAll("['’‘´`]", "'"), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "")
                 .replaceAll("\\s+", " ");
     }
