@@ -2761,14 +2761,6 @@
     "article" : "il/la",
     "plural" : "clienti"
   }, {
-    "id" : 325,
-    "word" : "denaro",
-    "pos" : "s.m.",
-    "meaning" : "货币",
-    "category" : "服装与购物",
-    "gender" : "m",
-    "article" : "il"
-  }, {
     "id" : 326,
     "word" : "soldi",
     "pos" : "s.m.pl.",
