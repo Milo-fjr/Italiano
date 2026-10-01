@@ -9593,7 +9593,7 @@
     "id" : 774,
     "word" : "spedire",
     "pos" : "v.",
-    "meaning" : "寄；发送",
+    "meaning" : "邮寄",
     "category" : "动词",
     "conjugation" : {
       "present" : {
@@ -9673,7 +9673,7 @@
     "id" : 776,
     "word" : "mandare",
     "pos" : "v.",
-    "meaning" : "寄；派遣",
+    "meaning" : "发送；派遣",
     "category" : "动词",
     "conjugation" : {
       "present" : {
@@ -13335,7 +13335,7 @@
     "id" : 904,
     "word" : "allegro",
     "pos" : "agg.",
-    "meaning" : "快乐的；开朗的",
+    "meaning" : "开朗的；欢快的",
     "category" : "形容词",
     "article" : "l'",
     "adjForms" : {
@@ -13360,7 +13360,7 @@
     "id" : 906,
     "word" : "felice",
     "pos" : "agg.",
-    "meaning" : "幸福的；快乐的",
+    "meaning" : "幸福的",
     "category" : "形容词",
     "adjForms" : {
       "ms" : "felice",
