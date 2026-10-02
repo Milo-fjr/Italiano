@@ -6,6 +6,8 @@ import com.italiano.vocab.dto.DictWordDTO;
 import com.italiano.vocab.dto.IrregularAnswerDTO;
 import com.italiano.vocab.dto.IrregularPointDTO;
 import com.italiano.vocab.dto.IrregularWordDTO;
+import com.italiano.vocab.dto.NounAnswerDTO;
+import com.italiano.vocab.dto.NounQuestionDTO;
 import com.italiano.vocab.dto.PersonTenseOptionDTO;
 import com.italiano.vocab.dto.SpellWordDTO;
 import com.italiano.vocab.dto.TodayWordDTO;
@@ -30,7 +32,8 @@ import java.util.stream.Collectors;
 
 /**
  * 加练模式：纯练习，不碰任何 SRS 盒子/完成次数。
- * 四题型：quiz（认识）、spell（拼写）、dict（听写）、irregular（变化专考：听辨 + 不规则拼写）。
+ * 五题型：quiz（认识）、spell（拼写）、dict（听写）、irregular（变化专考：听辨 + 不规则拼写）、
+ * noun（名词专考：只考"推不出的"——性别不可直推的冠词、非直推复数拼写、非平凡复数冠词，一词多关）。
  * 选词范围：已学过的词（extract_count > 0），随机抽取。
  * 答错只进错题本，答对什么都不记——答到一半退出也没记录（零持久化负担）。
  * <p>
@@ -52,6 +55,11 @@ public class PracticeService {
 
     /** 选人称时态选项池（仅两种时态可听辨人称；未完成时未学不进池，学后随考点枚举一起补） */
     private static final Map<String, String> TENSE_LABELS = Map.of("present", "现在时", "futuro", "简单将来时");
+
+    /** 完全不规则复数（无规则纯记忆，人工从 IRREGULAR_PLURAL 筛出；加 h/软音/-io 双 i 等规则族不在内） */
+    private static final Set<String> TRULY_IRREGULAR_PLURALS = Set.of(
+            "uomo", "dio", "braccio", "uovo", "paio", "dito", "ginocchio", "orecchio",
+            "pigiama", "lenzuolo", "collega", "pilota");
 
     /** 从已学词里随机抽 count 个，按题型组装 DTO */
     public Map<String, Object> draw(String type, int count) {
@@ -90,6 +98,35 @@ public class PracticeService {
             }
             if (words.isEmpty()) {
                 return emptyResult(type, "已学词里还没有可考的变化形式。");
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("total", words.size());
+            result.put("words", words);
+            return result;
+        }
+
+        // 名词专考：只出已学名词（gender 为空的双性别/无性别词整词跳过），一词一题三关
+        if ("noun".equals(type)) {
+            Map<Long, Word> wordById = wordMapper.selectBatchIds(
+                            learned.stream().map(WordProgress::getWordId).toList()).stream()
+                    .collect(Collectors.toMap(Word::getId, Function.identity()));
+            List<NounQuestionDTO> words = new ArrayList<>();
+            for (WordProgress p : learned) {
+                Word w = wordById.get(p.getWordId());
+                if (w == null) {
+                    continue;
+                }
+                NounQuestionDTO dto = buildNounDTO(w);
+                if (dto == null) {
+                    continue;
+                }
+                words.add(dto);
+                if (words.size() >= count) {
+                    break;
+                }
+            }
+            if (words.isEmpty()) {
+                return emptyResult(type, "已学词里还没有可考的名词。");
             }
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("total", words.size());
@@ -285,6 +322,159 @@ public class PracticeService {
     /** 「选人称时态」预检：所选组合与考点标识比对，只判断不落库 */
     public boolean checkIrregularPerson(String type, String person, String chosenTense, String chosenPerson) {
         return type != null && type.equals(chosenTense) && person != null && person.equals(chosenPerson);
+    }
+
+    // ===== 名词专考（noun：单数定冠词 → 复数拼写 → 复数定冠词）=====
+
+    /**
+     * 名词题考点推导（入队与判分共用，包可见供单测）。只考两类纯记忆项：
+     * 关1=单数定冠词，仅当性别不可知（-e 结尾，或词尾骗人的反常 -a 阳/-o 阴，如 problema/radio/mano）；
+     * 关2=复数拼写，仅当复数完全不规则（TRULY_IRREGULAR_PLURALS 白名单 + "/" 双形式）；
+     * 关3=复数定冠词，仅当性别漂移 il→le（le braccia/le uova 类）。
+     * 规则族（加 h、软音、lo/l'→gli、-cia/-glia 保 i、-io 双 i、不变复数、直推 -o/-a/-e）一律不考。
+     * gender 为空（双性别/无性别）、DB 冠词为 "il/la" 并列、无任何可考项 → 返回 null 整词跳过。
+     */
+    record NounGates(boolean hasArticleGate, String article, String plural,
+                     boolean hasPluralSpell, String pluralArticle, boolean hasPluralArticle) {
+    }
+
+    static NounGates deriveNounGates(String word, String pos, String gender,
+                                     String dbArticle, String dbPlural) {
+        if (pos == null || !(pos.contains("s.m.") || pos.contains("s.f."))) {
+            return null;
+        }
+        if (gender == null || gender.isBlank()) {
+            return null;
+        }
+        String article = dbArticle != null && !dbArticle.isBlank()
+                ? dbArticle
+                : ItalianGrammarUtil.inferArticle(word, pos, gender);
+        if (article == null || article.isBlank() || article.contains("/")) {
+            return null;
+        }
+        String w = word.toLowerCase();
+        boolean genderUnknown = w.endsWith("e")
+                || ("m".equals(gender) && w.endsWith("a"))
+                || ("f".equals(gender) && w.endsWith("o"));
+        String plural = dbPlural != null && !dbPlural.isBlank()
+                ? dbPlural
+                : ItalianGrammarUtil.buildPlural(word, pos);
+        boolean invariable = plural != null && !plural.isBlank()
+                && ExtraFormService.normalize(plural.split("/")[0]).equals(ExtraFormService.normalize(word));
+        boolean hasSpell = plural != null && !plural.isBlank() && !invariable
+                && (TRULY_IRREGULAR_PLURALS.contains(w) || plural.contains("/"));
+        String pluralArticle = plural == null || plural.isBlank() ? null
+                : ItalianGrammarUtil.pluralArticle(article, gender, word, plural);
+        boolean hasPA = pluralArticle != null && !pluralArticle.isBlank() && !pluralArticle.contains("/")
+                && "il".equals(article) && "le".equals(pluralArticle); // 仅性别漂移
+        if (!genderUnknown && !hasSpell && !hasPA) {
+            return null;
+        }
+        return new NounGates(genderUnknown, article, plural, hasSpell, hasPA ? pluralArticle : null, hasPA);
+    }
+
+    /** 关1 选项：7 个定冠词形态里取正确项 + 3 个干扰项，整体打乱（包可见供单测） */
+    static List<String> articleOptionsFor(String correct) {
+        return buildShuffledOptions(correct, List.of("il", "lo", "la", "l'", "i", "gli", "le"));
+    }
+
+    /** 关3 选项：复数定冠词四形态全集（l' 是复数里最常见的误选，留作干扰项） */
+    static List<String> pluralArticleOptionsFor(String correct) {
+        return buildShuffledOptions(correct, List.of("i", "gli", "le", "l'"));
+    }
+
+    private static List<String> buildShuffledOptions(String correct, List<String> pool) {
+        List<String> distractors = new ArrayList<>(pool);
+        distractors.remove(correct);
+        Collections.shuffle(distractors);
+        List<String> options = new ArrayList<>();
+        options.add(correct);
+        options.addAll(distractors.subList(0, Math.min(3, distractors.size())));
+        Collections.shuffle(options);
+        return options;
+    }
+
+    private NounQuestionDTO buildNounDTO(Word w) {
+        NounGates g = deriveNounGates(w.getWord(), w.getPos(), w.getGender(), w.getArticle(), w.getPlural());
+        if (g == null) {
+            return null;
+        }
+        NounQuestionDTO dto = new NounQuestionDTO();
+        dto.setWordId(w.getId());
+        dto.setWord(w.getWord());
+        dto.setPos(w.getPos());
+        dto.setMeaning(w.getMeaning());
+        dto.setCategory(w.getCategory());
+        dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
+        dto.setHasArticleGate(g.hasArticleGate());
+        dto.setArticleOptions(articleOptionsFor(g.article()));
+        dto.setHasPluralSpell(g.hasPluralSpell());
+        dto.setHasPluralArticle(g.hasPluralArticle());
+        if (g.hasPluralArticle()) {
+            dto.setPluralArticleOptions(pluralArticleOptionsFor(g.pluralArticle()));
+        }
+        return dto;
+    }
+
+    /** 关1预检：所选单数定冠词与真值比对，只判断不落库（选错由前端走正式判分） */
+    public boolean checkNounArticle(Long wordId, String article) {
+        Word w = wordMapper.selectById(wordId);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        NounGates g = deriveNounGates(w.getWord(), w.getPos(), w.getGender(), w.getArticle(), w.getPlural());
+        return g != null && ExtraFormService.normalize(article).equals(ExtraFormService.normalize(g.article()));
+    }
+
+    /** 关2预检：复数拼写与真值比对（"/" 双形式任一命中），只判断不落库 */
+    public boolean checkNounPlural(Long wordId, String plural) {
+        Word w = wordMapper.selectById(wordId);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        NounGates g = deriveNounGates(w.getWord(), w.getPos(), w.getGender(), w.getArticle(), w.getPlural());
+        return g != null && g.hasPluralSpell() && matchesAny(plural, g.plural());
+    }
+
+    /**
+     * 名词专考判分：三关现场推导比对（词上不存在的关视为通过），答错进变位本——
+     * 名词形式错与变位错同族（形式/语法），不进词本。
+     */
+    @Transactional
+    public Map<String, Object> answerNoun(Long wordId, NounAnswerDTO body) {
+        Word w = wordMapper.selectById(wordId);
+        if (w == null) {
+            throw new IllegalArgumentException("单词不存在");
+        }
+        NounGates g = deriveNounGates(w.getWord(), w.getPos(), w.getGender(), w.getArticle(), w.getPlural());
+        if (g == null) {
+            throw new IllegalArgumentException("该词没有可考的名词考点");
+        }
+        boolean articleCorrect = !g.hasArticleGate()
+                || (body.getArticle() != null && matchesAny(body.getArticle(), g.article()));
+        boolean pluralCorrect = !g.hasPluralSpell()
+                || (body.getPlural() != null && matchesAny(body.getPlural(), g.plural()));
+        boolean pluralArticleCorrect = !g.hasPluralArticle()
+                || (body.getPluralArticle() != null && matchesAny(body.getPluralArticle(), g.pluralArticle()));
+        boolean passed = articleCorrect && pluralCorrect && pluralArticleCorrect;
+        if (!passed) {
+            markConjNotebook(wordId);
+        }
+
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("passed", passed);
+        r.put("articleCorrect", articleCorrect);
+        r.put("pluralCorrect", pluralCorrect);
+        r.put("pluralArticleCorrect", pluralArticleCorrect);
+        r.put("article", g.article());
+        r.put("plural", g.plural());
+        r.put("pluralArticle", g.pluralArticle());
+        r.put("word", w.getWord());
+        r.put("meaning", w.getMeaning());
+        r.put("pos", w.getPos());
+        r.put("category", w.getCategory());
+        r.put("irregular", ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
+        return r;
     }
 
     // ===== 不规则考点枚举与答案推导 =====

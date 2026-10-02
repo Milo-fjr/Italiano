@@ -35,15 +35,15 @@ export default {
   undoWord: (id) => http.post(`/words/${id}/undo`),
   // 自测「不认识」：SRS 盒子归 0，明天再复习（词保留在本批次）
   forgetWord: (id) => http.post(`/words/${id}/forget`),
-  // 测验模式（SRS 到期复习，独立于学习批次）
-  getQuizDue: () => http.get('/quiz'),
+  // 测验模式（SRS 到期复习，独立于学习批次；params.all=1 手动续池无视每日上限）
+  getQuizDue: (params) => http.get('/quiz', { params }),
   quizKnow: (id) => http.post(`/quiz/${id}/know`),
-  // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则）
-  getSpellDue: () => http.get('/spell'),
+  // 拼写模式（中→意产出复习，独立拼写盒子 + 防撞规则；params.all=1 手动续池）
+  getSpellDue: (params) => http.get('/spell', { params }),
   spellAnswer: (id, data) => http.post(`/spell/${id}/answer`, data),
   spellTypoFix: (id, data) => http.post(`/spell/${id}/typo-fix`, data),
-  // 听写模式（听音→写词，独立听写盒子 + 防撞规则；两段式：先选释义再拼写）
-  getDictDue: () => http.get('/dict'),
+  // 听写模式（听音→写词，独立听写盒子 + 防撞规则；两段式：先选释义再拼写；params.all=1 手动续池）
+  getDictDue: (params) => http.get('/dict', { params }),
   dictCheckMeaning: (id, data) => http.post(`/dict/${id}/check-meaning`, data),
   dictAnswer: (id, data) => http.post(`/dict/${id}/answer`, data),
   dictTypoFix: (id, data) => http.post(`/dict/${id}/typo-fix`, data),
@@ -68,5 +68,8 @@ export default {
   practiceTypoFix: (id, type, data) => http.post(`/practice/${id}/typo-fix`, data, { params: { type } }),
   practiceIrregularCheckMeaning: (id, data) => http.post(`/practice/${id}/irregular-check-meaning`, data),
   practiceIrregularCheckPerson: (id, data) => http.post(`/practice/${id}/irregular-check-person`, data),
-  practiceIrregularAnswer: (id, data) => http.post(`/practice/${id}/irregular-answer`, data)
+  practiceIrregularAnswer: (id, data) => http.post(`/practice/${id}/irregular-answer`, data),
+  practiceNounCheckArticle: (id, data) => http.post(`/practice/${id}/noun-check-article`, data),
+  practiceNounCheckPlural: (id, data) => http.post(`/practice/${id}/noun-check-plural`, data),
+  practiceNounAnswer: (id, data) => http.post(`/practice/${id}/noun-answer`, data)
 }

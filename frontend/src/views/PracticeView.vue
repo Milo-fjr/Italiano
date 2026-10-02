@@ -51,10 +51,10 @@
           </div>
         </div>
         <div class="count-row">
-          <span class="count-label">{{ selectedType === 'irregular' ? '词量（每词多个考点）' : '题量' }}</span>
+          <span class="count-label">{{ countLabel }}</span>
           <el-radio-group v-model="selectedCount" size="large">
             <el-radio-button v-for="n in [10, 20, 30, 50]" :key="n" :value="n">
-              {{ n }}{{ selectedType === 'irregular' ? ' 词' : ' 题' }}
+              {{ n }}{{ countSuffix }}
             </el-radio-button>
           </el-radio-group>
         </div>
@@ -423,6 +423,145 @@
       </el-card>
     </div>
 
+    <!-- 名词专考（noun）：一词三关——单数定冠词 4选1 → 复数拼写 → 复数定冠词 4选1 -->
+    <div v-else-if="selectedType === 'noun' && nounCurrent" v-loading="loading" class="spell-stage">
+      <el-card class="spell-card">
+        <div class="prompt-tags">
+          <span class="head-tags">
+            <el-tag v-if="nounCurrent.irregular" size="small" :type="irregularTagType(nounCurrent.irregular)">{{ nounCurrent.irregular }}</el-tag>
+            <el-tag size="small" :type="posTagType(nounCurrent.pos)">{{ nounCurrent.pos || '-' }}</el-tag>
+            <el-tag size="small" type="info" effect="plain">{{ nounCurrent.category }}</el-tag>
+          </span>
+        </div>
+        <div class="word-prompt">
+          <span class="word">{{ nounCurrent.word }}</span>
+          <SoundButton :text="nounCurrent.word" />
+        </div>
+        <div class="meaning-sub">{{ nounCurrent.meaning }}</div>
+
+        <div class="stage-hint">
+          <template v-if="nounStage === 1">这个名词的单数定冠词是？</template>
+          <template v-else-if="nounStage === 2">写出它的复数形式</template>
+          <template v-else>写出复数前的定冠词</template>
+        </div>
+
+        <!-- 关1：单数定冠词 4 选 1 -->
+        <div v-if="nounStage === 1 && !nounResult" class="inputs">
+          <div class="input-item">
+            <label class="input-label">单数定冠词 <span class="label-hint">（1-4 选 · 0 不会 · Enter 确认）</span></label>
+            <div class="meaning-options">
+              <button
+                v-for="(opt, idx) in nounCurrent.articleOptions"
+                :key="opt"
+                type="button"
+                class="option-btn"
+                :class="{ selected: pickedArticle === opt }"
+                @click="pickedArticle = opt"
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关2：复数拼写 -->
+        <div v-else-if="nounStage === 2 && !nounResult" class="inputs">
+          <div v-if="nounCurrent.hasArticleGate" class="input-item">
+            <label class="input-label">单数定冠词（已选对）</label>
+            <div class="meaning-confirmed">{{ pickedArticle }} {{ nounCurrent.word }}</div>
+          </div>
+          <div class="input-item">
+            <label class="input-label">复数形式 <span class="label-hint">（0 不会 · Enter 提交）</span></label>
+            <el-input
+              ref="wordInputRef"
+              v-model="inputWord"
+              size="large"
+              placeholder="写出复数形式（重音符号可不带）"
+              :disabled="!!nounResult"
+              @keydown.enter="nounSpellSubmit(false)"
+            />
+          </div>
+        </div>
+
+        <!-- 关3：复数定冠词 4 选 1 -->
+        <div v-else-if="!nounResult" class="inputs">
+          <div v-if="nounCurrent.hasArticleGate" class="input-item">
+            <label class="input-label">单数定冠词（已选对）</label>
+            <div class="meaning-confirmed">{{ pickedArticle }} {{ nounCurrent.word }}</div>
+          </div>
+          <div v-if="nounCurrent.hasPluralSpell" class="input-item">
+            <label class="input-label">复数形式（已写对）</label>
+            <div class="meaning-confirmed">{{ inputWord }}</div>
+          </div>
+          <div class="input-item">
+            <label class="input-label">复数定冠词 <span class="label-hint">（1-4 选 · 0 不会 · Enter 确认）</span></label>
+            <div class="meaning-options">
+              <button
+                v-for="(opt, idx) in nounCurrent.pluralArticleOptions"
+                :key="opt"
+                type="button"
+                class="option-btn"
+                :class="{ selected: pickedPluralArticle === opt }"
+                @click="pickedPluralArticle = opt"
+              ><span class="option-idx">{{ idx + 1 }}</span>{{ opt }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 结果对照：单词 → 单数定冠词 → 复数形式 → 复数定冠词 -->
+        <div v-if="nounResult" class="result">
+          <div class="verdict" :class="nounResult.passed ? 'ok' : 'bad'">
+            {{ nounResult.passed ? '✓ 答对了' : gaveUp ? '✗ 不会' : '✗ 有错误' }}
+          </div>
+          <div v-if="reviewReminded" class="review-hint">先看看自己错在哪 · 再按一次回车继续</div>
+          <div class="compare-row">
+            <span class="compare-label">单词</span>
+            <span class="compare-answer">
+              {{ nounResult.word }}
+              <SoundButton :text="nounResult.word" small />
+            </span>
+          </div>
+          <div v-if="nounCurrent.hasArticleGate" class="compare-row" :class="nounResult.articleCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">单数定冠词</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : pickedArticle || '（未选）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">{{ nounResult.article }} {{ nounResult.word }}</span>
+          </div>
+          <div v-if="nounCurrent.hasPluralSpell" class="compare-row" :class="nounResult.pluralCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">复数形式</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : nounReachedPlural ? (inputWord || '（未输入）') : '（未到复数）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">
+              {{ nounResult.plural }}
+              <SoundButton :text="(nounResult.plural || '').split('/')[0]" small />
+            </span>
+          </div>
+          <div v-if="nounCurrent.hasPluralArticle" class="compare-row" :class="nounResult.pluralArticleCorrect ? 'ok' : 'bad'">
+            <span class="compare-label">复数定冠词</span>
+            <span class="compare-input">{{ gaveUp ? '（不会）' : nounReachedPA ? (pickedPluralArticle || '（未选）') : '（未到）' }}</span>
+            <span class="arrow">→</span>
+            <span class="compare-answer">{{ nounResult.pluralArticle }} {{ (nounResult.plural || '').split('/')[0] }}</span>
+          </div>
+        </div>
+
+        <div class="card-btns">
+          <el-button v-if="!nounResult" type="danger" plain round size="large" :loading="submitting" @click="nounGiveUp">
+            不会（0）
+          </el-button>
+          <el-button v-if="!nounResult && nounStage === 1" type="primary" round size="large" :loading="submitting" @click="confirmNounArticle">
+            确认冠词（Enter）
+          </el-button>
+          <el-button v-else-if="!nounResult && nounStage === 2" type="primary" round size="large" :loading="submitting" @click="nounSpellSubmit(false)">
+            提交（Enter）
+          </el-button>
+          <el-button v-else-if="!nounResult" type="primary" round size="large" :loading="submitting" @click="confirmNounPluralArticle">
+            确认冠词（Enter）
+          </el-button>
+          <el-button v-else type="primary" round size="large" @click="nounNext">
+            下一个（Enter）
+          </el-button>
+        </div>
+      </el-card>
+    </div>
+
     <!-- 完成汇总 -->
     <div v-if="started && finished" class="summary-card">
       <el-card>
@@ -454,7 +593,8 @@ const typeOptions = [
   { value: 'quiz', label: '认识翻卡', icon: '🔄', desc: '意→中翻卡核对，练眼熟' },
   { value: 'spell', label: '中→意拼写', icon: '✍️', desc: '给中文拼意语，练手速' },
   { value: 'dict', label: '听音写词', icon: '🎧', desc: '先选释义再拼写，练听力' },
-  { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '听形式辨人称时态，不规则形式专拼，一词多考点' }
+  { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '听形式辨人称时态，不规则形式专拼，一词多考点' },
+  { value: 'noun', label: '名词冠词', icon: '📌', desc: '只考纯记忆项：-e 词性别、完全不规则复数' }
 ]
 
 const loading = ref(false)
@@ -469,9 +609,17 @@ const wrongCount = ref(0)
 const answered = computed(() => rightCount.value + wrongCount.value)
 const finished = computed(() => started.value && answered.value >= total.value)
 const wrongNote = computed(() =>
-  selectedType.value === 'irregular'
+  selectedType.value === 'irregular' || selectedType.value === 'noun'
     ? `答错的 ${wrongCount.value} 个词已自动进变位错题本，去错题本「变位本」复习吧`
     : `答错的 ${wrongCount.value} 个词已自动进错题本，去错题本复习吧`
+)
+const countLabel = computed(() =>
+  selectedType.value === 'irregular'
+    ? '词量（每词多个考点）'
+    : selectedType.value === 'noun' ? '词量（按词出题，一至两关）' : '题量'
+)
+const countSuffix = computed(() =>
+  selectedType.value === 'irregular' || selectedType.value === 'noun' ? ' 词' : ' 题'
 )
 
 // quiz 专属
@@ -525,6 +673,25 @@ const irrHadPersonChoice = computed(() => {
 })
 const irrReachedSpell = computed(() => irrStage.value === 3)
 
+// noun 专属（名词专考：一词三关——单数定冠词 4选1 → 复数拼写 → 复数定冠词 4选1）
+const nounIndex = ref(0)
+const nounStage = ref(1) // 1=单数定冠词 2=复数拼写 3=复数定冠词
+const pickedArticle = ref('')
+const pickedPluralArticle = ref('')
+const nounResult = ref(null)
+const nounCurrent = computed(() => {
+  if (selectedType.value !== 'noun') return null
+  return words.value[nounIndex.value] || null
+})
+const nounReachedPlural = computed(() => nounStage.value >= 2)
+const nounReachedPA = computed(() => nounStage.value >= 3)
+
+/** 该词的第一个可考关（出题条件由后端 deriveNounGates 决定，关可缺席） */
+function nounFirstGate(w) {
+  if (!w || w.hasArticleGate) return 1
+  return w.hasPluralSpell ? 2 : 3
+}
+
 async function start() {
   loading.value = true
   try {
@@ -558,8 +725,16 @@ async function start() {
     irrResult.value = null
     irrStage.value = 1
     pickedTense.value = null
+    nounIndex.value = 0
+    nounStage.value = 1
+    pickedArticle.value = ''
+    pickedPluralArticle.value = ''
+    nounResult.value = null
     gaveUp.value = false
     reviewReminded.value = false
+    if (selectedType.value === 'noun') {
+      nounStage.value = nounFirstGate(words.value[0])
+    }
     if (selectedType.value === 'spell') {
       focusWord()
     }
@@ -764,6 +939,104 @@ function irrNext() {
   irrIndex.value++
 }
 
+// ===== Noun（名词专考：单数定冠词 → 复数拼写 → 复数定冠词）=====
+
+/** 关1：确认单数定冠词——选对进下一关，选错整题判错（预检不落库，判错走正式 noun-answer） */
+async function confirmNounArticle() {
+  if (nounStage.value !== 1 || !nounCurrent.value || nounResult.value || submitting.value) return
+  if (!pickedArticle.value) {
+    ElMessage.warning('先按 1-4 选一个冠词')
+    return
+  }
+  submitting.value = true
+  try {
+    const r = await api.practiceNounCheckArticle(nounCurrent.value.wordId, { article: pickedArticle.value })
+    if (r.correct) {
+      if (nounCurrent.value.hasPluralSpell) {
+        nounStage.value = 2
+        focusWord()
+      } else if (nounCurrent.value.hasPluralArticle) {
+        nounStage.value = 3
+      } else {
+        await nounFinalize()
+      }
+    } else {
+      await nounFinalize()
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+/** 关2：复数拼写提交——预检选错整题判错，选对进关3（无关3 直接收口判分） */
+async function nounSpellSubmit(gaveUpFlag = false) {
+  if (!nounCurrent.value || nounStage.value !== 2 || nounResult.value || submitting.value) return
+  if (!gaveUpFlag && !inputWord.value.trim()) {
+    ElMessage.warning('还没写呢：写下复数形式再按 Enter，或点「不会」')
+    return
+  }
+  if (gaveUpFlag) {
+    await nounFinalize(true)
+    return
+  }
+  submitting.value = true
+  try {
+    const r = await api.practiceNounCheckPlural(nounCurrent.value.wordId, { plural: inputWord.value })
+    if (r.correct && nounCurrent.value.hasPluralArticle) {
+      nounStage.value = 3
+    } else {
+      await nounFinalize()
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+/** 关3：确认复数定冠词（末关，直接收口正式判分） */
+async function confirmNounPluralArticle() {
+  if (nounStage.value !== 3 || !nounCurrent.value || nounResult.value || submitting.value) return
+  if (!pickedPluralArticle.value) {
+    ElMessage.warning('先按 1-4 选一个冠词')
+    return
+  }
+  await nounFinalize()
+}
+
+/** 正式判分（各关收口共用）：三关现场推导比对，答错进变位本 */
+async function nounFinalize(gaveUpFlag = false) {
+  if (!nounCurrent.value) return
+  submitting.value = true
+  try {
+    nounResult.value = await api.practiceNounAnswer(nounCurrent.value.wordId, {
+      article: pickedArticle.value || '',
+      plural: nounStage.value >= 2 ? inputWord.value : '',
+      pluralArticle: pickedPluralArticle.value || ''
+    })
+    gaveUp.value = gaveUpFlag
+    speakItalian(nounResult.value.word)
+    if (nounResult.value.passed) rightCount.value++
+    else wrongCount.value++
+  } finally {
+    submitting.value = false
+  }
+}
+
+function nounGiveUp() {
+  nounFinalize(true)
+}
+
+function nounNext() {
+  if (!nounResult.value) return
+  nounResult.value = null
+  reviewReminded.value = false
+  gaveUp.value = false
+  inputWord.value = ''
+  pickedArticle.value = ''
+  pickedPluralArticle.value = ''
+  nounIndex.value++
+  nounStage.value = nounFirstGate(words.value[nounIndex.value])
+}
+
 // ===== Dict =====
 function playDictWord() {
   if (dictCurrent.value) speakItalian(dictCurrent.value.word)
@@ -872,7 +1145,7 @@ function focusWord() {
 /** 判错复盘拦截：判错（非「不会」）后第一次回车只提醒不切题——防惯性回车跳过对照区，第二次回车才切 */
 const reviewReminded = ref(false)
 function reviewRemindGuard() {
-  const r = spellResult.value || dictResult.value || irrResult.value
+  const r = spellResult.value || dictResult.value || irrResult.value || nounResult.value
   if (r.passed || gaveUp.value || reviewReminded.value) {
     reviewReminded.value = false
     return false
@@ -904,6 +1177,12 @@ function onKeydown(e) {
       e.preventDefault()
       if (reviewRemindGuard()) return
       irrNext()
+      return
+    }
+    if (selectedType.value === 'noun' && nounResult.value) {
+      e.preventDefault()
+      if (reviewRemindGuard()) return
+      nounNext()
       return
     }
   }
@@ -990,6 +1269,40 @@ function onKeydown(e) {
     }
     return
   }
+
+  // 名词专考：阶段1/3 1-4 选冠词 + Enter 确认；阶段2 0 不会（Enter 提交由输入框处理）；无播放键
+  if (selectedType.value === 'noun' && nounCurrent.value && !nounResult.value) {
+    if (e.key === '0') {
+      e.preventDefault()
+      nounGiveUp()
+      return
+    }
+    const idx = ['1', '2', '3', '4'].indexOf(e.key)
+    if (nounStage.value === 1) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        confirmNounArticle()
+        return
+      }
+      if (idx >= 0 && nounCurrent.value.articleOptions && idx < nounCurrent.value.articleOptions.length) {
+        e.preventDefault()
+        pickedArticle.value = nounCurrent.value.articleOptions[idx]
+      }
+      return
+    }
+    if (nounStage.value === 3) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        confirmNounPluralArticle()
+        return
+      }
+      const opts = nounCurrent.value.pluralArticleOptions || []
+      if (idx >= 0 && idx < opts.length) {
+        e.preventDefault()
+        pickedPluralArticle.value = opts[idx]
+      }
+    }
+  }
 }
 
 onMounted(() => {
@@ -1020,11 +1333,11 @@ onBeforeUnmount(() => {
 .progress-hint { font-size: 12px; color: #98a2ac; white-space: nowrap; }
 
 /* 选题型 */
-.setup-card { max-width: 820px; margin: 0 auto; }
+.setup-card { max-width: 960px; margin: 0 auto; }
 .setup-title { font-size: 16px; font-weight: 600; color: #1e3a2b; }
 .type-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -1127,6 +1440,22 @@ onBeforeUnmount(() => {
   font-size: 17px;
   font-weight: 600;
   color: #1e3a2b;
+}
+
+/* 名词题型：题面单词大字 + 释义小字 */
+.word-prompt {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.word-prompt .word { font-size: 30px; }
+.meaning-sub {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 14px;
+  color: #98a2ac;
 }
 
 /* 结束汇总（本地：上边距，与普通拼写/听写的下边距不同） */

@@ -3,6 +3,7 @@ package com.italiano.vocab.controller;
 import com.italiano.vocab.dto.ApiResponse;
 import com.italiano.vocab.dto.DictAnswerDTO;
 import com.italiano.vocab.dto.IrregularAnswerDTO;
+import com.italiano.vocab.dto.NounAnswerDTO;
 import com.italiano.vocab.dto.SpellAnswerDTO;
 import com.italiano.vocab.dto.TypoFixDTO;
 import com.italiano.vocab.service.PracticeService;
@@ -78,6 +79,27 @@ public class PracticeController {
     public ApiResponse<Map<String, Object>> irregularAnswer(@PathVariable Long id,
                                                             @RequestBody IrregularAnswerDTO body) {
         return ApiResponse.ok(practiceService.answerIrregular(id, body));
+    }
+
+    /** 名词题关1单数定冠词预检（与 irregular-check-* 同口径：只判断不落库，选错由前端走正式判分） */
+    @PostMapping("/{id}/noun-check-article")
+    public ApiResponse<Map<String, Object>> nounCheckArticle(@PathVariable Long id,
+                                                             @RequestBody NounAnswerDTO body) {
+        return ApiResponse.ok(Map.of("correct", practiceService.checkNounArticle(id, body.getArticle())));
+    }
+
+    /** 名词题关2复数拼写预检（只判断不落库，选错由前端走正式判分） */
+    @PostMapping("/{id}/noun-check-plural")
+    public ApiResponse<Map<String, Object>> nounCheckPlural(@PathVariable Long id,
+                                                            @RequestBody NounAnswerDTO body) {
+        return ApiResponse.ok(Map.of("correct", practiceService.checkNounPlural(id, body.getPlural())));
+    }
+
+    /** 名词题判分：单数定冠词 + 复数拼写（可选）+ 复数定冠词（可选），现场推导比对，答错进变位本 */
+    @PostMapping("/{id}/noun-answer")
+    public ApiResponse<Map<String, Object>> nounAnswer(@PathVariable Long id,
+                                                       @RequestBody NounAnswerDTO body) {
+        return ApiResponse.ok(practiceService.answerNoun(id, body));
     }
 
     /** 误触改判（加练拼写/听写）：无 SRS，仅把这次误触塞进错题本的词按快照还原 */
