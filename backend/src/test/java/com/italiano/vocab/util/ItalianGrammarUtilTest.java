@@ -413,14 +413,6 @@ class ItalianGrammarUtilTest {
     }
 
     @Test
-    void 不定冠词推断() {
-        assertEquals("un", ItalianGrammarUtil.indefiniteArticle("amico", "s.m.", "m"));
-        assertEquals("uno", ItalianGrammarUtil.indefiniteArticle("studente", "s.m.", "m"));
-        assertEquals("un'", ItalianGrammarUtil.indefiniteArticle("amica", "s.f.", "f"));
-        assertEquals("una", ItalianGrammarUtil.indefiniteArticle("casa", "s.f.", "f"));
-    }
-
-    @Test
     void 复数冠词_性别漂移与例外() {
         assertEquals("i", ItalianGrammarUtil.pluralArticle("il", "m", "libro", "libri"));
         assertEquals("gli", ItalianGrammarUtil.pluralArticle("lo", "m", "studente", "studenti"));

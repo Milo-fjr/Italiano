@@ -37,7 +37,7 @@
           </div>
         </div>
 
-        <!-- 名词：定冠词/不定冠词与单复数、性别 -->
+        <!-- 名词：定冠词与单复数、性别 -->
         <div v-if="isNoun" class="section">
           <h4>名词</h4>
           <div class="noun-forms">
@@ -57,13 +57,9 @@
               </div>
             </div>
           </div>
-          <div v-if="detail.gender || detail.articleIndefinite" class="noun-meta">
-            <span v-if="detail.gender">
+          <div v-if="detail.gender" class="noun-meta">
+            <span>
               性别：<b>{{ detail.gender === 'm' ? '阳性 (m)' : '阴性 (f)' }}</b>
-            </span>
-            <span v-if="detail.articleIndefinite" class="noun-indef">
-              不定冠词：<b>{{ detail.articleIndefinite + ' ' + detail.word }}</b>
-              <SoundButton :text="detail.articleIndefinite + ' ' + detail.word" small />
             </span>
           </div>
         </div>
@@ -507,12 +503,6 @@ defineExpose({ reload: load })
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-.noun-indef {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* 表格单元格：形式 + 朗读按钮 */

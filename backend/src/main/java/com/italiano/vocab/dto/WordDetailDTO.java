@@ -25,9 +25,6 @@ public class WordDetailDTO {
     /** 复数定冠词（由单数冠词推导，展示用） */
     private String articlePlural;
 
-    /** 不定冠词（un/uno/una/un'，由规则推导，展示用） */
-    private String articleIndefinite;
-
     /** 名词复数形式 */
     private String plural;
 

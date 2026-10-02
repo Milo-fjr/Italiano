@@ -456,26 +456,6 @@ public final class ItalianGrammarUtil {
     }
 
     /**
-     * 推断名词不定冠词（展示用，不落库）：
-     * 阳性：元音/一般辅音 → un（un amico），特殊开头（s+辅音/z/ps/gn/x/y）→ uno（uno studente）
-     * 阴性：元音 → un'（un'amica），辅音 → una（una casa）
-     */
-    public static String indefiniteArticle(String word, String pos, String gender) {
-        if (word == null || word.isBlank() || gender == null || !isNounPos(pos)) {
-            return null;
-        }
-        String w = word.toLowerCase();
-        boolean male = "m".equals(gender);
-        if (startsWithVowel(w)) {
-            return male ? "un" : "un'";
-        }
-        if (male) {
-            return startsWithSpecial(w) ? "uno" : "un";
-        }
-        return "una";
-    }
-
-    /**
      * 生成形容词性数变化（四格：阳性单数/阴性单数/阳性复数/阴性复数）：
      * - 四式（-o 结尾）：bello → bella / belli / belle
      * - 二式（-e 结尾）：grande → grande / grandi（单数阴阳同形，复数 -i）

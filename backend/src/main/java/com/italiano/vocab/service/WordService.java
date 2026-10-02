@@ -126,7 +126,6 @@ public class WordService {
         dto.setGender(w.getGender());
         dto.setArticle(w.getArticle());
         dto.setArticlePlural(ItalianGrammarUtil.pluralArticle(w.getArticle(), w.getGender(), w.getWord(), w.getPlural()));
-        dto.setArticleIndefinite(ItalianGrammarUtil.indefiniteArticle(w.getWord(), w.getPos(), w.getGender()));
         dto.setPlural(w.getPlural());
         dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
         dto.setConjugation(parseConjugation(w.getConjugation()));
