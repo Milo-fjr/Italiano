@@ -1,7 +1,12 @@
 # AGENTS.md — AI 协作须知
 
 给接手本项目的 AI 助手：README 之外的**关键领域知识与踩坑规则**，改动前先读。
-**本文件纪律：规则为主干，案例只留一行防回归锚点，不复述事故经过与日期流水**（完整历史在 git，需要细节用 `git log`/`git show` 回查）。
+
+## 本文件编写风格
+
+- **条目写法 = 规则句（怎么做/别怎么做）+ 机制（为什么会坏）+ 至多一行锚点（防回归结论）**；不写事故经过、对话引用、日期流水、排查过程——完整历史在 git，需要细节用 `git log`/`git show` 回查
+- **陷阱编号冻结**：外部代码注释引用了具体编号，新条目一律追加到章节末尾，不插入、不重排；条目过时改写而非删除（保留编号与结论的对应）
+- **散落的 TODO 一律收进「待决备忘」**，不在正文里散写；守则 0 的"沉淀"即按本风格执行
 
 ## 一句话概述
 
@@ -59,6 +64,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `frontend/src/views/DictView.vue` | 听写模式两段式答题页 |
 | `frontend/src/views/PracticeView.vue` | 加练模式四题型页（irregular 题卡见陷阱 14） |
 | `frontend/src/views/NotebookView.vue` | 错题本双本 tab：卡片/详情/学会了/放回去/全部学会，按 book 参数复用 |
+| `frontend/src/views/LibraryView.vue` | 单词库：全库表格 + 分类/状态筛选 + 关键词搜索 + 导入词库（行点击开详情） |
 | `frontend/src/components/WordDetailDialog.vue` | 详情弹窗（变位表、单复数、朗读） |
 | `frontend/src/utils/tts.js` | Web Speech API 朗读（Windows 意语语音包 Elsa） |
 
@@ -115,4 +121,5 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 - 每次改动：改完 → 浏览器实测 → git commit + push（origin = GitHub Milo-fjr/Italiano，Gitee 停推；代理见高频操作）
 - 学习目标：每天 10-15 词精背，A2 全覆盖后加 B1；明年 6 月毕业、11 月出发意大利
 - 词汇取舍标准 = **用户的认知实用性**（判断权在用户，别拿"意大利高频"反驳）
+- 详情弹窗不展示不定冠词（un/uno/una/un' 由性别 + 首字母规则可推导；定冠词/复数/性别保留）——别加回
 - 技术审美：YAGNI，最小实现；红标/UI 提示同理——什么都强调等于什么都不强调
