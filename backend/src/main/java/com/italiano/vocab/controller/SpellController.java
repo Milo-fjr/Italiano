@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -22,10 +23,10 @@ public class SpellController {
 
     private final SpellService spellService;
 
-    /** 到期拼写队列（随机顺序，不含答案）+ 最近未来到期日 */
+    /** 到期拼写队列（随机顺序，不含答案）+ 最近未来到期日；all=1 为前端「重新加载」手动续池（无视每日上限） */
     @GetMapping
-    public ApiResponse<Map<String, Object>> due() {
-        return ApiResponse.ok(spellService.getDueWords());
+    public ApiResponse<Map<String, Object>> due(@RequestParam(defaultValue = "false") boolean all) {
+        return ApiResponse.ok(spellService.getDueWords(all));
     }
 
     /** 答题判分 + 拼写 SRS 推进，返回正确答案供结果页对照 */

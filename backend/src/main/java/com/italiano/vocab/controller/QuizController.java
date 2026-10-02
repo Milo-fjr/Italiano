@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -22,10 +23,10 @@ public class QuizController {
     private final QuizService quizService;
     private final WordService wordService;
 
-    /** 到期测验词（随机顺序）+ 最近未来到期日 */
+    /** 到期测验词（随机顺序）+ 最近未来到期日；all=1 为前端「重新加载」手动续池（无视每日上限） */
     @GetMapping
-    public ApiResponse<Map<String, Object>> due() {
-        return ApiResponse.ok(quizService.getDueWords());
+    public ApiResponse<Map<String, Object>> due(@RequestParam(defaultValue = "false") boolean all) {
+        return ApiResponse.ok(quizService.getDueWords(all));
     }
 
     /** 测验「认识」：盒 +1（不动完成次数与批次状态） */

@@ -21,7 +21,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <el-button round :loading="loading" @click="load">重新加载</el-button>
+        <el-button round :loading="loading" @click="loadMore">重新加载</el-button>
       </div>
     </div>
 
@@ -31,14 +31,11 @@
         <template #header>
           <div class="summary-head">
             <span>今日听写完成：听对 {{ rightCount }} 个 · 听错 {{ wrongCount }} 个（错的明天回来）</span>
-            <el-button v-if="poolTotal > total && !quotaReached" type="primary" round @click="load">
-              再来一批（池中还有约 {{ poolTotal - total }} 题）
-            </el-button>
-            <el-button round @click="load">重新加载</el-button>
+            <el-button round @click="loadMore">重新加载</el-button>
           </div>
         </template>
-        <div v-if="quotaReached && poolTotal > 0" class="quota-note">
-          今日上限 {{ dailyLimit }} 题已答满，剩余 {{ poolTotal }} 题明天继续
+        <div v-if="quotaReached && poolTotal > total" class="quota-note">
+          今日上限 {{ dailyLimit }} 题已答满 · 点「重新加载」可继续清池（剩约 {{ poolTotal - total }} 题）
         </div>
         <div v-if="wrongCount" class="wrong-note">听错的 {{ wrongCount }} 个词已自动进错题本，去错题本复习吧</div>
         <div v-else class="all-right">全部听对，没有一个错词 🎉</div>
@@ -48,9 +45,9 @@
     <!-- 空状态：进页时今日配额已满（之前答够了） -->
     <el-empty
       v-else-if="!loading && !current && quotaReached && poolTotal > 0"
-      :description="`今日听写已完成 ${answeredToday} / ${dailyLimit} 题，剩余 ${poolTotal} 题明天继续`"
+      :description="`今日听写已完成 ${answeredToday} / ${dailyLimit} 题 · 池中还有 ${poolTotal} 题，点「重新加载」继续`"
     >
-      <el-button round @click="load">重新加载</el-button>
+      <el-button round @click="loadMore">重新加载</el-button>
     </el-empty>
 
     <!-- 空状态：没有到期词 -->
@@ -223,6 +220,24 @@ const nextDueAtText = computed(() => {
   const d = new Date(nextDueAt.value)
   return `${d.getMonth() + 1} 月 ${d.getDate()} 日`
 })
+
+/** 手动续池：无视每日上限，把池子里今天没听写过的词追加进当前队列（保留本会话统计，不清进度） */
+async function loadMore() {
+  loading.value = true
+  try {
+    const r = await api.getDictDue({ all: 1 })
+    const known = new Set(words.value.map((w) => w.wordId))
+    const fresh = (r.words || []).filter((w) => !known.has(w.wordId))
+    words.value = words.value.concat(fresh)
+    total.value = total.value + fresh.length
+    poolTotal.value = r.poolTotal ?? poolTotal.value
+    quotaReached.value = !!r.quotaReached
+    answeredToday.value = r.answeredToday ?? answeredToday.value
+    dailyLimit.value = r.dailyLimit ?? dailyLimit.value
+  } finally {
+    loading.value = false
+  }
+}
 
 async function load() {
   loading.value = true

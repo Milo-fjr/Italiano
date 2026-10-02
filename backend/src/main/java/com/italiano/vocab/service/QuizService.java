@@ -37,11 +37,12 @@ public class QuizService {
      * 到期测验词（next_review_at <= 今天，不筛 box——测验答错的词归 0 后明天到期也能回来）；
      * 附带最近一次未来到期日（无到期词时的空状态提示）。
      * 每日配额（setting.quiz_daily_limit，0=不限制）：按「今天已答数」（last_quiz_at = 今天）计，
-     * 答满 limit 即返回空队列——剩余到期词保持到期状态明天继续（真·每日配额，不是每次抽题上限）；
+     * 只钳制自动首载——all=false 答满 limit 即返回空队列（剩余到期词保持到期状态明天继续）；
+     * all=true 为前端「重新加载」的手动续池：无视上限补齐全部到期词（今天答过的已自然出池）。
      * 未答满时按最欠账优先抽取（到期日最早先出，同日随机）。
      * 返回 poolTotal（到期池全量）/ answeredToday（今日已答）/ dailyLimit / quotaReached，供前端提示与导航红点同口径。
      */
-    public Map<String, Object> getDueWords() {
+    public Map<String, Object> getDueWords(boolean all) {
         LocalDate today = LocalDate.now();
         Setting cfg = settingService.getSetting();
         int limit = cfg.getQuizDailyLimit() == null ? 0 : cfg.getQuizDailyLimit();
@@ -53,15 +54,20 @@ public class QuizService {
                 .le(WordProgress::getNextReviewAt, today));
 
         List<WordProgress> due;
-        if (quotaReached || poolTotal == 0) {
+        if (poolTotal == 0 || (!all && quotaReached)) {
             due = List.of();
         } else {
-            int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
             LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
                     .isNotNull(WordProgress::getNextReviewAt)
                     .le(WordProgress::getNextReviewAt, today);
-            if (remaining < poolTotal) {
-                query.last("ORDER BY next_review_at ASC, RAND() LIMIT " + remaining); // 最欠账优先，同日随机
+            if (all) {
+                // 手动续池：无视每日上限补齐全部到期词（最欠账优先）
+                query.last("ORDER BY next_review_at ASC, RAND()");
+            } else {
+                int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
+                if (remaining < poolTotal) {
+                    query.last("ORDER BY next_review_at ASC, RAND() LIMIT " + remaining); // 最欠账优先，同日随机
+                }
             }
             due = progressMapper.selectList(query);
         }

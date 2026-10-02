@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -22,10 +23,10 @@ public class DictController {
 
     private final DictService dictService;
 
-    /** 到期听写队列（随机顺序，含单词原文供 TTS；不含释义——释义是考察产出）+ 最近未来到期日 */
+    /** 到期听写队列（随机顺序，含单词原文供 TTS；不含释义——释义是考察产出）+ 最近未来到期日；all=1 手动续池 */
     @GetMapping
-    public ApiResponse<Map<String, Object>> due() {
-        return ApiResponse.ok(dictService.getDueWords());
+    public ApiResponse<Map<String, Object>> due(@RequestParam(defaultValue = "false") boolean all) {
+        return ApiResponse.ok(dictService.getDueWords(all));
     }
 
     /** 两段式第一关：释义选项预检（只判对错，不推进 SRS；选对后前端进入拼写关） */

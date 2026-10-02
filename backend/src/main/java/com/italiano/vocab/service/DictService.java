@@ -46,10 +46,11 @@ public class DictService {
 
     /** 到期听写队列（含单词原文供前端 TTS）+ 最近未来听写到期日（空状态提示）。
      * 每日配额（setting.dict_daily_limit，0=不限制）：按「今天已答数」（last_dict_at = 今天）计，
-     * 答满 limit 即返回空队列——剩余到期词保持到期状态明天继续（真·每日配额，不是每次抽题上限）；
+     * 只钳制自动首载——all=false 答满 limit 即返回空队列（剩余到期词保持到期状态明天继续）；
+     * all=true 为前端「重新加载」的手动续池：无视上限补齐全部到期词（今天听写过的已由防撞出池）。
      * 未答满时按最欠账优先抽取（到期日最早先出，同日随机；从未听写过的 NULL 池垫底）。
      * 返回 poolTotal / answeredToday / dailyLimit / quotaReached，供前端提示与导航红点同口径。 */
-    public Map<String, Object> getDueWords() {
+    public Map<String, Object> getDueWords(boolean all) {
         LocalDate today = LocalDate.now();
         Setting cfg = settingService.getSetting();
         int limit = cfg.getDictDailyLimit() == null ? 0 : cfg.getDictDailyLimit();
@@ -70,10 +71,9 @@ public class DictService {
                         .or().lt(WordProgress::getLastSpellAt, today)));
 
         List<WordProgress> due;
-        if (quotaReached || poolTotal == 0) {
+        if (poolTotal == 0 || (!all && quotaReached)) {
             due = List.of();
         } else {
-            int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
             LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
                     .gt(WordProgress::getExtractCount, 0)
                     .and(q -> q.isNull(WordProgress::getDictNextReviewAt)
@@ -86,9 +86,15 @@ public class DictService {
                             .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
                     .and(q -> q.isNull(WordProgress::getLastSpellAt)
                             .or().lt(WordProgress::getLastSpellAt, today));
-            if (remaining < poolTotal) {
-                // 最欠账优先：NULL 池（从未听写过）垫底，有到期日的按日期升序，同日随机
-                query.last("ORDER BY dict_next_review_at IS NULL ASC, dict_next_review_at ASC, RAND() LIMIT " + remaining);
+            if (all) {
+                // 手动续池：无视每日上限补齐全部到期词（NULL 池垫底同序）
+                query.last("ORDER BY dict_next_review_at IS NULL ASC, dict_next_review_at ASC, RAND()");
+            } else {
+                int remaining = limit > 0 ? (int) Math.max(0, limit - answeredToday) : Integer.MAX_VALUE;
+                if (remaining < poolTotal) {
+                    // 最欠账优先：NULL 池（从未听写过）垫底，有到期日的按日期升序，同日随机
+                    query.last("ORDER BY dict_next_review_at IS NULL ASC, dict_next_review_at ASC, RAND() LIMIT " + remaining);
+                }
             }
             due = progressMapper.selectList(query);
         }
