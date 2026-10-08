@@ -6,10 +6,10 @@ import lombok.Data;
 @Data
 public class IrregularAnswerDTO {
 
-    /** 考点类型：present/pp/futuro/plural/bello/adjMp/adjInv */
+    /** 考点类型：present/imperfetto/futuro/pp/plural/bello/adjMp/adjInv */
     private String type;
 
-    /** 人称（仅 present/futuro） */
+    /** 人称（仅 present/futuro/imperfetto） */
     private String person;
 
     /** bello 型语境名词原文 */
@@ -30,7 +30,7 @@ public class IrregularAnswerDTO {
     /** 与题目 points 项一致回传：是否纯听辨点（选对人称时态即过，不拼写） */
     private Boolean listenOnly;
 
-    /** 所选时态（personChoice/listenOnly 点回传：present/futuro） */
+    /** 所选时态（personChoice/listenOnly 点回传：present/futuro/imperfetto） */
     private String chosenTense;
 
     /** 所选人称（personChoice/listenOnly 点回传） */

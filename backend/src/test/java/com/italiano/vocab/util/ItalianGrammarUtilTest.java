@@ -102,6 +102,47 @@ class ItalianGrammarUtilTest {
         assertNull(ItalianGrammarUtil.irregularFuturo("parlare"));
     }
 
+    // ===== 未完成过去时 =====
+
+    @Test
+    void 规则未完成时_三族() {
+        assertForm(ItalianGrammarUtil.regularImperfetto("parlare"), "parlavo", "parlavi", "parlava", "parlavamo", "parlavate", "parlavano");
+        assertForm(ItalianGrammarUtil.regularImperfetto("credere"), "credevo", "credevi", "credeva", "credevamo", "credevate", "credevano");
+        assertForm(ItalianGrammarUtil.regularImperfetto("dormire"), "dormivo", "dormivi", "dormiva", "dormivamo", "dormivate", "dormivano");
+        // 未完成时无加 h / 去 i 拼写音变问题（mangiare→mangiavo、cercare→cercavo 直拼）
+        assertForm(ItalianGrammarUtil.regularImperfetto("mangiare"), "mangiavo", "mangiavi", "mangiava", "mangiavamo", "mangiavate", "mangiavano");
+        assertForm(ItalianGrammarUtil.regularImperfetto("cercare"), "cercavo", "cercavi", "cercava", "cercavamo", "cercavate", "cercavano");
+    }
+
+    @Test
+    void 不规则未完成时_例外表四词() {
+        assertForm(ItalianGrammarUtil.irregularImperfetto("essere"), "ero", "eri", "era", "eravamo", "eravate", "erano");
+        assertForm(ItalianGrammarUtil.irregularImperfetto("fare"), "facevo", "facevi", "faceva", "facevamo", "facevate", "facevano");
+        assertForm(ItalianGrammarUtil.irregularImperfetto("dire"), "dicevo", "dicevi", "diceva", "dicevamo", "dicevate", "dicevano");
+        assertForm(ItalianGrammarUtil.irregularImperfetto("bere"), "bevevo", "bevevi", "beveva", "bevevamo", "bevevate", "bevevano");
+        assertNull(ItalianGrammarUtil.irregularImperfetto("parlare"));
+    }
+
+    @Test
+    void 考点过滤依据_未完成时逐人称() {
+        // 未完成时几乎全规则（regularImperfetto 兜底），仅例外表四词出逐人称考点：
+        // essere 六人称全与规则推导（essevo…）不同 → 6 个考点
+        String[] essere = ItalianGrammarUtil.irregularImperfetto("essere");
+        String[] essereReg = ItalianGrammarUtil.regularImperfetto("essere");
+        for (int i = 0; i < 6; i++) {
+            assertFalse(essere[i].equals(essereReg[i]));
+        }
+        // 规则动词无例外 → 不进逐人称考点（整词仍以听辨点入池）
+        assertNull(ItalianGrammarUtil.irregularImperfetto("credere"));
+        // 未完成时六人称互不同形 → 无同形降级，听辨关始终可出
+        String[] parlare = ItalianGrammarUtil.regularImperfetto("parlare");
+        for (int i = 0; i < 6; i++) {
+            for (int j = i + 1; j < 6; j++) {
+                assertFalse(parlare[i].equals(parlare[j]));
+            }
+        }
+    }
+
     // ===== 过去分词 =====
 
     @Test

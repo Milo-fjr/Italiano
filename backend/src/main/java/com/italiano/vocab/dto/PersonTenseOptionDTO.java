@@ -9,7 +9,7 @@ public class PersonTenseOptionDTO {
     /** 题面标签（如「现在时 · noi」） */
     private String label;
 
-    /** 时态：present/futuro */
+    /** 时态：present/futuro/imperfetto */
     private String tense;
 
     /** 人称：io/tu/lui/lei/noi/voi/loro */

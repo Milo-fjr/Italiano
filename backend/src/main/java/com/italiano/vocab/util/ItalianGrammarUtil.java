@@ -776,21 +776,37 @@ public final class ItalianGrammarUtil {
 
     /** 未完成过去时：不规则表 → 规则后缀（-avo/-evo/-ivo） */
     private static Map<String, String> buildImperfetto(String infinitive, boolean reflexive) {
-        String[] forms = IRREGULAR_IMPERFETTO.get(infinitive);
+        String[] forms = irregularImperfetto(infinitive);
         if (forms == null) {
-            if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
-                return null;
-            }
-            String stem = infinitive.substring(0, infinitive.length() - 3);
-            String v = switch (infinitive.substring(infinitive.length() - 3)) {
-                case "are" -> "av";
-                case "ere" -> "ev";
-                default -> "iv";
-            };
-            forms = new String[]{stem + v + "o", stem + v + "i", stem + v + "a",
-                    stem + v + "amo", stem + v + "ate", stem + v + "ano"};
+            forms = regularImperfetto(infinitive);
+        }
+        if (forms == null) {
+            return null;
         }
         return withPersons(forms, reflexive);
+    }
+
+    /** 不规则未完成时六人称（例外表 essere/fare/dire/bere）；规则动词返回 null */
+    public static String[] irregularImperfetto(String infinitive) {
+        return IRREGULAR_IMPERFETTO.get(infinitive);
+    }
+
+    /**
+     * 规则未完成时六人称（-are→avo / -ere→evo / -ire→ivo；不查例外表）。
+     * 与 irregularImperfetto 逐人称对比筛考点，同 regularPresent。
+     */
+    public static String[] regularImperfetto(String infinitive) {
+        if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
+            return null;
+        }
+        String stem = infinitive.substring(0, infinitive.length() - 3);
+        String v = switch (infinitive.substring(infinitive.length() - 3)) {
+            case "are" -> "av";
+            case "ere" -> "ev";
+            default -> "iv";
+        };
+        return new String[]{stem + v + "o", stem + v + "i", stem + v + "a",
+                stem + v + "amo", stem + v + "ate", stem + v + "ano"};
     }
 
     /** 简单将来时：不规则词干表 → 规则（-are/-ere→erò、-ire→irò） */
