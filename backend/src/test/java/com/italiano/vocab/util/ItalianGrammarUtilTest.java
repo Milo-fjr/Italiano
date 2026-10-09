@@ -143,6 +143,56 @@ class ItalianGrammarUtilTest {
         }
     }
 
+    // ===== 条件式现在时 =====
+
+    @Test
+    void 规则条件式_三族与音变() {
+        assertForm(ItalianGrammarUtil.regularCondizionale("parlare"), "parlerei", "parleresti", "parlerebbe", "parleremmo", "parlereste", "parlerebbero");
+        assertForm(ItalianGrammarUtil.regularCondizionale("credere"), "crederei", "crederesti", "crederebbe", "crederemmo", "credereste", "crederebbero");
+        assertForm(ItalianGrammarUtil.regularCondizionale("dormire"), "dormirei", "dormiresti", "dormirebbe", "dormiremmo", "dormireste", "dormirebbero");
+        // 词干与规则将来时同源：-care 保硬音加 h、-ciare 去 i、普通 -iare 保留 i
+        assertForm(ItalianGrammarUtil.regularCondizionale("giocare"), "giocherei", "giocheresti", "giocherebbe", "giocheremmo", "giochereste", "giocherebbero");
+        assertForm(ItalianGrammarUtil.regularCondizionale("mangiare"), "mangerei", "mangeresti", "mangerebbe", "mangeremmo", "mangereste", "mangerebbero");
+        assertForm(ItalianGrammarUtil.regularCondizionale("cambiare"), "cambierei", "cambieresti", "cambierebbe", "cambieremmo", "cambiereste", "cambierebbero");
+    }
+
+    @Test
+    void 不规则条件式_词干与将来时共享() {
+        assertForm(ItalianGrammarUtil.irregularCondizionale("essere"), "sarei", "saresti", "sarebbe", "saremmo", "sareste", "sarebbero");
+        assertForm(ItalianGrammarUtil.irregularCondizionale("avere"), "avrei", "avresti", "avrebbe", "avremmo", "avreste", "avrebbero");
+        assertForm(ItalianGrammarUtil.irregularCondizionale("fare"), "farei", "faresti", "farebbe", "faremmo", "fareste", "farebbero");
+        assertForm(ItalianGrammarUtil.irregularCondizionale("venire"), "verrei", "verresti", "verrebbe", "verremmo", "verreste", "verrebbero");
+        assertForm(ItalianGrammarUtil.irregularCondizionale("potere"), "potrei", "potresti", "potrebbe", "potremmo", "potreste", "potrebbero");
+        assertForm(ItalianGrammarUtil.irregularCondizionale("bere"), "berrei", "berresti", "berrebbe", "berremmo", "berreste", "berrebbero");
+        assertNull(ItalianGrammarUtil.irregularCondizionale("parlare"));
+    }
+
+    @Test
+    void 考点过滤依据_条件式() {
+        // 例外词干词六人称全与规则推导不同 → 6 个考点（essere 规则推导 essei…，实际 sarei…）
+        String[] essere = ItalianGrammarUtil.irregularCondizionale("essere");
+        String[] essereReg = ItalianGrammarUtil.regularCondizionale("essere");
+        for (int i = 0; i < 6; i++) {
+            assertFalse(essere[i].equals(essereReg[i]));
+        }
+        // dire 的条件式与规则推导一致（direi…）→ 逐人称考点全被过滤，同将来时
+        assertArrayEquals(ItalianGrammarUtil.irregularCondizionale("dire"),
+                ItalianGrammarUtil.regularCondizionale("dire"));
+        // 六人称互不同形 → 无同形降级，听辨关始终可出
+        String[] parlare = ItalianGrammarUtil.regularCondizionale("parlare");
+        for (int i = 0; i < 6; i++) {
+            for (int j = i + 1; j < 6; j++) {
+                assertFalse(parlare[i].equals(parlare[j]));
+            }
+        }
+        // 五时态变位表含条件式；反身动词带代词
+        Map<String, Map<String, String>> conj = ItalianGrammarUtil.buildConjugation("parlare", "v.");
+        assertNotNull(conj.get("condizionale"));
+        assertEquals("parlerei", conj.get("condizionale").get("io"));
+        assertEquals("mi alzerei",
+                ItalianGrammarUtil.buildConjugation("alzarsi", "v.").get("condizionale").get("io"));
+    }
+
     // ===== 过去分词 =====
 
     @Test

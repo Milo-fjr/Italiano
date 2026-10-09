@@ -128,7 +128,17 @@ public class WordService {
         dto.setArticlePlural(ItalianGrammarUtil.pluralArticle(w.getArticle(), w.getGender(), w.getWord(), w.getPlural()));
         dto.setPlural(w.getPlural());
         dto.setIrregular(ItalianGrammarUtil.irregularTag(w.getWord(), w.getPos(), w.getGender()));
-        dto.setConjugation(parseConjugation(w.getConjugation()));
+        Map<String, Map<String, String>> conjugation = parseConjugation(w.getConjugation());
+        // 条件式读时派生（不落库）：存量四时态 JSON 无此键时引擎补齐，与 imperfetto 等平级展示；
+        // 编辑表仍四时态、保存整体覆盖 JSON——condizionale 永远引擎现推，无覆盖丢失风险
+        if (!conjugation.isEmpty() && !conjugation.containsKey("condizionale")
+                && w.getPos() != null && w.getPos().startsWith("v.")) {
+            Map<String, Map<String, String>> derived = ItalianGrammarUtil.buildConjugation(w.getWord(), w.getPos());
+            if (derived != null && derived.get("condizionale") != null) {
+                conjugation.put("condizionale", derived.get("condizionale"));
+            }
+        }
+        dto.setConjugation(conjugation);
         dto.setAdjForms(parseFlatMap(w.getAdjForms()));
         dto.setExample(parseFlatMap(w.getExample()));
 

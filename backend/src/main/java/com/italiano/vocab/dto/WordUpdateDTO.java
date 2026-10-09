@@ -16,7 +16,7 @@ public class WordUpdateDTO {
     private String article;
     /** 名词复数形式（空字符串清空） */
     private String plural;
-    /** 四时态变位 {present, passatoProssimo, imperfetto, futuro} → 六人称 */
+    /** 四时态变位 {present, passatoProssimo, imperfetto, futuro} → 六人称（condizionale 不入编辑面，读时派生） */
     private Map<String, Map<String, String>> conjugation;
     /** 形容词性数变化 {ms, fs, mp, fp} */
     private Map<String, String> adjForms;

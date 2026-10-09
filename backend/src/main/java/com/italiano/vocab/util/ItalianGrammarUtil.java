@@ -652,7 +652,7 @@ public final class ItalianGrammarUtil {
     }
 
     /**
-     * 生成动词四时态变位（现在时/近过去时/未完成过去时/简单将来时，各六人称）：
+     * 生成动词五时态变位（现在时/近过去时/未完成过去时/简单将来时/条件式现在时，各六人称）：
      * - 不规则动词查内置表；反身动词剥离 si 后变位并加反身代词
      * - 近过去时按动词类型选 avere/essere 助动词；essere 类分词标注性数配合（arrivato/a、arrivati/e）
      * 非动词或词尾无法识别时返回 null
@@ -675,6 +675,7 @@ public final class ItalianGrammarUtil {
         putIfNotNull(result, "passatoProssimo", buildPassatoProssimo(infinitive, reflexive));
         putIfNotNull(result, "imperfetto", buildImperfetto(infinitive, reflexive));
         putIfNotNull(result, "futuro", buildFuturo(infinitive, reflexive));
+        putIfNotNull(result, "condizionale", buildCondizionale(infinitive, reflexive));
         return result;
     }
 
@@ -832,6 +833,15 @@ public final class ItalianGrammarUtil {
      * 与 irregularFuturo 逐人称对比筛考点，同 regularPresent。
      */
     public static String[] regularFuturo(String infinitive) {
+        String stem = regularTenseStem(infinitive);
+        return stem == null ? null : conjugateFromStem(stem);
+    }
+
+    /**
+     * 将来时/条件式共享的规则词干（-care/-gare→her、-ciare/-giare 去 i、-ire→ir；不查例外表）。
+     * 非三族动词返回 null。
+     */
+    private static String regularTenseStem(String infinitive) {
         if (!infinitive.endsWith("are") && !infinitive.endsWith("ere") && !infinitive.endsWith("ire")) {
             return null;
         }
@@ -845,12 +855,44 @@ public final class ItalianGrammarUtil {
         } else {
             link = infinitive.endsWith("ire") ? "ir" : "er"; // 普通 -iare 保留 i：cambiare→cambierò
         }
-        return conjugateFromStem(stem + link);
+        return stem + link;
     }
 
     /** 将来时词干 → 六人称（sarò/sarai/sarà/saremo/sarete/saranno） */
     private static String[] conjugateFromStem(String stem) {
         return new String[]{stem + "ò", stem + "ai", stem + "à", stem + "emo", stem + "ete", stem + "anno"};
+    }
+
+    /** 条件式现在时：词干与将来时完全共享（avr-→avrò/avrei），只换词尾（-ei/-esti/-ebbe/-emmo/-este/-ebbero） */
+    private static Map<String, String> buildCondizionale(String infinitive, boolean reflexive) {
+        String[] forms = irregularCondizionale(infinitive);
+        if (forms == null) {
+            forms = regularCondizionale(infinitive);
+        }
+        if (forms == null) {
+            return null;
+        }
+        return withPersons(forms, reflexive);
+    }
+
+    /** 不规则条件式六人称（例外词干与将来时共用 IRREGULAR_FUTURO_STEM，如 sarei/avrei/berrei）；规则动词返回 null */
+    public static String[] irregularCondizionale(String infinitive) {
+        String stem = IRREGULAR_FUTURO_STEM.get(infinitive);
+        return stem == null ? null : conjugateFromCondStem(stem);
+    }
+
+    /**
+     * 规则条件式六人称（词干与规则将来时同源；不查例外表）。
+     * 与 irregularCondizionale 逐人称对比筛考点，同 regularPresent。
+     */
+    public static String[] regularCondizionale(String infinitive) {
+        String stem = regularTenseStem(infinitive);
+        return stem == null ? null : conjugateFromCondStem(stem);
+    }
+
+    /** 条件式词干 → 六人称（sarei/saresti/sarebbe/saremmo/sareste/sarebbero；六人称互不同形） */
+    private static String[] conjugateFromCondStem(String stem) {
+        return new String[]{stem + "ei", stem + "esti", stem + "ebbe", stem + "emmo", stem + "este", stem + "ebbero"};
     }
 
     /**

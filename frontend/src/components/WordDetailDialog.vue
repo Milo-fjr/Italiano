@@ -231,7 +231,11 @@ const tenses = [
   { key: 'imperfetto', label: '未完成过去时' },
   { key: 'futuro', label: '简单将来时' }
 ]
-const tenseLabelMap = Object.fromEntries(tenses.map((t) => [t.key, t.label]))
+// 编辑表只覆盖四时态；condizionale 为读时派生（后端注入），只读展示、标签在此登记
+const tenseLabelMap = {
+  ...Object.fromEntries(tenses.map((t) => [t.key, t.label])),
+  condizionale: '条件式现在时'
+}
 const loading = ref(false)
 const saving = ref(false)
 const editing = ref(false)

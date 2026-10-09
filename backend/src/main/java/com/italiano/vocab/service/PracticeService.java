@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * 答错只进错题本，答对什么都不记——答到一半退出也没记录（零持久化负担）。
  * <p>
  * 变化专考（2026-09-22 听力改造，合并原「变位听写」构想）：题面藏词听形式——
- * 流程 = 听形式 → 选释义（4 选 1）→ 选人称时态（4 选 1，present/futuro/imperfetto 且无同形歧义）→ 拼写；
+ * 流程 = 听形式 → 选释义（4 选 1）→ 选人称时态（4 选 1，TENSE_LABELS 四时态且无同形歧义）→ 拼写；
  * 规则形式以「纯听辨点」入池（每词随机 1 个未被考点占用的时态人称，选对即过不拼——
  * 规则变位拼写无产出价值，练的是音→词尾解码）；同形形式（如 essere 的 sono=io/loro）不出选人称关。
  * 不规则考点由语法引擎枚举（例外表 ∪ -isc 型，逐人称与规则推导比对过滤规则形式）；
@@ -52,9 +52,9 @@ public class PracticeService {
     private final WordProgressMapper progressMapper;
     private final ObjectMapper objectMapper;
 
-    /** 选人称时态选项池（可听辨人称的时态：现在/将来/未完成；三处共用——逐人称考点池、听辨点候选池、干扰项池） */
+    /** 选人称时态选项池（可听辨人称的时态：现在/将来/未完成/条件式；共用——逐人称考点池、听辨点候选池、干扰项池） */
     private static final Map<String, String> TENSE_LABELS = Map.of(
-            "present", "现在时", "futuro", "简单将来时", "imperfetto", "未完成过去时");
+            "present", "现在时", "futuro", "简单将来时", "imperfetto", "未完成过去时", "condizionale", "条件式现在时");
 
     /** 完全不规则复数（无规则纯记忆，人工从 IRREGULAR_PLURAL 筛出；加 h/软音/-io 双 i 等规则族不在内） */
     private static final Set<String> TRULY_IRREGULAR_PLURALS = Set.of(
@@ -481,9 +481,9 @@ public class PracticeService {
 
     /**
      * 枚举一个词的全部考点（不含判分答案，含听力题面字段）：
-     * - 动词：现在时逐人称、过去分词、简单将来时逐人称、未完成时逐人称（与规则推导比对，规则形式不考；
-     *   可听辨人称的时态（present/futuro/imperfetto）无同形歧义者先出「选人称时态」关）+ 1 个纯听辨点
-     * （规则形式随机采样，候选时态 = TENSE_LABELS 三时态）
+     * - 动词：现在时逐人称、过去分词、简单将来时逐人称、未完成时逐人称、条件式逐人称（与规则推导比对，规则形式不考；
+     *   可听辨人称的时态（present/futuro/imperfetto/condizionale）无同形歧义者先出「选人称时态」关）+ 1 个纯听辨点
+     * （规则形式随机采样，候选时态 = TENSE_LABELS 四时态）
      * - 名词：不规则复数（-ca/-ga/-cia/-gia 拼写陷阱词不在此列，规则可推导）
      * - 形容词：bello 型定语形式（BELLO_PRACTICE 语境名词）、-co/-go 硬软音阳性复数、不变形容词复数
      * 不考：阴阳性特殊/性别需记（非变形考点）
@@ -509,6 +509,9 @@ public class PracticeService {
             addPersonPoints(points, "imperfetto", "未完成过去时",
                     ItalianGrammarUtil.irregularImperfetto(infinitive),
                     ItalianGrammarUtil.regularImperfetto(infinitive), reflexive, w);
+            addPersonPoints(points, "condizionale", "条件式现在时",
+                    ItalianGrammarUtil.irregularCondizionale(infinitive),
+                    ItalianGrammarUtil.regularCondizionale(infinitive), reflexive, w);
             addListenOnlyPoint(points, w);
         } else if (ItalianGrammarUtil.isNounPos(w.getPos())) {
             if (tag != null && tag.contains("不规则复数")) {
@@ -567,7 +570,7 @@ public class PracticeService {
     }
 
     /**
-     * 填充听力题面字段：播报形式 + 可听辨人称时态（TENSE_LABELS 三时态）的「选人称时态」关判定。
+     * 填充听力题面字段：播报形式 + 可听辨人称时态（TENSE_LABELS 四时态）的「选人称时态」关判定。
      * 同形歧义（该形式在同一时态内与其他人称相同，如 essere 的 sono=io/loro）→ 不出选人称关，
      * 降级为听形式直接拼写（形式照考，只是人称不可辨）。
      */
@@ -600,7 +603,7 @@ public class PracticeService {
     }
 
     /**
-     * 纯听辨点：从未被本词考点占用的 (三时态, 人称) 组合里随机抽 1 个（排除同形歧义），
+     * 纯听辨点：从未被本词考点占用的 (四时态, 人称) 组合里随机抽 1 个（排除同形歧义），
      * 听形式选对人称时态即过、不拼写——规则变位拼写无产出价值，练的是音→词尾解码。
      * 整表不规则的词（potere/essere 的 futuro 等）候选耗尽则自然不出。
      */
@@ -671,6 +674,7 @@ public class PracticeService {
             case "pp" -> participleFromDb(w);
             case "futuro" -> conjugationForm(w, "futuro", person);
             case "imperfetto" -> conjugationForm(w, "imperfetto", person);
+            case "condizionale" -> conjugationForm(w, "condizionale", person);
             case "plural" -> w.getPlural() != null && !w.getPlural().isBlank()
                     ? w.getPlural()
                     : ItalianGrammarUtil.buildPlural(w.getWord(), w.getPos());
