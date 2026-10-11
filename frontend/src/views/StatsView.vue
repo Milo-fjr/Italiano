@@ -55,7 +55,7 @@
         class="box-row"
       >
         <span class="box-label">
-          {{ b.label }}<template v-if="b.label === 'Box 0'">（未进入复习）</template>
+          {{ b.label }}<template v-if="b.label === 'Box 0'">（测错过，待重测）</template>
         </span>
         <el-progress
           class="box-bar"

@@ -89,11 +89,16 @@ public class StatsService {
         dto.setNotebookCount(progresses.stream().filter(p -> Boolean.TRUE.equals(p.getInNotebook())).count());
         dto.setConjNotebookCount(progresses.stream().filter(p -> Boolean.TRUE.equals(p.getInConjNotebook())).count());
 
-        // SRS 盒子分布：Box 0 = 未进入复习（无进度记录或 box=0），Box 1-5 = Leitner 各级
+        // SRS 盒子分布：从未进入复习（未进 SRS 体系） / Box 0（测错过，待重测） / Box 1-5
+        // 判据：进过复习体系必有 next_review_at（学习完成排期、测验答对排期/答错明天），NULL 且 box<=0 即从未进入
         long inSrs = progresses.stream()
-                .filter(p -> p.getBox() != null && p.getBox() > 0).count();
+                .filter(p -> p.getNextReviewAt() != null
+                        || (p.getBox() != null && p.getBox() > 0)).count();
         List<StatsDTO.CountBucket> boxDist = new ArrayList<>();
-        boxDist.add(bucket("Box 0", words.size() - inSrs));
+        boxDist.add(bucket("从未进入复习", words.size() - inSrs));
+        boxDist.add(bucket("Box 0", progresses.stream()
+                .filter(p -> p.getNextReviewAt() != null
+                        && (p.getBox() == null || p.getBox() == 0)).count()));
         for (int b = 1; b <= 5; b++) {
             final int box = b;
             boxDist.add(bucket("Box " + b, progresses.stream()
