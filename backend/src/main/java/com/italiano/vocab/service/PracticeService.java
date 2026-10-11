@@ -575,6 +575,9 @@ public class PracticeService {
                 points.add(p);
             }
         }
+        // 出队前统一过滤解析不出形式的考点：没有形式的题既不能播也不能答
+        // （nessuno/qualche 被例外表标「不规则变化」但无复数形式，adjMp 解析为 null 会入队成坏题）
+        points.removeIf(p -> p.getForm() == null || p.getForm().isBlank() || "—".equals(p.getForm()));
         return points;
     }
 
