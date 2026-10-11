@@ -134,6 +134,37 @@ public class PracticeService {
             return result;
         }
 
+        // 变位听辨：每个已学动词 1 个纯听辨点（规则/不规则形式皆入池，练"听形式→辨人称时态"）。
+        // 判分复用 irregular 的三端点（check-meaning/check-person/answer），listenOnly 点无拼写关。
+        if ("listen".equals(type)) {
+            Map<Long, Word> wordById = wordMapper.selectBatchIds(
+                            learned.stream().map(WordProgress::getWordId).toList()).stream()
+                    .collect(Collectors.toMap(Word::getId, Function.identity()));
+            List<IrregularWordDTO> words = new ArrayList<>();
+            for (WordProgress p : learned) {
+                Word w = wordById.get(p.getWordId());
+                if (w == null || w.getPos() == null || !w.getPos().startsWith("v.")) {
+                    continue;
+                }
+                List<IrregularPointDTO> points = new ArrayList<>();
+                addListenOnlyPoint(points, w);
+                if (points.isEmpty()) {
+                    continue;
+                }
+                words.add(buildIrregularDTO(w, points));
+                if (words.size() >= count) {
+                    break;
+                }
+            }
+            if (words.isEmpty()) {
+                return emptyResult(type, "已学词里还没有可听辨的动词。");
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("total", words.size());
+            result.put("words", words);
+            return result;
+        }
+
         List<WordProgress> picked = learned.subList(0, Math.min(count, learned.size()));
 
         List<Long> ids = picked.stream().map(WordProgress::getWordId).toList();
@@ -482,8 +513,7 @@ public class PracticeService {
     /**
      * 枚举一个词的全部考点（不含判分答案，含听力题面字段）：
      * - 动词：现在时逐人称、过去分词、简单将来时逐人称、未完成时逐人称、条件式逐人称（与规则推导比对，规则形式不考；
-     *   可听辨人称的时态（present/futuro/imperfetto/condizionale）无同形歧义者先出「选人称时态」关）+ 1 个纯听辨点
-     * （规则形式随机采样，候选时态 = TENSE_LABELS 四时态）
+     *   可听辨人称的时态（present/futuro/imperfetto/condizionale）无同形歧义者先出「选人称时态」关）
      * - 名词：不规则复数（-ca/-ga/-cia/-gia 拼写陷阱词不在此列，规则可推导）
      * - 形容词：bello 型定语形式（BELLO_PRACTICE 语境名词）、-co/-go 硬软音阳性复数、不变形容词复数
      * 不考：阴阳性特殊/性别需记（非变形考点）
@@ -512,7 +542,6 @@ public class PracticeService {
             addPersonPoints(points, "condizionale", "条件式现在时",
                     ItalianGrammarUtil.irregularCondizionale(infinitive),
                     ItalianGrammarUtil.regularCondizionale(infinitive), reflexive, w);
-            addListenOnlyPoint(points, w);
         } else if (ItalianGrammarUtil.isNounPos(w.getPos())) {
             if (tag != null && tag.contains("不规则复数")) {
                 IrregularPointDTO p = point("plural", "复数形式");
@@ -603,9 +632,9 @@ public class PracticeService {
     }
 
     /**
-     * 纯听辨点：从未被本词考点占用的 (四时态, 人称) 组合里随机抽 1 个（排除同形歧义），
+     * 纯听辨点：随机抽 1 个 (四时态, 人称) 组合（排除同形歧义与已占用组合），
      * 听形式选对人称时态即过、不拼写——规则变位拼写无产出价值，练的是音→词尾解码。
-     * 整表不规则的词（potere/essere 的 futuro 等）候选耗尽则自然不出。
+     * 仅供 listen 题型调用（irregular 已不掺听辨点）；整表不规则的词候选耗尽则自然不出。
      */
     private void addListenOnlyPoint(List<IrregularPointDTO> points, Word w) {
         Set<String> occupied = points.stream()

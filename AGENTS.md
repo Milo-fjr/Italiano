@@ -10,7 +10,7 @@
 
 ## 一句话概述
 
-意大利语 A2 词汇学习系统（用户为马可波罗计划生，明年 11 月出发）。Spring Boot 3 + Vue 3，本地单机，MySQL 8，词库 1083 词。六种学习模式：学习 / 测验 / 拼写 / 听写 / 加练（认识/拼写/听写/不规则变化/名词冠词五题型）/ 错题本。
+意大利语 A2 词汇学习系统（用户为马可波罗计划生，明年 11 月出发）。Spring Boot 3 + Vue 3，本地单机，MySQL 8，词库 1083 词。六种学习模式：学习 / 测验 / 拼写 / 听写 / 加练（认识/拼写/听写/不规则变化/变位听辨/名词冠词六题型）/ 错题本。
 启动：双击根目录 `start.bat`（后端 8080 + 前端 5173，5 秒后自动开浏览器——未就绪转圈刷新即可，但先看控制台有无渲染报错，别和真崩溃混淆）。数据库密码在 `backend/application-local.yml`（gitignored，不入库）。
 
 ## 高频操作
@@ -54,7 +54,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `backend/.../service/QuizService.java` | 测验模式：SRS 到期词查询 |
 | `backend/.../service/SpellService.java` | 拼写模式：中→意产出复习，独立 spell 盒子 + 防撞队列 |
 | `backend/.../service/DictService.java` | 听写模式：两段式，独立 dict 盒子 |
-| `backend/.../service/PracticeService.java` | 加练模式：五题型，零 SRS（不规则专考见陷阱 14，名词专考见陷阱 17） |
+| `backend/.../service/PracticeService.java` | 加练模式：六题型，零 SRS（不规则专考见陷阱 14，名词专考见陷阱 17，变位听辨见陷阱 14） |
 | `backend/.../service/WordService.java` | 完成/撤销/编辑/答题，SRS 升降盒 |
 | `backend/.../service/NotebookService.java` | 错题本双本制：词本 in_notebook / 变位本 in_conj_notebook |
 | `backend/src/main/resources/data/vocab_data.json` | 词库导入源（首启导入用） |
@@ -62,7 +62,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 | `frontend/src/views/QuizView.vue` | 测验模式卡片页（SRS 到期） |
 | `frontend/src/views/SpellView.vue` | 拼写模式单卡答题页 |
 | `frontend/src/views/DictView.vue` | 听写模式两段式答题页 |
-| `frontend/src/views/PracticeView.vue` | 加练模式五题型页（irregular 题卡见陷阱 14，noun 题卡见陷阱 17） |
+| `frontend/src/views/PracticeView.vue` | 加练模式六题型页（irregular/listen 题卡见陷阱 14，noun 题卡见陷阱 17） |
 | `frontend/src/views/NotebookView.vue` | 错题本双本 tab：卡片/详情/学会了/放回去/全部学会，按 book 参数复用 |
 | `frontend/src/views/LibraryView.vue` | 单词库：全库表格 + 分类/状态筛选 + 关键词搜索 + 导入词库（行点击开详情） |
 | `frontend/src/components/WordDetailDialog.vue` | 详情弹窗（变位表、单复数、朗读） |
@@ -83,11 +83,11 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 11. **双助动词两处硬编码必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS` 与 `ImportService.fixDualAuxV3` 内的清单（漏改 = 启动迁移每次重复执行打误导日志）；误加的幂等回退在 fixDualAuxV6。camminare/nuotare 是动作方式动词，只用 avere，别加回；追加前确认该词真是 avere/essere 两义都对（如 correre/vivere/volare），拿不准查权威词典。
 12. **错题本排序稳定**（按 word_progress.id 升序 = 进本先后，别加回 shuffle）；测验 SRS 随机防位置记忆——两者别混淆。
 13. **加练模式零 SRS**：从 extract_count>0 随机抽，答错只进错题本，中途退出零持久化；听写释义选错立即判错（预检接口只判断、不落库、不泄答案）。**新 UI 必须对齐同类型现有模式的交互惯例**；`frontend/src/styles/answer-card.css` 是答题卡样式单一来源（拼写/听写/加练三视图 @import 引入；新增题型引它、改样式改它；本地同名规则写在后面即覆盖；仅布局语义真不同的类留各视图，别硬抽）。浏览器验证 CSS 用 getComputedStyle 查具体值（快照证明不了样式表挂载）；Vite dev 代理在后端未启动时把 API 报成 500，别误诊为后端 bug。
-14. **不规则专考（加练第 4 题型 irregular）**：拼写/听写/加练的附加题已全部撤下，不规则统一由本题型专考。考点引擎枚举：现在/将来/未完成时逐人称与规则推导比对（相同不考）+ 裸分词（念裸分词，避 ho/sono 性数歧义）+ 名词不规则复数（"/"双形式任答一）+ bello 型（固定语境推导唯一定语形式）+ -co/-go 软音 + 不变形容词复数=原词。变位考点三段式（听形式→选释义→选人称时态→拼写，同词性优先取干扰项，任一关错整题判错）；pp/名词/形容词考点无人称关。规则形式 = 纯听辨点（选对人称即过、不拼）；同形歧义降级不出人称关；**答案现场推导、题目 DTO 不含答案**（请求回传考点 + listenOnly/personChoice，服务端无状态判分）；DB 手动值优先，引擎推导兜底；全规则动词也入队（每词 1 听辨点）。
+14. **不规则专考（加练第 4 题型 irregular）**：拼写/听写/加练的附加题已全部撤下，不规则统一由本题型专考。考点引擎枚举：现在/将来/未完成时逐人称与规则推导比对（相同不考）+ 裸分词（念裸分词，避 ho/sono 性数歧义）+ 名词不规则复数（"/"双形式任答一）+ bello 型（固定语境推导唯一定语形式）+ -co/-go 软音 + 不变形容词复数=原词。变位考点三段式（听形式→选释义→选人称时态→拼写，同词性优先取干扰项，任一关错整题判错）；pp/名词/形容词考点无人称关。规则形式的听辨训练已拆至独立题型 **listen（变位听辨，第 5 题型）**：irregular 只留真不规则考点（纯规则动词不入队），listen 全动词入池、每词 1 纯听辨点（选对人称即过、不拼、无拼写关），判分复用 irregular 三端点（listenOnly 口径，前端 irrLike 共用题卡与队列摊平）；同形歧义降级不出人称关；**答案现场推导、题目 DTO 不含答案**（请求回传考点 + listenOnly/personChoice，服务端无状态判分）；DB 手动值优先，引擎推导兜底。
 15. **拼写陷阱复数判则**：-ca/-ga → 加 h（banca→banche，锁硬音）；-cia/-gia → 看紧邻 c/g 前一字母（辅音前去 i / 元音后保 i，实现 = `buildPlural` 的 `charAt(len-4)`）；-co/-go：piana 加 h / sdrucciola 不加 h / amico→amici 是著名例外（保留红标）。**IRREGULAR_PLURAL 表照存但红标判定解耦**（复数以 -chi/-ghi 结尾视为规则加 h 不标红；改表别动红标判定）；软音型（amico/medico/stomaco/traffico 等）与强不规则（braccio→braccia，复数性别漂移）标红。数据疑点必须查权威词典修订后改库（succo 先例：piana 加 h，succi 系三处误写）。
 16. **误触改判 + 复盘拦截**：打字题判错后结果区有「手滑了，改判对」——服务端**先快照后变更**、响应带 boxBefore/notebookBefore 原样回传（`/typo-fix`，零新表零字段），盒子按答错前等级+1、错题本还原到答错前、last_X_at 保持今天；「不会」主动放弃不提供改判、听写选错释义不提供、加练 irregular/noun 拼写关暂无（见待决备忘）。**复盘拦截**：判错后（「不会」/答对不拦）首次回车只拦截不切题、第二次放行，防惯性回车跳过对照区；提醒 = 结果区内嵌琥珀脉冲横幅 `.review-hint`（answer-card.css 三视图统一），**不用 toast**（不醒目）；`reviewReminded` 重置点必须齐全（next/fixTypo/load/practice 的 switchType 与 nounNext 等各题型 next 清空块），漏一处 = 下个错词首次回车被静默放行。
-17. **名词专考（加练第 5 题型 noun）——只考两类纯记忆项**，出题条件由 `PracticeService.deriveNounGates` 统一推导（DB 手动值优先、引擎兜底），**入队与判分共用同一函数——别在判分里另写一套**。关1=单数定冠词 4选1（7 形态池 il/lo/la/l'/i/gli/le 取干扰项），仅当性别不可知（-e 结尾；词尾骗人的反常 -a 阳/-o 阴，如 problema/radio/mano）；关2=复数拼写（"/" 双形式任答一），仅当复数在 `TRULY_IRREGULAR_PLURALS` 白名单（uomo/braccio/uovo/paio/dito/ginocchio/orecchio/pigiama/lenzuolo/dio/collega/pilota——人工从例外表筛出的无规则子集，加 h/软音/-io 双 i 等规则族不在内）；关3=复数定冠词 4选1，仅当性别漂移 il→le（le braccia/le uova 类）。三关可缺席，前端按 has* 标志从第一可考关起走（nounFirstGate）；无可考项 → 返回 null 整词不入队（直推词/规则族/不变复数/月份全不出现）。gender 为空（双性别/无性别）与 DB 冠词 "il/la" 并列的词整词跳过。预检 `noun-check-article`/`noun-check-plural` 只判断不落库，选错由前端走正式判分；答错进变位本（见陷阱 5）。题面即单词（无泄题问题），选项含正确项但不含标识，复数答案不随题目下发。
-18. **加练 irregular 可听辨人称时态以 TENSE_LABELS 为核心（现四时态：present/futuro/imperfetto/condizionale）**：`TENSE_LABELS` 一处登记后，听辨点候选池（`addListenOnlyPoint`）与「选人称时态」关判定（`fillListeningFields`）都按 `TENSE_LABELS.containsKey(type)` 自动认账，并喂养干扰项池（`buildPersonTenseOptions`）——**但新增时态仍需手动补两处**：`buildIrregularPoints` 的 `addPersonPoints`（逐人称不规则考点；规则动词由 regular==irregular 自然过滤，只有例外表词产出）与 `resolveForm` 的 `case`（漏了答案推导抛"未知考点类型"）。加时态前先确认六人称互不同形（复合时态如 passato prossimo 人称不可辨，别加）。imperfetto 例外表仅 essere/fare/dire/bere 四词，其余动词走 `regularImperfetto` 兜底（只以听辨点入池）；`buildImperfetto` 复用这对公开方法，别在 build 里另写规则后缀。**condizionale 词干与将来时完全共享**（`IRREGULAR_FUTURO_STEM` + `regularTenseStem` 只换词尾 -ei/-esti/-ebbe/-emmo/-este/-ebbero）——不建新例外表、不加"条件式不规则"红标（将来时红标即可推导，红标哲学）；详情弹窗条件式页签 = `WordService.getDetail` 读时派生（DB 四时态 JSON 缺键时引擎现推、不落库），编辑表保持四时态（保存整体覆盖 JSON，condizionale 永远引擎现推故无覆盖风险）。
+17. **名词专考（加练第 6 题型 noun）——只考两类纯记忆项**，出题条件由 `PracticeService.deriveNounGates` 统一推导（DB 手动值优先、引擎兜底），**入队与判分共用同一函数——别在判分里另写一套**。关1=单数定冠词 4选1（7 形态池 il/lo/la/l'/i/gli/le 取干扰项），仅当性别不可知（-e 结尾；词尾骗人的反常 -a 阳/-o 阴，如 problema/radio/mano）；关2=复数拼写（"/" 双形式任答一），仅当复数在 `TRULY_IRREGULAR_PLURALS` 白名单（uomo/braccio/uovo/paio/dito/ginocchio/orecchio/pigiama/lenzuolo/dio/collega/pilota——人工从例外表筛出的无规则子集，加 h/软音/-io 双 i 等规则族不在内）；关3=复数定冠词 4选1，仅当性别漂移 il→le（le braccia/le uova 类）。三关可缺席，前端按 has* 标志从第一可考关起走（nounFirstGate）；无可考项 → 返回 null 整词不入队（直推词/规则族/不变复数/月份全不出现）。gender 为空（双性别/无性别）与 DB 冠词 "il/la" 并列的词整词跳过。预检 `noun-check-article`/`noun-check-plural` 只判断不落库，选错由前端走正式判分；答错进变位本（见陷阱 5）。题面即单词（无泄题问题），选项含正确项但不含标识，复数答案不随题目下发。
+18. **加练 irregular 可听辨人称时态以 TENSE_LABELS 为核心（现四时态：present/futuro/imperfetto/condizionale）**：`TENSE_LABELS` 一处登记后，听辨点候选池（`addListenOnlyPoint`）与「选人称时态」关判定（`fillListeningFields`）都按 `TENSE_LABELS.containsKey(type)` 自动认账，并喂养干扰项池（`buildPersonTenseOptions`）——**但新增时态仍需手动补两处**：`buildIrregularPoints` 的 `addPersonPoints`（逐人称不规则考点；规则动词由 regular==irregular 自然过滤，只有例外表词产出）与 `resolveForm` 的 `case`（漏了答案推导抛"未知考点类型"）。加时态前先确认六人称互不同形（复合时态如 passato prossimo 人称不可辨，别加）。imperfetto 例外表仅 essere/fare/dire/bere 四词，其余动词走 `regularImperfetto` 兜底（imperfetto 无逐人称考点，只经 listen 题型的听辨点入池）；`buildImperfetto` 复用这对公开方法，别在 build 里另写规则后缀。**condizionale 词干与将来时完全共享**（`IRREGULAR_FUTURO_STEM` + `regularTenseStem` 只换词尾 -ei/-esti/-ebbe/-emmo/-este/-ebbero）——不建新例外表、不加"条件式不规则"红标（将来时红标即可推导，红标哲学）；详情弹窗条件式页签 = `WordService.getDetail` 读时派生（DB 四时态 JSON 缺键时引擎现推、不落库），编辑表保持四时态（保存整体覆盖 JSON，condizionale 永远引擎现推故无覆盖风险）。
 
 ## 待决备忘（TODO）
 

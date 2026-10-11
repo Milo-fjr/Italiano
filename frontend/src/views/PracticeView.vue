@@ -268,7 +268,7 @@
     </div>
 
     <!-- 变化专考（irregular）：题面藏词，听形式 → 选释义 → 选人称时态 → 不规则拼写（纯听辨点选对即过） -->
-    <div v-else-if="selectedType === 'irregular' && irrCurrent" v-loading="loading" class="spell-stage">
+    <div v-else-if="irrLike && irrCurrent" v-loading="loading" class="spell-stage">
       <el-card class="spell-card">
         <div class="prompt-tags">
           <span class="head-tags">
@@ -594,6 +594,7 @@ const typeOptions = [
   { value: 'spell', label: '中→意拼写', icon: '✍️', desc: '给中文拼意语，练手速' },
   { value: 'dict', label: '听音写词', icon: '🎧', desc: '先选释义再拼写，练听力' },
   { value: 'irregular', label: '不规则变化', icon: '⚡', desc: '听形式辨人称时态，不规则形式专拼，一词多考点' },
+  { value: 'listen', label: '变位听辨', icon: '👂', desc: '听变位形式辨人称时态，全部动词一词一题，不拼写' },
   { value: 'noun', label: '名词冠词', icon: '📌', desc: '只考纯记忆项：-e 词性别、完全不规则复数' }
 ]
 
@@ -608,18 +609,22 @@ const rightCount = ref(0)
 const wrongCount = ref(0)
 const answered = computed(() => rightCount.value + wrongCount.value)
 const finished = computed(() => started.value && answered.value >= total.value)
+/** irregular/listen 共用变位题卡与队列摊平（listen 全是听辨点，无拼写关） */
+const irrLike = computed(() => selectedType.value === 'irregular' || selectedType.value === 'listen')
 const wrongNote = computed(() =>
-  selectedType.value === 'irregular' || selectedType.value === 'noun'
+  irrLike.value || selectedType.value === 'noun'
     ? `答错的 ${wrongCount.value} 个词已自动进变位错题本，去错题本「变位本」复习吧`
     : `答错的 ${wrongCount.value} 个词已自动进错题本，去错题本复习吧`
 )
 const countLabel = computed(() =>
   selectedType.value === 'irregular'
     ? '词量（每词多个考点）'
+    : selectedType.value === 'listen'
+    ? '词量（一词一题）'
     : selectedType.value === 'noun' ? '词量（按词出题，一至两关）' : '题量'
 )
 const countSuffix = computed(() =>
-  selectedType.value === 'irregular' || selectedType.value === 'noun' ? ' 词' : ' 题'
+  irrLike.value || selectedType.value === 'noun' ? ' 词' : ' 题'
 )
 
 // quiz 专属
@@ -664,7 +669,7 @@ const irrResult = ref(null)
 const irrStage = ref(1) // 1=选释义 2=选人称时态 3=拼写
 const pickedTense = ref(null)
 const irrCurrent = computed(() => {
-  if (selectedType.value !== 'irregular') return null
+  if (!irrLike.value) return null
   return irregularQueue.value[irrIndex.value] || null
 })
 const irrHadPersonChoice = computed(() => {
@@ -697,8 +702,8 @@ async function start() {
   try {
     const r = await api.getPractice(selectedType.value, selectedCount.value)
     words.value = r.words
-    if (selectedType.value === 'irregular') {
-      // r.total 是词数；进度按考点题数计（每词多个考点）
+    if (irrLike.value) {
+      // r.total 是词数；进度按考点题数计（irregular 每词多考点，listen 一词一题）
       irregularQueue.value = r.words.flatMap((w) =>
         (w.points || []).map((p) => ({ ...w, point: p }))
       )
@@ -1173,7 +1178,7 @@ function onKeydown(e) {
       dictNext()
       return
     }
-    if (selectedType.value === 'irregular' && irrResult.value) {
+    if (irrLike.value && irrResult.value) {
       e.preventDefault()
       if (reviewRemindGuard()) return
       irrNext()
@@ -1225,9 +1230,9 @@ function onKeydown(e) {
     spellGiveUp()
   }
 
-  // 不规则（变化专考）：阶段化——阶段1 1-4 选释义 + Enter；阶段2 1-4 选人称时态 + Enter；
-  // 阶段3 0 不会（Enter 提交由输入框 @keydown.enter 处理）；空格播放三关通用
-  if (selectedType.value === 'irregular' && irrCurrent.value && !irrResult.value) {
+  // 不规则/变位听辨：阶段化——阶段1 1-4 选释义 + Enter；阶段2 1-4 选人称时态 + Enter；
+  // 阶段3 0 不会（Enter 提交由输入框 @keydown.enter 处理，listen 无此关）；空格播放通用
+  if (irrLike.value && irrCurrent.value && !irrResult.value) {
     if (e.key === ' ') {
       const el = document.activeElement
       const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value.trim().length > 0
@@ -1337,7 +1342,7 @@ onBeforeUnmount(() => {
 .setup-title { font-size: 16px; font-weight: 600; color: #1e3a2b; }
 .type-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
