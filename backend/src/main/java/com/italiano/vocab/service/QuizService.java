@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ public class QuizService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
     private final SettingService settingService;
+    private final FreezeService freezeService;
 
     /**
      * 到期测验词（next_review_at <= 今天，不筛 box——测验答错的词归 0 后明天到期也能回来）；
@@ -46,12 +48,14 @@ public class QuizService {
         LocalDate today = LocalDate.now();
         Setting cfg = settingService.getSetting();
         int limit = cfg.getQuizDailyLimit() == null ? 0 : cfg.getQuizDailyLimit();
+        Set<Long> frozen = freezeService.frozenFromReviewIds();
         long answeredToday = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .eq(WordProgress::getLastQuizAt, today));
         boolean quotaReached = limit > 0 && answeredToday >= limit;
         long poolTotal = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .isNotNull(WordProgress::getNextReviewAt)
-                .le(WordProgress::getNextReviewAt, today));
+                .le(WordProgress::getNextReviewAt, today)
+                .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen));
 
         List<WordProgress> due;
         if (poolTotal == 0 || (!all && quotaReached)) {
@@ -59,7 +63,8 @@ public class QuizService {
         } else {
             LambdaQueryWrapper<WordProgress> query = new LambdaQueryWrapper<WordProgress>()
                     .isNotNull(WordProgress::getNextReviewAt)
-                    .le(WordProgress::getNextReviewAt, today);
+                    .le(WordProgress::getNextReviewAt, today)
+                    .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen);
             if (all) {
                 // 手动续池：无视每日上限补齐全部到期词（最欠账优先）
                 query.last("ORDER BY next_review_at ASC, RAND()");
@@ -98,6 +103,7 @@ public class QuizService {
 
         WordProgress next = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
                         .gt(WordProgress::getNextReviewAt, today)
+                        .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen)
                         .orderByAsc(WordProgress::getNextReviewAt)
                         .last("LIMIT 1"))
                 .stream().findFirst().orElse(null);

@@ -51,6 +51,7 @@ public class PracticeService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
     private final ObjectMapper objectMapper;
+    private final FreezeService freezeService;
 
     /** 选人称时态选项池（可听辨人称的时态：现在/将来/未完成/条件式；共用——逐人称考点池、听辨点候选池、干扰项池） */
     private static final Map<String, String> TENSE_LABELS = Map.of(
@@ -66,9 +67,12 @@ public class PracticeService {
         if (count <= 0) count = 20;
         if (count > 100) count = 100;
 
-        // 已学过的词（有学习记录且 extract_count > 0）
+        // 已学过的词（有学习记录且 extract_count > 0），统一排除冻结词（词本在册 ∪ 学习批次未背完）
+        Set<Long> frozen = freezeService.frozenFromReviewIds();
         List<WordProgress> learned = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
-                .gt(WordProgress::getExtractCount, 0));
+                .gt(WordProgress::getExtractCount, 0)).stream()
+                .filter(p -> !frozen.contains(p.getWordId()))
+                .collect(Collectors.toList());
         if (learned.isEmpty()) {
             return emptyResult(type, "还没有学过的词，先去学习模式背一些吧。");
         }

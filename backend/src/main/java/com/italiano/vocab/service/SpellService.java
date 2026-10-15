@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ public class SpellService {
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
     private final SettingService settingService;
+    private final FreezeService freezeService;
 
     /** 到期拼写队列（不含答案）+ 最近未来拼写到期日（空状态提示）。
      * 每日配额（setting.spell_daily_limit，0=不限制）：按「今天已答数」（last_spell_at = 今天）计，
@@ -52,6 +54,7 @@ public class SpellService {
         LocalDate today = LocalDate.now();
         Setting cfg = settingService.getSetting();
         int limit = cfg.getSpellDailyLimit() == null ? 0 : cfg.getSpellDailyLimit();
+        Set<Long> frozen = freezeService.frozenFromReviewIds();
         long answeredToday = progressMapper.selectCount(new LambdaQueryWrapper<WordProgress>()
                 .eq(WordProgress::getLastSpellAt, today));
         boolean quotaReached = limit > 0 && answeredToday >= limit;
@@ -66,7 +69,8 @@ public class SpellService {
                 .and(q -> q.isNull(WordProgress::getCompletedAt)
                         .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
                 .and(q -> q.isNull(WordProgress::getLastDictAt)
-                        .or().lt(WordProgress::getLastDictAt, today)));
+                        .or().lt(WordProgress::getLastDictAt, today))
+                .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen));
 
         List<WordProgress> due;
         if (poolTotal == 0 || (!all && quotaReached)) {
@@ -83,7 +87,8 @@ public class SpellService {
                     .and(q -> q.isNull(WordProgress::getCompletedAt)
                             .or().lt(WordProgress::getCompletedAt, today.atStartOfDay()))
                     .and(q -> q.isNull(WordProgress::getLastDictAt)
-                            .or().lt(WordProgress::getLastDictAt, today));
+                            .or().lt(WordProgress::getLastDictAt, today))
+                    .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen);
             if (all) {
                 // 手动续池：无视每日上限补齐全部到期词（NULL 池垫底同序）
                 query.last("ORDER BY spell_next_review_at IS NULL ASC, spell_next_review_at ASC, RAND()");
@@ -116,6 +121,7 @@ public class SpellService {
 
         WordProgress next = progressMapper.selectList(new LambdaQueryWrapper<WordProgress>()
                         .gt(WordProgress::getSpellNextReviewAt, today)
+                        .notIn(!frozen.isEmpty(), WordProgress::getWordId, frozen)
                         .orderByAsc(WordProgress::getSpellNextReviewAt)
                         .last("LIMIT 1"))
                 .stream().findFirst().orElse(null);

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ public class StatsService {
     private final WordProgressMapper progressMapper;
     private final DailyExtractMapper dailyExtractMapper;
     private final SettingService settingService;
+    private final FreezeService freezeService;
 
     public StatsDTO getStats() {
         List<Word> words = wordMapper.selectList(null);
@@ -48,11 +50,14 @@ public class StatsService {
 
         // 三模式到期数与每日配额同口径（导航红点 = 今天还能做几题）：
         // 配额内 = min(到期池, 上限 - 今日已答)；答满即 0（红点消失，剩余的明天继续）
+        // 冻结词（词本在册 ∪ 学习批次未背完）同口径排除，否则红点与实际队列不符
         LocalDate today = LocalDate.now();
         Setting cfg = settingService.getSetting();
+        Set<Long> frozen = freezeService.frozenFromReviewIds();
 
         // SRS：今日到期复习数（next_review_at <= 今天，含测验答错归 0 的词）= 测验模式实际题量
         long dueReview = progresses.stream()
+                .filter(p -> !frozen.contains(p.getWordId()))
                 .filter(p -> p.getNextReviewAt() != null && !p.getNextReviewAt().isAfter(today))
                 .count();
         long quizAnsweredToday = progresses.stream()
@@ -61,6 +66,7 @@ public class StatsService {
 
         // 今日到期拼写数（与拼写队列同口径：学过 + 拼写到期 + 当日未被学习/测验/听写接触）
         long spellDue = progresses.stream()
+                .filter(p -> !frozen.contains(p.getWordId()))
                 .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
                 .filter(p -> p.getSpellNextReviewAt() == null || !p.getSpellNextReviewAt().isAfter(today))
                 .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))
@@ -74,6 +80,7 @@ public class StatsService {
 
         // 今日到期听写数（与听写队列同口径：学过 + 听写到期 + 当日未被学习/测验/拼写接触）
         long dictDue = progresses.stream()
+                .filter(p -> !frozen.contains(p.getWordId()))
                 .filter(p -> p.getExtractCount() != null && p.getExtractCount() > 0)
                 .filter(p -> p.getDictNextReviewAt() == null || !p.getDictNextReviewAt().isAfter(today))
                 .filter(p -> p.getNextReviewAt() == null || p.getNextReviewAt().isAfter(today))

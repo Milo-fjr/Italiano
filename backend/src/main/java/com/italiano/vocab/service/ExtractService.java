@@ -47,9 +47,18 @@ public class ExtractService {
     private final WordProgressMapper progressMapper;
     private final DailyExtractMapper dailyExtractMapper;
     private final SettingService settingService;
+    private final FreezeService freezeService;
 
-    /** 获取当前批次（不自动抽取：从未刷新过则返回空批次，由用户手动抽第一批） */
+    /** 获取当前批次（不自动抽取：从未刷新过则返回空批次，由用户手动抽第一批）。
+     *  惰性剔除：批次记录里已进错题词本（未学会）的词物理删除——冻结后学习页也不再展示，
+     *  无需数据迁移；学会后由正常抽取规则重新进批次。 */
+    @Transactional
     public Map<String, Object> getCurrent() {
+        Set<Long> notebookIds = freezeService.notebookIds();
+        if (!notebookIds.isEmpty()) {
+            dailyExtractMapper.delete(new LambdaQueryWrapper<DailyExtract>()
+                    .in(DailyExtract::getWordId, notebookIds));
+        }
         List<DailyExtract> records = dailyExtractMapper.selectList(
                 new LambdaQueryWrapper<DailyExtract>().orderByAsc(DailyExtract::getId));
         return assemble(records);
@@ -59,10 +68,12 @@ public class ExtractService {
     @Transactional
     public Map<String, Object> refresh() {
         LocalDate today = LocalDate.now();
+        Set<Long> notebookIds = freezeService.notebookIds();
         List<DailyExtract> current = dailyExtractMapper.selectList(null);
         List<Long> carried = current.stream()
                 .filter(de -> de.getStatus() == null || de.getStatus() == 0)
                 .map(DailyExtract::getWordId)
+                .filter(id -> !notebookIds.contains(id)) // 在册错词不 carry，学会后再抽
                 .toList();
         if (!current.isEmpty()) {
             dailyExtractMapper.delete(new LambdaQueryWrapper<>());
@@ -91,10 +102,13 @@ public class ExtractService {
         Map<Long, WordProgress> progressById = allProgress.stream()
                 .collect(Collectors.toMap(WordProgress::getWordId, Function.identity(), (a, b) -> a));
 
+        // 错题词本在册的词不参与任何批次抽取（学会了自动回池）
+        Set<Long> notebookIds = freezeService.notebookIds();
+
         Set<Long> picked = new LinkedHashSet<>();
 
-        // 保留上批未完成的词（学完为止，优先级最高）
-        picked.addAll(carried);
+        // 保留上批未完成的词（学完为止，优先级最高；refresh 已排除在册词，这里双保险）
+        carried.stream().filter(id -> !notebookIds.contains(id)).forEach(picked::add);
 
         // ① 新词：从未抽取过的词（无 progress 记录），随机抽取
         if (picked.size() < need) {
@@ -115,6 +129,7 @@ public class ExtractService {
         if (picked.size() < need) {
             allProgress.stream()
                     .filter(p -> !picked.contains(p.getWordId()))
+                    .filter(p -> !notebookIds.contains(p.getWordId()))
                     .filter(p -> p.getLastExtractedAt() == null
                             || !p.getLastExtractedAt().isAfter(cooldownBoundary))
                     .sorted(progressComparator())
@@ -122,10 +137,11 @@ public class ExtractService {
                     .forEach(p -> picked.add(p.getWordId()));
         }
 
-        // ③ 补足：候选不足时放宽冷却限制，仍按完成次数最少优先
+        // ③ 补足：候选不足时放宽冷却限制，仍按完成次数最少优先（在册错词依旧排除）
         if (picked.size() < need) {
             allProgress.stream()
                     .filter(p -> !picked.contains(p.getWordId()))
+                    .filter(p -> !notebookIds.contains(p.getWordId()))
                     .sorted(progressComparator())
                     .limit((long) need - picked.size())
                     .forEach(p -> picked.add(p.getWordId()));
