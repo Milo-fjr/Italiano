@@ -79,7 +79,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 7. **DTO 防泄题**：拼写题目接口**不含意语单词**（答案只在判分结果里）；听写/加练 irregular 含 word（题面即形式）；irregular 人称点的 label 含答案人称 → **UI 不渲染**（防泄题口径演进：DTO 不含答案，或含但 UI 不渲染）。前端写 `current.xxx` 前先确认 DTO 真有该字段（曾读不存在的 current.word 白屏，见事故记录）。
 8. **自动朗读**：五模式统一"标记过了就读一遍"（学习标记完成、错题本学会了、测验认识/不认识、拼写提交/不会、听写判分落库）；批量操作不播（防音频叠加）。
 9. **MyBatis-Plus 全局 FieldStrategy.ALWAYS**：IGNORED 会让 null 更新失效（曾致撤销清不掉 completed_at，留脏时间戳）。
-10. **释义边界化**：一词多义造成拼写提示歧义 → 释义拆开各归一词（sera=傍晚；晚上 / notte=夜里，"晚上"只归前者）。措辞由用户定，AI 提议被否属常态；用户质疑先查库对账再动手。已裁决：tranquillo=平静的 / silenzioso=安静的（心理/环境）；spedire=邮寄 / mandare=发送；派遣；allegro/felice/contento 按性格/深沉/当下切；**denaro 已整词删除（soldi 独占日常"钱"；ItalianGrammarUtil 不变形名词单里的残留属有意保留，别"修复"）**。
+10. **释义边界化**：一词多义造成拼写提示歧义 → 释义拆开各归一词（sera=傍晚；晚上 / notte=夜里）。措辞由用户定，AI 提议被否属常态；用户质疑先查库对账再动手。已裁决：tranquillo=平静的 / silenzioso=安静的（心理/环境）；spedire=邮寄 / mandare=发送；派遣；allegro/felice/contento 按性格/深沉/当下切；**denaro 已整词删除（soldi 独占日常"钱"；ItalianGrammarUtil 不变形名词单里的残留属有意保留，别"修复"）**。**语义切不动的同义对（molto/tanto、quindi/dunque/allora）用"括号自标"**：释义尾加（单词本身），拼写题自答式过眼熟、听写干扰项不再撞字——别再尝试给这类词做语义细分，用户已否决。
 11. **双助动词两处硬编码必须同步改**：`ItalianGrammarUtil.DUAL_AUX_VERBS` 与 `ImportService.fixDualAuxV3` 内的清单（漏改 = 启动迁移每次重复执行打误导日志）；误加的幂等回退在 fixDualAuxV6。camminare/nuotare 是动作方式动词，只用 avere，别加回；追加前确认该词真是 avere/essere 两义都对（如 correre/vivere/volare），拿不准查权威词典。
 12. **错题本排序稳定**（按 word_progress.id 升序 = 进本先后，别加回 shuffle）；测验 SRS 随机防位置记忆——两者别混淆。
 13. **加练模式零 SRS**：从 extract_count>0 随机抽，答错只进错题本，中途退出零持久化；听写释义选错立即判错（预检接口只判断、不落库、不泄答案）。**新 UI 必须对齐同类型现有模式的交互惯例**；`frontend/src/styles/answer-card.css` 是答题卡样式单一来源（拼写/听写/加练三视图 @import 引入；新增题型引它、改样式改它；本地同名规则写在后面即覆盖；仅布局语义真不同的类留各视图，别硬抽）。浏览器验证 CSS 用 getComputedStyle 查具体值（快照证明不了样式表挂载）；Vite dev 代理在后端未启动时把 API 报成 500，别误诊为后端 bug。
@@ -115,6 +115,7 @@ mysql -u root -p<密码> italian_vocab -e "SQL..."
 5. **AI 的语法断言查权威词典验证后才能改库**。
 6. **收工归还资源**：后台服务/端口（netstat 验证）/临时文件（tmp_* 用完即删）全部清干净。
 7. **用户对数据不一致的质疑往往是对的**——先查库对账，不要急着解释。
+8. **方法论类顶级规则以全局 skill 为单一来源**（`~/.trae-cn/skills/`：pitfall-ledger 踩坑沉淀、snapshot-before-mutation 先快照后变更、evidence-before-claim 先取证后断言）；本文件守则 0-7 是其在项目的落地细节，两边改动须互相同步，防漂移。
 
 ## 用户协作偏好
 
