@@ -2,34 +2,34 @@
   "meta" : {
     "name" : "意大利语A2核心词库",
     "description" : "马可波罗计划生意大利语A2学习用词库（含手动编辑的语法字段与例句）",
-    "total" : 1084,
+    "total" : 1399,
     "category_count" : 23,
     "category_counts" : {
-      "问候与礼貌" : 30,
+      "问候与礼貌" : 31,
       "数字与数量" : 40,
-      "时间与日期" : 53,
-      "家庭与人物" : 41,
-      "身体与健康" : 44,
-      "饮食" : 77,
-      "服装与购物" : 49,
+      "时间与日期" : 57,
+      "家庭与人物" : 48,
+      "身体与健康" : 58,
+      "饮食" : 97,
+      "服装与购物" : 51,
       "家与居住" : 48,
-      "城市与场所" : 49,
-      "交通与旅行" : 44,
-      "天气与自然" : 37,
-      "工作与职业" : 43,
-      "学习与学校" : 44,
-      "爱好与休闲" : 36,
-      "动物" : 32,
+      "城市与场所" : 84,
+      "交通与旅行" : 51,
+      "天气与自然" : 46,
+      "工作与职业" : 52,
+      "学习与学校" : 59,
+      "爱好与休闲" : 38,
+      "动物" : 34,
       "颜色" : 15,
-      "动词" : 165,
-      "形容词" : 87,
-      "代词·冠词·连词" : 48,
-      "副词与介词" : 39,
+      "动词" : 213,
+      "形容词" : 116,
+      "代词·冠词·连词" : 53,
+      "副词与介词" : 55,
       "情感与性格" : 32,
-      "通讯与科技" : 21,
-      "其他高频词" : 10
+      "通讯与科技" : 65,
+      "其他高频词" : 56
     },
-    "exported_at" : "2026-09-06",
+    "exported_at" : "2026-10-20",
     "source" : "database export"
   },
   "categories" : [ "问候与礼貌", "数字与数量", "时间与日期", "家庭与人物", "身体与健康", "饮食", "服装与购物", "家与居住", "城市与场所", "交通与旅行", "天气与自然", "工作与职业", "学习与学校", "爱好与休闲", "动物", "颜色", "动词", "形容词", "代词·冠词·连词", "副词与介词", "情感与性格", "通讯与科技", "其他高频词" ],
@@ -594,7 +594,7 @@
     "id" : 78,
     "word" : "sera",
     "pos" : "s.f.",
-    "meaning": "傍晚；晚上",
+    "meaning" : "傍晚；晚上",
     "category" : "时间与日期",
     "gender" : "f",
     "article" : "la",
@@ -971,7 +971,7 @@
     "id" : 123,
     "word" : "allora",
     "pos" : "avv.",
-    "meaning" : "那时；那么",
+    "meaning" : "那时；那么（allora）",
     "category" : "时间与日期",
     "article" : "l'"
   }, {
@@ -4940,7 +4940,7 @@
     "id" : 565,
     "word" : "lezione",
     "pos" : "s.f.",
-    "meaning" : "课；课",
+    "meaning" : "课",
     "category" : "学习与学校",
     "gender" : "f",
     "article" : "la",
@@ -6544,7 +6544,7 @@
     "id" : 698,
     "word" : "lasciare",
     "pos" : "v.",
-    "meaning": "放手/留在某处；离开",
+    "meaning" : "放手/留在某处；离开",
     "category" : "动词",
     "conjugation" : {
       "present" : {
@@ -13973,7 +13973,7 @@
     "id" : 970,
     "word" : "quindi",
     "pos" : "cong.",
-    "meaning" : "因此；所以",
+    "meaning" : "因此；所以（quindi）",
     "category" : "代词·冠词·连词"
   }, {
     "id" : 971,
@@ -13991,7 +13991,7 @@
     "id" : 973,
     "word" : "molto",
     "pos" : "agg./avv.",
-    "meaning" : "很多的；非常",
+    "meaning" : "很多的；非常（molto）",
     "category" : "代词·冠词·连词",
     "adjForms" : {
       "ms" : "molto",
@@ -14015,7 +14015,7 @@
     "id" : 975,
     "word" : "tanto",
     "pos" : "agg./avv.",
-    "meaning" : "很多的；非常",
+    "meaning" : "很多的；非常（tanto）",
     "category" : "代词·冠词·连词",
     "adjForms" : {
       "ms" : "tanto",
@@ -14347,7 +14347,7 @@
     "id" : 1023,
     "word" : "dunque",
     "pos" : "cong./avv.",
-    "meaning" : "因此；那么",
+    "meaning" : "因此；那么（dunque）",
     "category" : "副词与介词"
   }, {
     "id" : 1024,
@@ -14922,5 +14922,5140 @@
     "gender" : "m",
     "article" : "il",
     "plural" : "pezzi"
+  }, {
+    "id" : 1093,
+    "word" : "software",
+    "pos" : "s.m.",
+    "meaning" : "软件",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "software"
+  }, {
+    "id" : 1094,
+    "word" : "hardware",
+    "pos" : "s.m.",
+    "meaning" : "硬件",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "hardware"
+  }, {
+    "id" : 1095,
+    "word" : "app",
+    "pos" : "s.f.",
+    "meaning" : "手机应用",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "app"
+  }, {
+    "id" : 1096,
+    "word" : "file",
+    "pos" : "s.m.",
+    "meaning" : "文件",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "file"
+  }, {
+    "id" : 1097,
+    "word" : "account",
+    "pos" : "s.m.",
+    "meaning" : "账户",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "account"
+  }, {
+    "id" : 1098,
+    "word" : "link",
+    "pos" : "s.m.",
+    "meaning" : "链接",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "link"
+  }, {
+    "id" : 1099,
+    "word" : "bug",
+    "pos" : "s.m.",
+    "meaning" : "程序漏洞",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "bug"
+  }, {
+    "id" : 1100,
+    "word" : "curriculum",
+    "pos" : "s.m.",
+    "meaning" : "简历",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "curriculum"
+  }, {
+    "id" : 1101,
+    "word" : "bancomat",
+    "pos" : "s.m.",
+    "meaning" : "自动取款机",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "bancomat"
+  }, {
+    "id" : 1102,
+    "word" : "caricabatterie",
+    "pos" : "s.m.",
+    "meaning" : "充电器",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "caricabatterie"
+  }, {
+    "id" : 1103,
+    "word" : "microonde",
+    "pos" : "s.m.",
+    "meaning" : "微波炉",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "microonde"
+  }, {
+    "id" : 1104,
+    "word" : "programma",
+    "pos" : "s.m.",
+    "meaning" : "程序；计划",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "programmi"
+  }, {
+    "id" : 1105,
+    "word" : "programmazione",
+    "pos" : "s.f.",
+    "meaning" : "编程",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "programmazioni"
+  }, {
+    "id" : 1106,
+    "word" : "programmatore",
+    "pos" : "s.m.",
+    "meaning" : "程序员",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "programmatori"
+  }, {
+    "id" : 1107,
+    "word" : "algoritmo",
+    "pos" : "s.m.",
+    "meaning" : "算法",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "algoritmi"
+  }, {
+    "id" : 1108,
+    "word" : "sistema",
+    "pos" : "s.m.",
+    "meaning" : "系统",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "sistemi"
+  }, {
+    "id" : 1109,
+    "word" : "codice",
+    "pos" : "s.m.",
+    "meaning" : "代码；编码",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "codici"
+  }, {
+    "id" : 1110,
+    "word" : "intelligenza",
+    "pos" : "s.f.",
+    "meaning" : "智能；智力",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "intelligenze"
+  }, {
+    "id" : 1111,
+    "word" : "artificiale",
+    "pos" : "agg.",
+    "meaning" : "人工的",
+    "category" : "通讯与科技",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "artificiale",
+      "fs" : "artificiale",
+      "mp" : "artificiali",
+      "fp" : "artificiali"
+    }
+  }, {
+    "id" : 1112,
+    "word" : "dispositivo",
+    "pos" : "s.m.",
+    "meaning" : "设备",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "dispositivi"
+  }, {
+    "id" : 1113,
+    "word" : "aggiornamento",
+    "pos" : "s.m.",
+    "meaning" : "更新",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "aggiornamenti"
+  }, {
+    "id" : 1114,
+    "word" : "allegato",
+    "pos" : "s.m.",
+    "meaning" : "附件",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "allegati"
+  }, {
+    "id" : 1115,
+    "word" : "utente",
+    "pos" : "s.m./s.f.",
+    "meaning" : "用户",
+    "category" : "通讯与科技",
+    "article" : "l'",
+    "plural" : "utenti"
+  }, {
+    "id" : 1116,
+    "word" : "profilo",
+    "pos" : "s.m.",
+    "meaning" : "个人主页；账户资料",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "profili"
+  }, {
+    "id" : 1117,
+    "word" : "notifica",
+    "pos" : "s.f.",
+    "meaning" : "通知",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "notifiche"
+  }, {
+    "id" : 1118,
+    "word" : "schermata",
+    "pos" : "s.f.",
+    "meaning" : "截图；屏幕画面",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "schermate"
+  }, {
+    "id" : 1119,
+    "word" : "cartella",
+    "pos" : "s.f.",
+    "meaning" : "文件夹",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "cartelle"
+  }, {
+    "id" : 1120,
+    "word" : "ricarica",
+    "pos" : "s.f.",
+    "meaning" : "充电",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "ricariche"
+  }, {
+    "id" : 1121,
+    "word" : "tecnologia",
+    "pos" : "s.f.",
+    "meaning" : "技术",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "tecnologie"
+  }, {
+    "id" : 1122,
+    "word" : "gestione",
+    "pos" : "s.f.",
+    "meaning" : "管理",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "gestioni"
+  }, {
+    "id" : 1123,
+    "word" : "soluzione",
+    "pos" : "s.f.",
+    "meaning" : "解决方案",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "soluzioni"
+  }, {
+    "id" : 1124,
+    "word" : "progetto",
+    "pos" : "s.m.",
+    "meaning" : "项目",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "progetti"
+  }, {
+    "id" : 1125,
+    "word" : "informatica",
+    "pos" : "s.f.",
+    "meaning" : "计算机科学",
+    "category" : "通讯与科技",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "informatiche"
+  }, {
+    "id" : 1126,
+    "word" : "sviluppo",
+    "pos" : "s.m.",
+    "meaning" : "开发；发展",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "sviluppi"
+  }, {
+    "id" : 1127,
+    "word" : "dato",
+    "pos" : "s.m.",
+    "meaning" : "数据；资料",
+    "category" : "通讯与科技",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "dati"
+  }, {
+    "id" : 1128,
+    "word" : "scaricare",
+    "pos" : "v.",
+    "meaning" : "下载",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "scarico",
+        "tu" : "scarichi",
+        "lui/lei" : "scarica",
+        "noi" : "scarichiamo",
+        "voi" : "scaricate",
+        "loro" : "scaricano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho scaricato",
+        "tu" : "hai scaricato",
+        "lui/lei" : "ha scaricato",
+        "noi" : "abbiamo scaricato",
+        "voi" : "avete scaricato",
+        "loro" : "hanno scaricato"
+      },
+      "imperfetto" : {
+        "io" : "scaricavo",
+        "tu" : "scaricavi",
+        "lui/lei" : "scaricava",
+        "noi" : "scaricavamo",
+        "voi" : "scaricavate",
+        "loro" : "scaricavano"
+      },
+      "futuro" : {
+        "io" : "scaricherò",
+        "tu" : "scaricherai",
+        "lui/lei" : "scaricherà",
+        "noi" : "scaricheremo",
+        "voi" : "scaricherete",
+        "loro" : "scaricheranno"
+      },
+      "condizionale" : {
+        "io" : "scaricherei",
+        "tu" : "scaricheresti",
+        "lui/lei" : "scaricherebbe",
+        "noi" : "scaricheremmo",
+        "voi" : "scarichereste",
+        "loro" : "scaricherebbero"
+      }
+    }
+  }, {
+    "id" : 1129,
+    "word" : "caricare",
+    "pos" : "v.",
+    "meaning" : "上传；充电",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "carico",
+        "tu" : "carichi",
+        "lui/lei" : "carica",
+        "noi" : "carichiamo",
+        "voi" : "caricate",
+        "loro" : "caricano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho caricato",
+        "tu" : "hai caricato",
+        "lui/lei" : "ha caricato",
+        "noi" : "abbiamo caricato",
+        "voi" : "avete caricato",
+        "loro" : "hanno caricato"
+      },
+      "imperfetto" : {
+        "io" : "caricavo",
+        "tu" : "caricavi",
+        "lui/lei" : "caricava",
+        "noi" : "caricavamo",
+        "voi" : "caricavate",
+        "loro" : "caricavano"
+      },
+      "futuro" : {
+        "io" : "caricherò",
+        "tu" : "caricherai",
+        "lui/lei" : "caricherà",
+        "noi" : "caricheremo",
+        "voi" : "caricherete",
+        "loro" : "caricheranno"
+      },
+      "condizionale" : {
+        "io" : "caricherei",
+        "tu" : "caricheresti",
+        "lui/lei" : "caricherebbe",
+        "noi" : "caricheremmo",
+        "voi" : "carichereste",
+        "loro" : "caricherebbero"
+      }
+    }
+  }, {
+    "id" : 1130,
+    "word" : "salvare",
+    "pos" : "v.",
+    "meaning" : "保存",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "salvo",
+        "tu" : "salvi",
+        "lui/lei" : "salva",
+        "noi" : "salviamo",
+        "voi" : "salvate",
+        "loro" : "salvano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho salvato",
+        "tu" : "hai salvato",
+        "lui/lei" : "ha salvato",
+        "noi" : "abbiamo salvato",
+        "voi" : "avete salvato",
+        "loro" : "hanno salvato"
+      },
+      "imperfetto" : {
+        "io" : "salvavo",
+        "tu" : "salvavi",
+        "lui/lei" : "salvava",
+        "noi" : "salvavamo",
+        "voi" : "salvavate",
+        "loro" : "salvavano"
+      },
+      "futuro" : {
+        "io" : "salverò",
+        "tu" : "salverai",
+        "lui/lei" : "salverà",
+        "noi" : "salveremo",
+        "voi" : "salverete",
+        "loro" : "salveranno"
+      },
+      "condizionale" : {
+        "io" : "salverei",
+        "tu" : "salveresti",
+        "lui/lei" : "salverebbe",
+        "noi" : "salveremmo",
+        "voi" : "salvereste",
+        "loro" : "salverebbero"
+      }
+    }
+  }, {
+    "id" : 1131,
+    "word" : "cliccare",
+    "pos" : "v.",
+    "meaning" : "点击",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "clicco",
+        "tu" : "clicchi",
+        "lui/lei" : "clicca",
+        "noi" : "clicchiamo",
+        "voi" : "cliccate",
+        "loro" : "cliccano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho cliccato",
+        "tu" : "hai cliccato",
+        "lui/lei" : "ha cliccato",
+        "noi" : "abbiamo cliccato",
+        "voi" : "avete cliccato",
+        "loro" : "hanno cliccato"
+      },
+      "imperfetto" : {
+        "io" : "cliccavo",
+        "tu" : "cliccavi",
+        "lui/lei" : "cliccava",
+        "noi" : "cliccavamo",
+        "voi" : "cliccavate",
+        "loro" : "cliccavano"
+      },
+      "futuro" : {
+        "io" : "cliccherò",
+        "tu" : "cliccherai",
+        "lui/lei" : "cliccherà",
+        "noi" : "cliccheremo",
+        "voi" : "cliccherete",
+        "loro" : "cliccheranno"
+      },
+      "condizionale" : {
+        "io" : "cliccherei",
+        "tu" : "cliccheresti",
+        "lui/lei" : "cliccherebbe",
+        "noi" : "cliccheremmo",
+        "voi" : "clicchereste",
+        "loro" : "cliccherebbero"
+      }
+    }
+  }, {
+    "id" : 1132,
+    "word" : "installare",
+    "pos" : "v.",
+    "meaning" : "安装",
+    "category" : "通讯与科技",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "installo",
+        "tu" : "installi",
+        "lui/lei" : "installa",
+        "noi" : "installiamo",
+        "voi" : "installate",
+        "loro" : "installano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho installato",
+        "tu" : "hai installato",
+        "lui/lei" : "ha installato",
+        "noi" : "abbiamo installato",
+        "voi" : "avete installato",
+        "loro" : "hanno installato"
+      },
+      "imperfetto" : {
+        "io" : "installavo",
+        "tu" : "installavi",
+        "lui/lei" : "installava",
+        "noi" : "installavamo",
+        "voi" : "installavate",
+        "loro" : "installavano"
+      },
+      "futuro" : {
+        "io" : "installerò",
+        "tu" : "installerai",
+        "lui/lei" : "installerà",
+        "noi" : "installeremo",
+        "voi" : "installerete",
+        "loro" : "installeranno"
+      },
+      "condizionale" : {
+        "io" : "installerei",
+        "tu" : "installeresti",
+        "lui/lei" : "installerebbe",
+        "noi" : "installeremmo",
+        "voi" : "installereste",
+        "loro" : "installerebbero"
+      }
+    }
+  }, {
+    "id" : 1133,
+    "word" : "aggiornare",
+    "pos" : "v.",
+    "meaning" : "更新",
+    "category" : "通讯与科技",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "aggiorno",
+        "tu" : "aggiorni",
+        "lui/lei" : "aggiorna",
+        "noi" : "aggiorniamo",
+        "voi" : "aggiornate",
+        "loro" : "aggiornano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho aggiornato",
+        "tu" : "hai aggiornato",
+        "lui/lei" : "ha aggiornato",
+        "noi" : "abbiamo aggiornato",
+        "voi" : "avete aggiornato",
+        "loro" : "hanno aggiornato"
+      },
+      "imperfetto" : {
+        "io" : "aggiornavo",
+        "tu" : "aggiornavi",
+        "lui/lei" : "aggiornava",
+        "noi" : "aggiornavamo",
+        "voi" : "aggiornavate",
+        "loro" : "aggiornavano"
+      },
+      "futuro" : {
+        "io" : "aggiornerò",
+        "tu" : "aggiornerai",
+        "lui/lei" : "aggiornerà",
+        "noi" : "aggiorneremo",
+        "voi" : "aggiornerete",
+        "loro" : "aggiorneranno"
+      },
+      "condizionale" : {
+        "io" : "aggiornerei",
+        "tu" : "aggiorneresti",
+        "lui/lei" : "aggiornerebbe",
+        "noi" : "aggiorneremmo",
+        "voi" : "aggiornereste",
+        "loro" : "aggiornerebbero"
+      }
+    }
+  }, {
+    "id" : 1134,
+    "word" : "cancellare",
+    "pos" : "v.",
+    "meaning" : "删除",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "cancello",
+        "tu" : "cancelli",
+        "lui/lei" : "cancella",
+        "noi" : "cancelliamo",
+        "voi" : "cancellate",
+        "loro" : "cancellano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho cancellato",
+        "tu" : "hai cancellato",
+        "lui/lei" : "ha cancellato",
+        "noi" : "abbiamo cancellato",
+        "voi" : "avete cancellato",
+        "loro" : "hanno cancellato"
+      },
+      "imperfetto" : {
+        "io" : "cancellavo",
+        "tu" : "cancellavi",
+        "lui/lei" : "cancellava",
+        "noi" : "cancellavamo",
+        "voi" : "cancellavate",
+        "loro" : "cancellavano"
+      },
+      "futuro" : {
+        "io" : "cancellerò",
+        "tu" : "cancellerai",
+        "lui/lei" : "cancellerà",
+        "noi" : "cancelleremo",
+        "voi" : "cancellerete",
+        "loro" : "cancelleranno"
+      },
+      "condizionale" : {
+        "io" : "cancellerei",
+        "tu" : "cancelleresti",
+        "lui/lei" : "cancellerebbe",
+        "noi" : "cancelleremmo",
+        "voi" : "cancellereste",
+        "loro" : "cancellerebbero"
+      }
+    }
+  }, {
+    "id" : 1135,
+    "word" : "copiare",
+    "pos" : "v.",
+    "meaning" : "复制",
+    "category" : "通讯与科技",
+    "conjugation" : {
+      "present" : {
+        "io" : "copio",
+        "tu" : "copi",
+        "lui/lei" : "copia",
+        "noi" : "copiamo",
+        "voi" : "copiate",
+        "loro" : "copiano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho copiato",
+        "tu" : "hai copiato",
+        "lui/lei" : "ha copiato",
+        "noi" : "abbiamo copiato",
+        "voi" : "avete copiato",
+        "loro" : "hanno copiato"
+      },
+      "imperfetto" : {
+        "io" : "copiavo",
+        "tu" : "copiavi",
+        "lui/lei" : "copiava",
+        "noi" : "copiavamo",
+        "voi" : "copiavate",
+        "loro" : "copiavano"
+      },
+      "futuro" : {
+        "io" : "copierò",
+        "tu" : "copierai",
+        "lui/lei" : "copierà",
+        "noi" : "copieremo",
+        "voi" : "copierete",
+        "loro" : "copieranno"
+      },
+      "condizionale" : {
+        "io" : "copierei",
+        "tu" : "copieresti",
+        "lui/lei" : "copierebbe",
+        "noi" : "copieremmo",
+        "voi" : "copiereste",
+        "loro" : "copierebbero"
+      }
+    }
+  }, {
+    "id" : 1136,
+    "word" : "incollare",
+    "pos" : "v.",
+    "meaning" : "粘贴",
+    "category" : "通讯与科技",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "incollo",
+        "tu" : "incolli",
+        "lui/lei" : "incolla",
+        "noi" : "incolliamo",
+        "voi" : "incollate",
+        "loro" : "incollano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho incollato",
+        "tu" : "hai incollato",
+        "lui/lei" : "ha incollato",
+        "noi" : "abbiamo incollato",
+        "voi" : "avete incollato",
+        "loro" : "hanno incollato"
+      },
+      "imperfetto" : {
+        "io" : "incollavo",
+        "tu" : "incollavi",
+        "lui/lei" : "incollava",
+        "noi" : "incollavamo",
+        "voi" : "incollavate",
+        "loro" : "incollavano"
+      },
+      "futuro" : {
+        "io" : "incollerò",
+        "tu" : "incollerai",
+        "lui/lei" : "incollerà",
+        "noi" : "incolleremo",
+        "voi" : "incollerete",
+        "loro" : "incolleranno"
+      },
+      "condizionale" : {
+        "io" : "incollerei",
+        "tu" : "incolleresti",
+        "lui/lei" : "incollerebbe",
+        "noi" : "incolleremmo",
+        "voi" : "incollereste",
+        "loro" : "incollerebbero"
+      }
+    }
+  }, {
+    "id" : 1137,
+    "word" : "permesso di soggiorno",
+    "pos" : "loc.",
+    "meaning" : "居留许可",
+    "category" : "城市与场所"
+  }, {
+    "id" : 1138,
+    "word" : "codice fiscale",
+    "pos" : "loc.",
+    "meaning" : "税号（意大利身份识别码）",
+    "category" : "城市与场所"
+  }, {
+    "id" : 1139,
+    "word" : "questura",
+    "pos" : "s.f.",
+    "meaning" : "警察局（办居留手续）",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "questure"
+  }, {
+    "id" : 1140,
+    "word" : "municipio",
+    "pos" : "s.m.",
+    "meaning" : "市政府",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "municipi"
+  }, {
+    "id" : 1141,
+    "word" : "comune",
+    "pos" : "s.m.",
+    "meaning" : "市镇政府",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "comuni"
+  }, {
+    "id" : 1142,
+    "word" : "modulo",
+    "pos" : "s.m.",
+    "meaning" : "表格",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "moduli"
+  }, {
+    "id" : 1143,
+    "word" : "firma",
+    "pos" : "s.f.",
+    "meaning" : "签名",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "firmi"
+  }, {
+    "id" : 1144,
+    "word" : "sportello",
+    "pos" : "s.m.",
+    "meaning" : "（银行/邮局）窗口",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "sportelli"
+  }, {
+    "id" : 1145,
+    "word" : "bolletta",
+    "pos" : "s.f.",
+    "meaning" : "（水电气）账单",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "bollette"
+  }, {
+    "id" : 1146,
+    "word" : "locatore",
+    "pos" : "s.m.",
+    "meaning" : "房东（出租方）",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "locatori"
+  }, {
+    "id" : 1147,
+    "word" : "caparra",
+    "pos" : "s.f.",
+    "meaning" : "押金",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "caparre"
+  }, {
+    "id" : 1148,
+    "word" : "agenzia",
+    "pos" : "s.f.",
+    "meaning" : "中介公司",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "agenzie"
+  }, {
+    "id" : 1149,
+    "word" : "assicurazione",
+    "pos" : "s.f.",
+    "meaning" : "保险",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "assicurazioni"
+  }, {
+    "id" : 1150,
+    "word" : "bonifico",
+    "pos" : "s.m.",
+    "meaning" : "银行转账",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il"
+  }, {
+    "id" : 1151,
+    "word" : "prelievo",
+    "pos" : "s.m.",
+    "meaning" : "取款",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "prelievi"
+  }, {
+    "id" : 1152,
+    "word" : "filiale",
+    "pos" : "s.f.",
+    "meaning" : "分行；分店",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "filiali"
+  }, {
+    "id" : 1153,
+    "word" : "scontrino",
+    "pos" : "s.m.",
+    "meaning" : "购物小票",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "scontrini"
+  }, {
+    "id" : 1154,
+    "word" : "palazzo",
+    "pos" : "s.m.",
+    "meaning" : "大楼；宫殿",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "palazzi"
+  }, {
+    "id" : 1155,
+    "word" : "edificio",
+    "pos" : "s.m.",
+    "meaning" : "建筑物",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "edifici"
+  }, {
+    "id" : 1156,
+    "word" : "monumento",
+    "pos" : "s.m.",
+    "meaning" : "纪念碑",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "monumenti"
+  }, {
+    "id" : 1157,
+    "word" : "fila",
+    "pos" : "s.f.",
+    "meaning" : "队伍；排队",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "file"
+  }, {
+    "id" : 1158,
+    "word" : "monolocale",
+    "pos" : "s.m.",
+    "meaning" : "单间公寓",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "monolocali"
+  }, {
+    "id" : 1159,
+    "word" : "ordine",
+    "pos" : "s.m.",
+    "meaning" : "秩序；订单",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "ordini"
+  }, {
+    "id" : 1160,
+    "word" : "consegna",
+    "pos" : "s.f.",
+    "meaning" : "配送；交付",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "consegne"
+  }, {
+    "id" : 1161,
+    "word" : "spedizione",
+    "pos" : "s.f.",
+    "meaning" : "寄送；运送",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "spedizioni"
+  }, {
+    "id" : 1162,
+    "word" : "riscaldamento",
+    "pos" : "s.m.",
+    "meaning" : "暖气",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "riscaldamenti"
+  }, {
+    "id" : 1163,
+    "word" : "spazzatura",
+    "pos" : "s.f.",
+    "meaning" : "垃圾",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "spazzature"
+  }, {
+    "id" : 1164,
+    "word" : "pattumiera",
+    "pos" : "s.f.",
+    "meaning" : "垃圾桶",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "pattumiere"
+  }, {
+    "id" : 1165,
+    "word" : "rubinetto",
+    "pos" : "s.m.",
+    "meaning" : "水龙头",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "rubinetti"
+  }, {
+    "id" : 1166,
+    "word" : "fornello",
+    "pos" : "s.m.",
+    "meaning" : "（燃气）灶",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "fornelli"
+  }, {
+    "id" : 1167,
+    "word" : "interruttore",
+    "pos" : "s.m.",
+    "meaning" : "电灯开关",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "interruttori"
+  }, {
+    "id" : 1168,
+    "word" : "presa",
+    "pos" : "s.f.",
+    "meaning" : "插座",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "prese"
+  }, {
+    "id" : 1169,
+    "word" : "spina",
+    "pos" : "s.f.",
+    "meaning" : "插头",
+    "category" : "城市与场所",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "spine"
+  }, {
+    "id" : 1170,
+    "word" : "luogo",
+    "pos" : "s.m.",
+    "meaning" : "地点",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "luoghi"
+  }, {
+    "id" : 1171,
+    "word" : "momento",
+    "pos" : "s.m.",
+    "meaning" : "时刻；一会儿",
+    "category" : "城市与场所",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "momenti"
+  }, {
+    "id" : 1172,
+    "word" : "andata e ritorno",
+    "pos" : "loc.",
+    "meaning" : "往返票",
+    "category" : "交通与旅行",
+    "article" : "l'"
+  }, {
+    "id" : 1173,
+    "word" : "biglietteria",
+    "pos" : "s.f.",
+    "meaning" : "售票处",
+    "category" : "交通与旅行",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "biglietterie"
+  }, {
+    "id" : 1174,
+    "word" : "sciopero",
+    "pos" : "s.m.",
+    "meaning" : "罢工",
+    "category" : "交通与旅行",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "scioperi"
+  }, {
+    "id" : 1175,
+    "word" : "multa",
+    "pos" : "s.f.",
+    "meaning" : "罚款",
+    "category" : "交通与旅行",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "multe"
+  }, {
+    "id" : 1176,
+    "word" : "pedaggio",
+    "pos" : "s.m.",
+    "meaning" : "过路费",
+    "category" : "交通与旅行",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "pedaggi"
+  }, {
+    "id" : 1177,
+    "word" : "distributore",
+    "pos" : "s.m.",
+    "meaning" : "加油站；自动售货机",
+    "category" : "交通与旅行",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "distributori"
+  }, {
+    "id" : 1178,
+    "word" : "velocità",
+    "pos" : "s.f.",
+    "meaning" : "速度",
+    "category" : "交通与旅行",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "velocità"
+  }, {
+    "id" : 1179,
+    "word" : "carrello",
+    "pos" : "s.m.",
+    "meaning" : "购物车",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "carrelli"
+  }, {
+    "id" : 1180,
+    "word" : "cassiere",
+    "pos" : "s.m.",
+    "meaning" : "收银员",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "cassieri"
+  }, {
+    "id" : 1181,
+    "word" : "scadenza",
+    "pos" : "s.f.",
+    "meaning" : "保质期",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "scadenze"
+  }, {
+    "id" : 1182,
+    "word" : "contorno",
+    "pos" : "s.m.",
+    "meaning" : "配菜",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "contorni"
+  }, {
+    "id" : 1183,
+    "word" : "porzione",
+    "pos" : "s.f.",
+    "meaning" : "一份（餐食）",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "porzioni"
+  }, {
+    "id" : 1184,
+    "word" : "panificio",
+    "pos" : "s.m.",
+    "meaning" : "面包店",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "panifici"
+  }, {
+    "id" : 1185,
+    "word" : "gelateria",
+    "pos" : "s.f.",
+    "meaning" : "冰淇淋店",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "gelaterie"
+  }, {
+    "id" : 1186,
+    "word" : "aperitivo",
+    "pos" : "s.m.",
+    "meaning" : "餐前酒",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "aperitivi"
+  }, {
+    "id" : 1187,
+    "word" : "spesa",
+    "pos" : "s.f.",
+    "meaning" : "购物；开支",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "spese"
+  }, {
+    "id" : 1188,
+    "word" : "risparmio",
+    "pos" : "s.m.",
+    "meaning" : "积蓄",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "risparmi"
+  }, {
+    "id" : 1189,
+    "word" : "prestito",
+    "pos" : "s.m.",
+    "meaning" : "借款；贷款",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "prestiti"
+  }, {
+    "id" : 1190,
+    "word" : "gusto",
+    "pos" : "s.m.",
+    "meaning" : "味道；品味",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "gusti"
+  }, {
+    "id" : 1191,
+    "word" : "odore",
+    "pos" : "s.m.",
+    "meaning" : "气味",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "odori"
+  }, {
+    "id" : 1192,
+    "word" : "profumo",
+    "pos" : "s.m.",
+    "meaning" : "香水",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "profumi"
+  }, {
+    "id" : 1193,
+    "word" : "tonno",
+    "pos" : "s.m.",
+    "meaning" : "金枪鱼",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "tonni"
+  }, {
+    "id" : 1194,
+    "word" : "salmone",
+    "pos" : "s.m.",
+    "meaning" : "三文鱼",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "salmoni"
+  }, {
+    "id" : 1195,
+    "word" : "gambero",
+    "pos" : "s.m.",
+    "meaning" : "虾",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "gamberi"
+  }, {
+    "id" : 1196,
+    "word" : "melone",
+    "pos" : "s.m.",
+    "meaning" : "甜瓜",
+    "category" : "饮食",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "meloni"
+  }, {
+    "id" : 1197,
+    "word" : "anguria",
+    "pos" : "s.f.",
+    "meaning" : "西瓜",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "angurie"
+  }, {
+    "id" : 1198,
+    "word" : "panna",
+    "pos" : "s.f.",
+    "meaning" : "奶油",
+    "category" : "饮食",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "panne"
+  }, {
+    "id" : 1199,
+    "word" : "mal di pancia",
+    "pos" : "loc.",
+    "meaning" : "肚子疼",
+    "category" : "身体与健康"
+  }, {
+    "id" : 1200,
+    "word" : "analisi",
+    "pos" : "s.f.",
+    "meaning" : "化验；分析",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "l'"
+  }, {
+    "id" : 1201,
+    "word" : "radiografia",
+    "pos" : "s.f.",
+    "meaning" : "X光检查",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "radiografie"
+  }, {
+    "id" : 1202,
+    "word" : "allergia",
+    "pos" : "s.f.",
+    "meaning" : "过敏",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "allerge"
+  }, {
+    "id" : 1203,
+    "word" : "pressione",
+    "pos" : "s.f.",
+    "meaning" : "血压；压力",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "pressioni"
+  }, {
+    "id" : 1204,
+    "word" : "muscolo",
+    "pos" : "s.m.",
+    "meaning" : "肌肉",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "muscoli"
+  }, {
+    "id" : 1205,
+    "word" : "osso",
+    "pos" : "s.m.",
+    "meaning" : "骨头",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "ossi"
+  }, {
+    "id" : 1206,
+    "word" : "cervello",
+    "pos" : "s.m.",
+    "meaning" : "大脑",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "cervelli"
+  }, {
+    "id" : 1207,
+    "word" : "polmone",
+    "pos" : "s.m.",
+    "meaning" : "肺",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "polmoni"
+  }, {
+    "id" : 1208,
+    "word" : "fegato",
+    "pos" : "s.m.",
+    "meaning" : "肝",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "fegati"
+  }, {
+    "id" : 1209,
+    "word" : "polso",
+    "pos" : "s.m.",
+    "meaning" : "手腕",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "polsi"
+  }, {
+    "id" : 1210,
+    "word" : "caviglia",
+    "pos" : "s.f.",
+    "meaning" : "脚踝",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "caviglie"
+  }, {
+    "id" : 1211,
+    "word" : "unghia",
+    "pos" : "s.f.",
+    "meaning" : "指甲",
+    "category" : "身体与健康",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "unghie"
+  }, {
+    "id" : 1212,
+    "word" : "sonno",
+    "pos" : "s.m.",
+    "meaning" : "睡意",
+    "category" : "身体与健康",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "sonni"
+  }, {
+    "id" : 1213,
+    "word" : "tesi",
+    "pos" : "s.f.",
+    "meaning" : "毕业论文",
+    "category" : "学习与学校",
+    "gender" : "f",
+    "article" : "la"
+  }, {
+    "id" : 1214,
+    "word" : "relatore",
+    "pos" : "s.m.",
+    "meaning" : "（论文）指导教授",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "relatori"
+  }, {
+    "id" : 1215,
+    "word" : "appunto",
+    "pos" : "s.m.",
+    "meaning" : "笔记",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "appunti"
+  }, {
+    "id" : 1216,
+    "word" : "iscrizione",
+    "pos" : "s.f.",
+    "meaning" : "注册；报名",
+    "category" : "学习与学校",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "iscrizioni"
+  }, {
+    "id" : 1217,
+    "word" : "matricola",
+    "pos" : "s.f.",
+    "meaning" : "新生；学号",
+    "category" : "学习与学校",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "matricole"
+  }, {
+    "id" : 1218,
+    "word" : "semestre",
+    "pos" : "s.m.",
+    "meaning" : "学期",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "semestri"
+  }, {
+    "id" : 1219,
+    "word" : "credito",
+    "pos" : "s.m.",
+    "meaning" : "学分",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "crediti"
+  }, {
+    "id" : 1220,
+    "word" : "borsa di studio",
+    "pos" : "loc.",
+    "meaning" : "奖学金",
+    "category" : "学习与学校"
+  }, {
+    "id" : 1221,
+    "word" : "dottorato",
+    "pos" : "s.m.",
+    "meaning" : "博士阶段",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "dottorati"
+  }, {
+    "id" : 1222,
+    "word" : "lavagna",
+    "pos" : "s.f.",
+    "meaning" : "黑板",
+    "category" : "学习与学校",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "lavagne"
+  }, {
+    "id" : 1223,
+    "word" : "elenco",
+    "pos" : "s.m.",
+    "meaning" : "清单；列表",
+    "category" : "学习与学校",
+    "gender" : "m",
+    "article" : "l'"
+  }, {
+    "id" : 1224,
+    "word" : "pausa",
+    "pos" : "s.f.",
+    "meaning" : "休息",
+    "category" : "学习与学校",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "pause"
+  }, {
+    "id" : 1225,
+    "word" : "orale",
+    "pos" : "agg.",
+    "meaning" : "口头的",
+    "category" : "学习与学校",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "orale",
+      "fs" : "orale",
+      "mp" : "orali",
+      "fp" : "orali"
+    }
+  }, {
+    "id" : 1226,
+    "word" : "assente",
+    "pos" : "agg.",
+    "meaning" : "缺席的",
+    "category" : "学习与学校",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "assente",
+      "fs" : "assente",
+      "mp" : "assenti",
+      "fp" : "assenti"
+    }
+  }, {
+    "id" : 1227,
+    "word" : "presente",
+    "pos" : "agg.",
+    "meaning" : "在场的；目前的",
+    "category" : "学习与学校",
+    "adjForms" : {
+      "ms" : "presente",
+      "fs" : "presente",
+      "mp" : "presenti",
+      "fp" : "presenti"
+    }
+  }, {
+    "id" : 1228,
+    "word" : "tirocinio",
+    "pos" : "s.m.",
+    "meaning" : "实习",
+    "category" : "工作与职业",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "tirocini"
+  }, {
+    "id" : 1229,
+    "word" : "stagista",
+    "pos" : "s.m./s.f.",
+    "meaning" : "实习生",
+    "category" : "工作与职业",
+    "article" : "lo/la",
+    "plural" : "stagisti/stagiste"
+  }, {
+    "id" : 1230,
+    "word" : "assunzione",
+    "pos" : "s.f.",
+    "meaning" : "录用；招聘",
+    "category" : "工作与职业",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "assunzioni"
+  }, {
+    "id" : 1231,
+    "word" : "dipendente",
+    "pos" : "s.m./s.f.",
+    "meaning" : "员工",
+    "category" : "工作与职业",
+    "article" : "il/la",
+    "plural" : "dipendenti"
+  }, {
+    "id" : 1232,
+    "word" : "licenziamento",
+    "pos" : "s.m.",
+    "meaning" : "解雇",
+    "category" : "工作与职业",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "licenziamenti"
+  }, {
+    "id" : 1233,
+    "word" : "concorso",
+    "pos" : "s.m.",
+    "meaning" : "招聘考试；竞赛",
+    "category" : "工作与职业",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "concorsi"
+  }, {
+    "id" : 1234,
+    "word" : "ruolo",
+    "pos" : "s.m.",
+    "meaning" : "角色；职责",
+    "category" : "工作与职业",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "ruoli"
+  }, {
+    "id" : 1235,
+    "word" : "straordinario",
+    "pos" : "s.m.",
+    "meaning" : "加班",
+    "category" : "工作与职业",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "straordinari"
+  }, {
+    "id" : 1236,
+    "word" : "datore di lavoro",
+    "pos" : "loc.",
+    "meaning" : "雇主",
+    "category" : "工作与职业"
+  }, {
+    "id" : 1237,
+    "word" : "terremoto",
+    "pos" : "s.m.",
+    "meaning" : "地震",
+    "category" : "天气与自然",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "terremoti"
+  }, {
+    "id" : 1238,
+    "word" : "alluvione",
+    "pos" : "s.f.",
+    "meaning" : "洪水",
+    "category" : "天气与自然",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "alluvioni"
+  }, {
+    "id" : 1239,
+    "word" : "incendio",
+    "pos" : "s.m.",
+    "meaning" : "火灾",
+    "category" : "天气与自然",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "incendi"
+  }, {
+    "id" : 1240,
+    "word" : "siccità",
+    "pos" : "s.f.",
+    "meaning" : "干旱",
+    "category" : "天气与自然",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "siccità"
+  }, {
+    "id" : 1241,
+    "word" : "energia",
+    "pos" : "s.f.",
+    "meaning" : "能源",
+    "category" : "天气与自然",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "energe"
+  }, {
+    "id" : 1242,
+    "word" : "elettricità",
+    "pos" : "s.f.",
+    "meaning" : "电",
+    "category" : "天气与自然",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "elettricità"
+  }, {
+    "id" : 1243,
+    "word" : "petrolio",
+    "pos" : "s.m.",
+    "meaning" : "石油",
+    "category" : "天气与自然",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "petroli"
+  }, {
+    "id" : 1244,
+    "word" : "inquinamento",
+    "pos" : "s.m.",
+    "meaning" : "污染",
+    "category" : "天气与自然",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "inquinamenti"
+  }, {
+    "id" : 1245,
+    "word" : "risorsa",
+    "pos" : "s.f.",
+    "meaning" : "资源",
+    "category" : "天气与自然",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "risorse"
+  }, {
+    "id" : 1246,
+    "word" : "società",
+    "pos" : "s.f.",
+    "meaning" : "社会；公司",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "società"
+  }, {
+    "id" : 1247,
+    "word" : "stato",
+    "pos" : "s.m.",
+    "meaning" : "国家；状态",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "stati"
+  }, {
+    "id" : 1248,
+    "word" : "governo",
+    "pos" : "s.m.",
+    "meaning" : "政府",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "governi"
+  }, {
+    "id" : 1249,
+    "word" : "storia",
+    "pos" : "s.f.",
+    "meaning" : "历史",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "storie"
+  }, {
+    "id" : 1250,
+    "word" : "cultura",
+    "pos" : "s.f.",
+    "meaning" : "文化",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "culture"
+  }, {
+    "id" : 1251,
+    "word" : "legge",
+    "pos" : "s.f.",
+    "meaning" : "法律",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "leggi"
+  }, {
+    "id" : 1252,
+    "word" : "regola",
+    "pos" : "s.f.",
+    "meaning" : "规则",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "regole"
+  }, {
+    "id" : 1253,
+    "word" : "diritto",
+    "pos" : "s.m.",
+    "meaning" : "权利；法学",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "diritti"
+  }, {
+    "id" : 1254,
+    "word" : "guerra",
+    "pos" : "s.f.",
+    "meaning" : "战争",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "guerre"
+  }, {
+    "id" : 1255,
+    "word" : "pace",
+    "pos" : "s.f.",
+    "meaning" : "和平",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "paci"
+  }, {
+    "id" : 1256,
+    "word" : "scelta",
+    "pos" : "s.f.",
+    "meaning" : "选择",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "scelte"
+  }, {
+    "id" : 1257,
+    "word" : "causa",
+    "pos" : "s.f.",
+    "meaning" : "起因",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "cause"
+  }, {
+    "id" : 1258,
+    "word" : "conseguenza",
+    "pos" : "s.f.",
+    "meaning" : "后果",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "conseguenze"
+  }, {
+    "id" : 1259,
+    "word" : "effetto",
+    "pos" : "s.m.",
+    "meaning" : "效果",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "effetti"
+  }, {
+    "id" : 1260,
+    "word" : "scopo",
+    "pos" : "s.m.",
+    "meaning" : "目的",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "scopi"
+  }, {
+    "id" : 1261,
+    "word" : "senso",
+    "pos" : "s.m.",
+    "meaning" : "意义",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "sensi"
+  }, {
+    "id" : 1262,
+    "word" : "valore",
+    "pos" : "s.m.",
+    "meaning" : "价值",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "valori"
+  }, {
+    "id" : 1263,
+    "word" : "opinione",
+    "pos" : "s.f.",
+    "meaning" : "意见",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "opinioni"
+  }, {
+    "id" : 1264,
+    "word" : "consiglio",
+    "pos" : "s.m.",
+    "meaning" : "建议",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "consigli"
+  }, {
+    "id" : 1265,
+    "word" : "vantaggio",
+    "pos" : "s.m.",
+    "meaning" : "优点",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "vantaggi"
+  }, {
+    "id" : 1266,
+    "word" : "svantaggio",
+    "pos" : "s.m.",
+    "meaning" : "缺点",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "svantaggi"
+  }, {
+    "id" : 1267,
+    "word" : "livello",
+    "pos" : "s.m.",
+    "meaning" : "水平",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "livelli"
+  }, {
+    "id" : 1268,
+    "word" : "abitudine",
+    "pos" : "s.f.",
+    "meaning" : "习惯",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "abitudini"
+  }, {
+    "id" : 1269,
+    "word" : "impegno",
+    "pos" : "s.m.",
+    "meaning" : "约定；投入",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "impegni"
+  }, {
+    "id" : 1270,
+    "word" : "successo",
+    "pos" : "s.m.",
+    "meaning" : "成功",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "successi"
+  }, {
+    "id" : 1271,
+    "word" : "fallimento",
+    "pos" : "s.m.",
+    "meaning" : "失败",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "fallimenti"
+  }, {
+    "id" : 1272,
+    "word" : "fortuna",
+    "pos" : "s.f.",
+    "meaning" : "运气",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "fortune"
+  }, {
+    "id" : 1273,
+    "word" : "rischio",
+    "pos" : "s.m.",
+    "meaning" : "风险",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "rischi"
+  }, {
+    "id" : 1274,
+    "word" : "sicurezza",
+    "pos" : "s.f.",
+    "meaning" : "安全",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "sicurezze"
+  }, {
+    "id" : 1275,
+    "word" : "pericolo",
+    "pos" : "s.m.",
+    "meaning" : "危险",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "pericoli"
+  }, {
+    "id" : 1276,
+    "word" : "libertà",
+    "pos" : "s.f.",
+    "meaning" : "自由",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "libertà"
+  }, {
+    "id" : 1277,
+    "word" : "sforzo",
+    "pos" : "s.m.",
+    "meaning" : "努力",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "sforzi"
+  }, {
+    "id" : 1278,
+    "word" : "ricordo",
+    "pos" : "s.m.",
+    "meaning" : "回忆；纪念品",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "ricordi"
+  }, {
+    "id" : 1279,
+    "word" : "realtà",
+    "pos" : "s.f.",
+    "meaning" : "现实",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "realtà"
+  }, {
+    "id" : 1280,
+    "word" : "caratteristica",
+    "pos" : "s.f.",
+    "meaning" : "特征",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "caratteristiche"
+  }, {
+    "id" : 1281,
+    "word" : "fase",
+    "pos" : "s.f.",
+    "meaning" : "阶段",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "fasi"
+  }, {
+    "id" : 1282,
+    "word" : "campo",
+    "pos" : "s.m.",
+    "meaning" : "田地；领域",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "campi"
+  }, {
+    "id" : 1283,
+    "word" : "punto",
+    "pos" : "s.m.",
+    "meaning" : "点；地点",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "punti"
+  }, {
+    "id" : 1284,
+    "word" : "lato",
+    "pos" : "s.m.",
+    "meaning" : "边；侧面",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "lati"
+  }, {
+    "id" : 1285,
+    "word" : "bisogno",
+    "pos" : "s.m.",
+    "meaning" : "需要",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "bisogni"
+  }, {
+    "id" : 1286,
+    "word" : "voglia",
+    "pos" : "s.f.",
+    "meaning" : "想要的念头",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "voglie"
+  }, {
+    "id" : 1287,
+    "word" : "fretta",
+    "pos" : "s.f.",
+    "meaning" : "匆忙",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "frette"
+  }, {
+    "id" : 1288,
+    "word" : "ragione",
+    "pos" : "s.f.",
+    "meaning" : "道理（avere ragione 有理）",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "ragioni"
+  }, {
+    "id" : 1289,
+    "word" : "torto",
+    "pos" : "s.m.",
+    "meaning" : "错理（avere torto 理亏）",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "torti"
+  }, {
+    "id" : 1290,
+    "word" : "idea",
+    "pos" : "s.f.",
+    "meaning" : "主意",
+    "category" : "其他高频词",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "idee"
+  }, {
+    "id" : 1291,
+    "word" : "mezzo",
+    "pos" : "s.m.",
+    "meaning" : "交通工具；一半",
+    "category" : "其他高频词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "mezzi"
+  }, {
+    "id" : 1292,
+    "word" : "affidabile",
+    "pos" : "agg.",
+    "meaning" : "可靠的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "affidabile",
+      "fs" : "affidabile",
+      "mp" : "affidabili",
+      "fp" : "affidabili"
+    }
+  }, {
+    "id" : 1293,
+    "word" : "onesto",
+    "pos" : "agg.",
+    "meaning" : "诚实的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "onesto",
+      "fs" : "onesta",
+      "mp" : "onesti",
+      "fp" : "oneste"
+    }
+  }, {
+    "id" : 1294,
+    "word" : "curioso",
+    "pos" : "agg.",
+    "meaning" : "好奇的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "curioso",
+      "fs" : "curiosa",
+      "mp" : "curiosi",
+      "fp" : "curiose"
+    }
+  }, {
+    "id" : 1295,
+    "word" : "generoso",
+    "pos" : "agg.",
+    "meaning" : "慷慨的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "generoso",
+      "fs" : "generosa",
+      "mp" : "generosi",
+      "fp" : "generose"
+    }
+  }, {
+    "id" : 1296,
+    "word" : "timido",
+    "pos" : "agg.",
+    "meaning" : "害羞的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "timido",
+      "fs" : "timida",
+      "mp" : "timidi",
+      "fp" : "timide"
+    }
+  }, {
+    "id" : 1297,
+    "word" : "impaziente",
+    "pos" : "agg.",
+    "meaning" : "不耐烦的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "impaziente",
+      "fs" : "impaziente",
+      "mp" : "impazienti",
+      "fp" : "impazienti"
+    }
+  }, {
+    "id" : 1298,
+    "word" : "elegante",
+    "pos" : "agg.",
+    "meaning" : "优雅的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "elegante",
+      "fs" : "elegante",
+      "mp" : "eleganti",
+      "fp" : "eleganti"
+    }
+  }, {
+    "id" : 1299,
+    "word" : "disponibile",
+    "pos" : "agg.",
+    "meaning" : "有空的；可使用的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "disponibile",
+      "fs" : "disponibile",
+      "mp" : "disponibili",
+      "fp" : "disponibili"
+    }
+  }, {
+    "id" : 1300,
+    "word" : "completo",
+    "pos" : "agg.",
+    "meaning" : "完整的；满员的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "completo",
+      "fs" : "completa",
+      "mp" : "completi",
+      "fp" : "complete"
+    }
+  }, {
+    "id" : 1301,
+    "word" : "puntuale",
+    "pos" : "agg.",
+    "meaning" : "准时的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "puntuale",
+      "fs" : "puntuale",
+      "mp" : "puntuali",
+      "fp" : "puntuali"
+    }
+  }, {
+    "id" : 1302,
+    "word" : "improvviso",
+    "pos" : "agg.",
+    "meaning" : "突然的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "improvviso",
+      "fs" : "improvvisa",
+      "mp" : "improvvisi",
+      "fp" : "improvvise"
+    }
+  }, {
+    "id" : 1303,
+    "word" : "profondo",
+    "pos" : "agg.",
+    "meaning" : "深的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "profondo",
+      "fs" : "profonda",
+      "mp" : "profondi",
+      "fp" : "profonde"
+    }
+  }, {
+    "id" : 1304,
+    "word" : "morbido",
+    "pos" : "agg.",
+    "meaning" : "柔软的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "morbido",
+      "fs" : "morbida",
+      "mp" : "morbidi",
+      "fp" : "morbide"
+    }
+  }, {
+    "id" : 1305,
+    "word" : "trasparente",
+    "pos" : "agg.",
+    "meaning" : "透明的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "trasparente",
+      "fs" : "trasparente",
+      "mp" : "trasparenti",
+      "fp" : "trasparenti"
+    }
+  }, {
+    "id" : 1306,
+    "word" : "impegnato",
+    "pos" : "agg.",
+    "meaning" : "忙碌的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "impegnato",
+      "fs" : "impegnata",
+      "mp" : "impegnati",
+      "fp" : "impegnate"
+    }
+  }, {
+    "id" : 1307,
+    "word" : "digitale",
+    "pos" : "agg.",
+    "meaning" : "数字的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "digitale",
+      "fs" : "digitale",
+      "mp" : "digitali",
+      "fp" : "digitali"
+    }
+  }, {
+    "id" : 1308,
+    "word" : "elettronico",
+    "pos" : "agg.",
+    "meaning" : "电子的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "elettronico",
+      "fs" : "elettronica",
+      "mp" : "elettronici",
+      "fp" : "elettroniche"
+    }
+  }, {
+    "id" : 1309,
+    "word" : "informatico",
+    "pos" : "agg.",
+    "meaning" : "信息技术的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "informatico",
+      "fs" : "informatica",
+      "mp" : "informatici",
+      "fp" : "informatiche"
+    }
+  }, {
+    "id" : 1310,
+    "word" : "tecnico",
+    "pos" : "agg.",
+    "meaning" : "技术的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "tecnico",
+      "fs" : "tecnica",
+      "mp" : "tecnici",
+      "fp" : "tecniche"
+    }
+  }, {
+    "id" : 1311,
+    "word" : "pubblico",
+    "pos" : "agg.",
+    "meaning" : "公共的；公众的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "pubblico",
+      "fs" : "pubblica",
+      "mp" : "pubblici",
+      "fp" : "pubbliche"
+    }
+  }, {
+    "id" : 1312,
+    "word" : "privato",
+    "pos" : "agg.",
+    "meaning" : "私人的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "privato",
+      "fs" : "privata",
+      "mp" : "privati",
+      "fp" : "private"
+    }
+  }, {
+    "id" : 1313,
+    "word" : "sociale",
+    "pos" : "agg.",
+    "meaning" : "社会的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "sociale",
+      "fs" : "sociale",
+      "mp" : "sociali",
+      "fp" : "sociali"
+    }
+  }, {
+    "id" : 1314,
+    "word" : "ufficiale",
+    "pos" : "agg.",
+    "meaning" : "官方的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "ufficiale",
+      "fs" : "ufficiale",
+      "mp" : "ufficiali",
+      "fp" : "ufficiali"
+    }
+  }, {
+    "id" : 1315,
+    "word" : "nazionale",
+    "pos" : "agg.",
+    "meaning" : "国家的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "nazionale",
+      "fs" : "nazionale",
+      "mp" : "nazionali",
+      "fp" : "nazionali"
+    }
+  }, {
+    "id" : 1316,
+    "word" : "internazionale",
+    "pos" : "agg.",
+    "meaning" : "国际的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "internazionale",
+      "fs" : "internazionale",
+      "mp" : "internazionali",
+      "fp" : "internazionali"
+    }
+  }, {
+    "id" : 1317,
+    "word" : "medio",
+    "pos" : "agg.",
+    "meaning" : "中等的",
+    "category" : "形容词",
+    "adjForms" : {
+      "ms" : "medio",
+      "fs" : "media",
+      "mp" : "medi",
+      "fp" : "medie"
+    }
+  }, {
+    "id" : 1318,
+    "word" : "straniero",
+    "pos" : "agg./s.m.",
+    "meaning" : "外国的；外国人",
+    "category" : "形容词",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "stranieri",
+    "adjForms" : {
+      "ms" : "straniero",
+      "fs" : "straniera",
+      "mp" : "stranieri",
+      "fp" : "straniere"
+    }
+  }, {
+    "id" : 1319,
+    "word" : "locale",
+    "pos" : "agg./s.m.",
+    "meaning" : "当地的；场所",
+    "category" : "形容词",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "locali",
+    "adjForms" : {
+      "ms" : "locale",
+      "fs" : "locale",
+      "mp" : "locali",
+      "fp" : "locali"
+    }
+  }, {
+    "id" : 1320,
+    "word" : "attuale",
+    "pos" : "agg.",
+    "meaning" : "当前的",
+    "category" : "形容词",
+    "article" : "l'",
+    "adjForms" : {
+      "ms" : "attuale",
+      "fs" : "attuale",
+      "mp" : "attuali",
+      "fp" : "attuali"
+    }
+  }, {
+    "id" : 1321,
+    "word" : "infatti",
+    "pos" : "avv.",
+    "meaning" : "事实上；正因如此",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1322,
+    "word" : "tuttavia",
+    "pos" : "avv.",
+    "meaning" : "然而",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1323,
+    "word" : "nonostante",
+    "pos" : "cong.",
+    "meaning" : "尽管",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1324,
+    "word" : "attraverso",
+    "pos" : "prep.",
+    "meaning" : "穿过；通过",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1325,
+    "word" : "verso",
+    "pos" : "prep.",
+    "meaning" : "朝；将近",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1326,
+    "word" : "accanto",
+    "pos" : "avv.",
+    "meaning" : "在旁边",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1327,
+    "word" : "appena",
+    "pos" : "avv.",
+    "meaning" : "刚刚；一…就",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1328,
+    "word" : "insomma",
+    "pos" : "avv.",
+    "meaning" : "总之",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1329,
+    "word" : "circa",
+    "pos" : "avv.",
+    "meaning" : "大约",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1330,
+    "word" : "almeno",
+    "pos" : "avv.",
+    "meaning" : "至少",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1331,
+    "word" : "addirittura",
+    "pos" : "avv.",
+    "meaning" : "甚至",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1332,
+    "word" : "finalmente",
+    "pos" : "avv.",
+    "meaning" : "终于",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1333,
+    "word" : "probabilmente",
+    "pos" : "avv.",
+    "meaning" : "很可能",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1334,
+    "word" : "soprattutto",
+    "pos" : "avv.",
+    "meaning" : "尤其是",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1335,
+    "word" : "ovunque",
+    "pos" : "avv.",
+    "meaning" : "无论哪里",
+    "category" : "副词与介词",
+    "article" : "l'"
+  }, {
+    "id" : 1336,
+    "word" : "lentamente",
+    "pos" : "avv.",
+    "meaning" : "慢慢地",
+    "category" : "副词与介词"
+  }, {
+    "id" : 1337,
+    "word" : "ne",
+    "pos" : "pron.",
+    "meaning" : "代词：关于这/这些；从这里（部分与地点用法）",
+    "category" : "代词·冠词·连词"
+  }, {
+    "id" : 1338,
+    "word" : "ci",
+    "pos" : "pron.",
+    "meaning" : "代词：我们；在那里/到那里",
+    "category" : "代词·冠词·连词"
+  }, {
+    "id" : 1339,
+    "word" : "cui",
+    "pos" : "pron.",
+    "meaning" : "关系代词：引导定语从句（di cui、in cui）",
+    "category" : "代词·冠词·连词"
+  }, {
+    "id" : 1340,
+    "word" : "affinché",
+    "pos" : "cong.",
+    "meaning" : "以便",
+    "category" : "代词·冠词·连词",
+    "article" : "l'"
+  }, {
+    "id" : 1341,
+    "word" : "sebbene",
+    "pos" : "cong.",
+    "meaning" : "虽然；尽管",
+    "category" : "代词·冠词·连词"
+  }, {
+    "id" : 1342,
+    "word" : "suocero",
+    "pos" : "s.m.",
+    "meaning" : "公公；岳父",
+    "category" : "家庭与人物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "suoceri"
+  }, {
+    "id" : 1343,
+    "word" : "suocera",
+    "pos" : "s.f.",
+    "meaning" : "婆婆；岳母",
+    "category" : "家庭与人物",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "suocere"
+  }, {
+    "id" : 1344,
+    "word" : "genero",
+    "pos" : "s.m.",
+    "meaning" : "女婿",
+    "category" : "家庭与人物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "generi"
+  }, {
+    "id" : 1345,
+    "word" : "nuora",
+    "pos" : "s.f.",
+    "meaning" : "儿媳",
+    "category" : "家庭与人物",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "nuore"
+  }, {
+    "id" : 1346,
+    "word" : "cognato",
+    "pos" : "s.m.",
+    "meaning" : "姐夫；妹夫",
+    "category" : "家庭与人物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "cognati"
+  }, {
+    "id" : 1347,
+    "word" : "cognata",
+    "pos" : "s.f.",
+    "meaning" : "嫂子；弟媳",
+    "category" : "家庭与人物",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "cognate"
+  }, {
+    "id" : 1348,
+    "word" : "vedovo",
+    "pos" : "agg./s.m.",
+    "meaning" : "丧偶的；鳏夫",
+    "category" : "家庭与人物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "vedovi",
+    "adjForms" : {
+      "ms" : "vedovo",
+      "fs" : "vedova",
+      "mp" : "vedovi",
+      "fp" : "vedove"
+    }
+  }, {
+    "id" : 1349,
+    "word" : "periodo",
+    "pos" : "s.m.",
+    "meaning" : "时期",
+    "category" : "时间与日期",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "periodi"
+  }, {
+    "id" : 1350,
+    "word" : "epoca",
+    "pos" : "s.f.",
+    "meaning" : "时代",
+    "category" : "时间与日期",
+    "gender" : "f",
+    "article" : "l'",
+    "plural" : "epoche"
+  }, {
+    "id" : 1351,
+    "word" : "futuro",
+    "pos" : "s.m./agg.",
+    "meaning" : "未来；将来的",
+    "category" : "时间与日期",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "futuri",
+    "adjForms" : {
+      "ms" : "futuro",
+      "fs" : "futura",
+      "mp" : "futuri",
+      "fp" : "future"
+    }
+  }, {
+    "id" : 1352,
+    "word" : "passato",
+    "pos" : "s.m.",
+    "meaning" : "过去",
+    "category" : "时间与日期",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "passati"
+  }, {
+    "id" : 1353,
+    "word" : "abbigliamento",
+    "pos" : "s.m.",
+    "meaning" : "服装（总称）",
+    "category" : "服装与购物",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "abbigliamenti"
+  }, {
+    "id" : 1354,
+    "word" : "reso",
+    "pos" : "s.m.",
+    "meaning" : "退货",
+    "category" : "服装与购物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "resi"
+  }, {
+    "id" : 1355,
+    "word" : "affare",
+    "pos" : "s.m.",
+    "meaning" : "买卖；生意",
+    "category" : "服装与购物",
+    "gender" : "m",
+    "article" : "l'",
+    "plural" : "affari"
+  }, {
+    "id" : 1356,
+    "word" : "spettacolo",
+    "pos" : "s.m.",
+    "meaning" : "演出；表演",
+    "category" : "爱好与休闲",
+    "gender" : "m",
+    "article" : "lo",
+    "plural" : "spettacoli"
+  }, {
+    "id" : 1357,
+    "word" : "collezione",
+    "pos" : "s.f.",
+    "meaning" : "收藏",
+    "category" : "爱好与休闲",
+    "gender" : "f",
+    "article" : "la",
+    "plural" : "collezioni"
+  }, {
+    "id" : 1358,
+    "word" : "criceto",
+    "pos" : "s.m.",
+    "meaning" : "仓鼠",
+    "category" : "动物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "criceti"
+  }, {
+    "id" : 1359,
+    "word" : "gufo",
+    "pos" : "s.m.",
+    "meaning" : "猫头鹰",
+    "category" : "动物",
+    "gender" : "m",
+    "article" : "il",
+    "plural" : "gufi"
+  }, {
+    "id" : 1360,
+    "word" : "in bocca al lupo",
+    "pos" : "loc.",
+    "meaning" : "祝好运（意式吉利话）",
+    "category" : "问候与礼貌",
+    "article" : "l'"
+  }, {
+    "id" : 1361,
+    "word" : "tradurre",
+    "pos" : "v.",
+    "meaning" : "翻译",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "traduco",
+        "tu" : "traduci",
+        "lui/lei" : "traduce",
+        "noi" : "traduciamo",
+        "voi" : "traducete",
+        "loro" : "traducono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho tradotto",
+        "tu" : "hai tradotto",
+        "lui/lei" : "ha tradotto",
+        "noi" : "abbiamo tradotto",
+        "voi" : "avete tradotto",
+        "loro" : "hanno tradotto"
+      },
+      "imperfetto" : {
+        "io" : "traducevo",
+        "tu" : "traducevi",
+        "lui/lei" : "traduceva",
+        "noi" : "traducevamo",
+        "voi" : "traducevate",
+        "loro" : "traducevano"
+      },
+      "futuro" : {
+        "io" : "tradurrò",
+        "tu" : "tradurrai",
+        "lui/lei" : "tradurrà",
+        "noi" : "tradurremo",
+        "voi" : "tradurrete",
+        "loro" : "tradurranno"
+      },
+      "condizionale" : {
+        "io" : "tradurrei",
+        "tu" : "tradurresti",
+        "lui/lei" : "tradurrebbe",
+        "noi" : "tradurremmo",
+        "voi" : "tradurreste",
+        "loro" : "tradurrebbero"
+      }
+    }
+  }, {
+    "id" : 1362,
+    "word" : "produrre",
+    "pos" : "v.",
+    "meaning" : "生产；产生",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "produco",
+        "tu" : "produci",
+        "lui/lei" : "produce",
+        "noi" : "produciamo",
+        "voi" : "producete",
+        "loro" : "producono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho prodotto",
+        "tu" : "hai prodotto",
+        "lui/lei" : "ha prodotto",
+        "noi" : "abbiamo prodotto",
+        "voi" : "avete prodotto",
+        "loro" : "hanno prodotto"
+      },
+      "imperfetto" : {
+        "io" : "producevo",
+        "tu" : "producevi",
+        "lui/lei" : "produceva",
+        "noi" : "producevamo",
+        "voi" : "producevate",
+        "loro" : "producevano"
+      },
+      "futuro" : {
+        "io" : "produrrò",
+        "tu" : "produrrai",
+        "lui/lei" : "produrrà",
+        "noi" : "produrremo",
+        "voi" : "produrrete",
+        "loro" : "produrranno"
+      },
+      "condizionale" : {
+        "io" : "produrrei",
+        "tu" : "produrresti",
+        "lui/lei" : "produrrebbe",
+        "noi" : "produrremmo",
+        "voi" : "produrreste",
+        "loro" : "produrrebbero"
+      }
+    }
+  }, {
+    "id" : 1363,
+    "word" : "risolvere",
+    "pos" : "v.",
+    "meaning" : "解决",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "risolvo",
+        "tu" : "risolvi",
+        "lui/lei" : "risolve",
+        "noi" : "risolviamo",
+        "voi" : "risolvete",
+        "loro" : "risolvono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho risolto",
+        "tu" : "hai risolto",
+        "lui/lei" : "ha risolto",
+        "noi" : "abbiamo risolto",
+        "voi" : "avete risolto",
+        "loro" : "hanno risolto"
+      },
+      "imperfetto" : {
+        "io" : "risolvevo",
+        "tu" : "risolvevi",
+        "lui/lei" : "risolveva",
+        "noi" : "risolvevamo",
+        "voi" : "risolvevate",
+        "loro" : "risolvevano"
+      },
+      "futuro" : {
+        "io" : "risolverò",
+        "tu" : "risolverai",
+        "lui/lei" : "risolverà",
+        "noi" : "risolveremo",
+        "voi" : "risolverete",
+        "loro" : "risolveranno"
+      },
+      "condizionale" : {
+        "io" : "risolverei",
+        "tu" : "risolveresti",
+        "lui/lei" : "risolverebbe",
+        "noi" : "risolveremmo",
+        "voi" : "risolvereste",
+        "loro" : "risolverebbero"
+      }
+    }
+  }, {
+    "id" : 1364,
+    "word" : "svolgere",
+    "pos" : "v.",
+    "meaning" : "执行；从事",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "svolgo",
+        "tu" : "svolgi",
+        "lui/lei" : "svolge",
+        "noi" : "svolgiamo",
+        "voi" : "svolgete",
+        "loro" : "svolgono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho svolto",
+        "tu" : "hai svolto",
+        "lui/lei" : "ha svolto",
+        "noi" : "abbiamo svolto",
+        "voi" : "avete svolto",
+        "loro" : "hanno svolto"
+      },
+      "imperfetto" : {
+        "io" : "svolgevo",
+        "tu" : "svolgevi",
+        "lui/lei" : "svolgeva",
+        "noi" : "svolgevamo",
+        "voi" : "svolgevate",
+        "loro" : "svolgevano"
+      },
+      "futuro" : {
+        "io" : "svolgerò",
+        "tu" : "svolgerai",
+        "lui/lei" : "svolgerà",
+        "noi" : "svolgeremo",
+        "voi" : "svolgerete",
+        "loro" : "svolgeranno"
+      },
+      "condizionale" : {
+        "io" : "svolgerei",
+        "tu" : "svolgeresti",
+        "lui/lei" : "svolgerebbe",
+        "noi" : "svolgeremmo",
+        "voi" : "svolgereste",
+        "loro" : "svolgerebbero"
+      }
+    }
+  }, {
+    "id" : 1365,
+    "word" : "gestire",
+    "pos" : "v.",
+    "meaning" : "管理",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "gestisco",
+        "tu" : "gestisci",
+        "lui/lei" : "gestisce",
+        "noi" : "gestiamo",
+        "voi" : "gestite",
+        "loro" : "gestiscono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho gestito",
+        "tu" : "hai gestito",
+        "lui/lei" : "ha gestito",
+        "noi" : "abbiamo gestito",
+        "voi" : "avete gestito",
+        "loro" : "hanno gestito"
+      },
+      "imperfetto" : {
+        "io" : "gestivo",
+        "tu" : "gestivi",
+        "lui/lei" : "gestiva",
+        "noi" : "gestivamo",
+        "voi" : "gestivate",
+        "loro" : "gestivano"
+      },
+      "futuro" : {
+        "io" : "gestirò",
+        "tu" : "gestirai",
+        "lui/lei" : "gestirà",
+        "noi" : "gestiremo",
+        "voi" : "gestirete",
+        "loro" : "gestiranno"
+      },
+      "condizionale" : {
+        "io" : "gestirei",
+        "tu" : "gestiresti",
+        "lui/lei" : "gestirebbe",
+        "noi" : "gestiremmo",
+        "voi" : "gestireste",
+        "loro" : "gestirebbero"
+      }
+    }
+  }, {
+    "id" : 1366,
+    "word" : "inserire",
+    "pos" : "v.",
+    "meaning" : "输入；插入",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "inserisco",
+        "tu" : "inserisci",
+        "lui/lei" : "inserisce",
+        "noi" : "inseriamo",
+        "voi" : "inserite",
+        "loro" : "inseriscono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho inserito",
+        "tu" : "hai inserito",
+        "lui/lei" : "ha inserito",
+        "noi" : "abbiamo inserito",
+        "voi" : "avete inserito",
+        "loro" : "hanno inserito"
+      },
+      "imperfetto" : {
+        "io" : "inserivo",
+        "tu" : "inserivi",
+        "lui/lei" : "inseriva",
+        "noi" : "inserivamo",
+        "voi" : "inserivate",
+        "loro" : "inserivano"
+      },
+      "futuro" : {
+        "io" : "inserirò",
+        "tu" : "inserirai",
+        "lui/lei" : "inserirà",
+        "noi" : "inseriremo",
+        "voi" : "inserirete",
+        "loro" : "inseriranno"
+      },
+      "condizionale" : {
+        "io" : "inserirei",
+        "tu" : "inseriresti",
+        "lui/lei" : "inserirebbe",
+        "noi" : "inseriremmo",
+        "voi" : "inserireste",
+        "loro" : "inserirebbero"
+      }
+    }
+  }, {
+    "id" : 1367,
+    "word" : "togliere",
+    "pos" : "v.",
+    "meaning" : "拿走；去掉",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "toglio",
+        "tu" : "togli",
+        "lui/lei" : "toglie",
+        "noi" : "togliamo",
+        "voi" : "togliete",
+        "loro" : "togliono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho tolto",
+        "tu" : "hai tolto",
+        "lui/lei" : "ha tolto",
+        "noi" : "abbiamo tolto",
+        "voi" : "avete tolto",
+        "loro" : "hanno tolto"
+      },
+      "imperfetto" : {
+        "io" : "toglievo",
+        "tu" : "toglievi",
+        "lui/lei" : "toglieva",
+        "noi" : "toglievamo",
+        "voi" : "toglievate",
+        "loro" : "toglievano"
+      },
+      "futuro" : {
+        "io" : "toglierò",
+        "tu" : "toglierai",
+        "lui/lei" : "toglierà",
+        "noi" : "toglieremo",
+        "voi" : "toglierete",
+        "loro" : "toglieranno"
+      },
+      "condizionale" : {
+        "io" : "toglierei",
+        "tu" : "toglieresti",
+        "lui/lei" : "toglierebbe",
+        "noi" : "toglieremmo",
+        "voi" : "togliereste",
+        "loro" : "toglierebbero"
+      }
+    }
+  }, {
+    "id" : 1368,
+    "word" : "riconoscere",
+    "pos" : "v.",
+    "meaning" : "认出；承认",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "riconosco",
+        "tu" : "riconosci",
+        "lui/lei" : "riconosce",
+        "noi" : "riconosciamo",
+        "voi" : "riconoscete",
+        "loro" : "riconoscono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho riconoscuto",
+        "tu" : "hai riconoscuto",
+        "lui/lei" : "ha riconoscuto",
+        "noi" : "abbiamo riconoscuto",
+        "voi" : "avete riconoscuto",
+        "loro" : "hanno riconoscuto"
+      },
+      "imperfetto" : {
+        "io" : "riconoscevo",
+        "tu" : "riconoscevi",
+        "lui/lei" : "riconosceva",
+        "noi" : "riconoscevamo",
+        "voi" : "riconoscevate",
+        "loro" : "riconoscevano"
+      },
+      "futuro" : {
+        "io" : "riconoscerò",
+        "tu" : "riconoscerai",
+        "lui/lei" : "riconoscerà",
+        "noi" : "riconosceremo",
+        "voi" : "riconoscerete",
+        "loro" : "riconosceranno"
+      },
+      "condizionale" : {
+        "io" : "riconoscerei",
+        "tu" : "riconosceresti",
+        "lui/lei" : "riconoscerebbe",
+        "noi" : "riconosceremmo",
+        "voi" : "riconoscereste",
+        "loro" : "riconoscerebbero"
+      }
+    }
+  }, {
+    "id" : 1369,
+    "word" : "diventare",
+    "pos" : "v.",
+    "meaning" : "变得；成为",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "divento",
+        "tu" : "diventi",
+        "lui/lei" : "diventa",
+        "noi" : "diventiamo",
+        "voi" : "diventate",
+        "loro" : "diventano"
+      },
+      "passatoProssimo" : {
+        "io" : "sono diventato/a",
+        "tu" : "sei diventato/a",
+        "lui/lei" : "è diventato/a",
+        "noi" : "siamo diventato/i/e",
+        "voi" : "siete diventato/i/e",
+        "loro" : "sono diventato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "diventavo",
+        "tu" : "diventavi",
+        "lui/lei" : "diventava",
+        "noi" : "diventavamo",
+        "voi" : "diventavate",
+        "loro" : "diventavano"
+      },
+      "futuro" : {
+        "io" : "diventerò",
+        "tu" : "diventerai",
+        "lui/lei" : "diventerà",
+        "noi" : "diventeremo",
+        "voi" : "diventerete",
+        "loro" : "diventeranno"
+      },
+      "condizionale" : {
+        "io" : "diventerei",
+        "tu" : "diventeresti",
+        "lui/lei" : "diventerebbe",
+        "noi" : "diventeremmo",
+        "voi" : "diventereste",
+        "loro" : "diventerebbero"
+      }
+    }
+  }, {
+    "id" : 1370,
+    "word" : "preparare",
+    "pos" : "v.",
+    "meaning" : "准备",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "preparo",
+        "tu" : "prepari",
+        "lui/lei" : "prepara",
+        "noi" : "prepariamo",
+        "voi" : "preparate",
+        "loro" : "preparano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho preparato",
+        "tu" : "hai preparato",
+        "lui/lei" : "ha preparato",
+        "noi" : "abbiamo preparato",
+        "voi" : "avete preparato",
+        "loro" : "hanno preparato"
+      },
+      "imperfetto" : {
+        "io" : "preparavo",
+        "tu" : "preparavi",
+        "lui/lei" : "preparava",
+        "noi" : "preparavamo",
+        "voi" : "preparavate",
+        "loro" : "preparavano"
+      },
+      "futuro" : {
+        "io" : "preparerò",
+        "tu" : "preparerai",
+        "lui/lei" : "preparerà",
+        "noi" : "prepareremo",
+        "voi" : "preparerete",
+        "loro" : "prepareranno"
+      },
+      "condizionale" : {
+        "io" : "preparerei",
+        "tu" : "prepareresti",
+        "lui/lei" : "preparerebbe",
+        "noi" : "prepareremmo",
+        "voi" : "preparereste",
+        "loro" : "preparerebbero"
+      }
+    }
+  }, {
+    "id" : 1371,
+    "word" : "iscriversi",
+    "pos" : "v.rifl.",
+    "meaning" : "注册；报名",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi iscrivo",
+        "tu" : "ti iscrivi",
+        "lui/lei" : "si iscrive",
+        "noi" : "ci iscriviamo",
+        "voi" : "vi iscrivete",
+        "loro" : "si iscrivono"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono iscritto/a",
+        "tu" : "ti sei iscritto/a",
+        "lui/lei" : "si è iscritto/a",
+        "noi" : "ci siamo iscritto/i/e",
+        "voi" : "vi siete iscritto/i/e",
+        "loro" : "si sono iscritto/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi iscrivevo",
+        "tu" : "ti iscrivevi",
+        "lui/lei" : "si iscriveva",
+        "noi" : "ci iscrivevamo",
+        "voi" : "vi iscrivevate",
+        "loro" : "si iscrivevano"
+      },
+      "futuro" : {
+        "io" : "mi iscriverò",
+        "tu" : "ti iscriverai",
+        "lui/lei" : "si iscriverà",
+        "noi" : "ci iscriveremo",
+        "voi" : "vi iscriverete",
+        "loro" : "si iscriveranno"
+      },
+      "condizionale" : {
+        "io" : "mi iscriverei",
+        "tu" : "ti iscriveresti",
+        "lui/lei" : "si iscriverebbe",
+        "noi" : "ci iscriveremmo",
+        "voi" : "vi iscrivereste",
+        "loro" : "si iscriverebbero"
+      }
+    }
+  }, {
+    "id" : 1372,
+    "word" : "accorgersi",
+    "pos" : "v.rifl.",
+    "meaning" : "发觉；意识到",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi accorgo",
+        "tu" : "ti accorgi",
+        "lui/lei" : "si accorge",
+        "noi" : "ci accorgiamo",
+        "voi" : "vi accorgete",
+        "loro" : "si accorgono"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono accorto/a",
+        "tu" : "ti sei accorto/a",
+        "lui/lei" : "si è accorto/a",
+        "noi" : "ci siamo accorto/i/e",
+        "voi" : "vi siete accorto/i/e",
+        "loro" : "si sono accorto/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi accorgevo",
+        "tu" : "ti accorgevi",
+        "lui/lei" : "si accorgeva",
+        "noi" : "ci accorgevamo",
+        "voi" : "vi accorgevate",
+        "loro" : "si accorgevano"
+      },
+      "futuro" : {
+        "io" : "mi accorgerò",
+        "tu" : "ti accorgerai",
+        "lui/lei" : "si accorgerà",
+        "noi" : "ci accorgeremo",
+        "voi" : "vi accorgerete",
+        "loro" : "si accorgeranno"
+      },
+      "condizionale" : {
+        "io" : "mi accorgerei",
+        "tu" : "ti accorgeresti",
+        "lui/lei" : "si accorgerebbe",
+        "noi" : "ci accorgeremmo",
+        "voi" : "vi accorgereste",
+        "loro" : "si accorgerebbero"
+      }
+    }
+  }, {
+    "id" : 1373,
+    "word" : "dimettersi",
+    "pos" : "v.rifl.",
+    "meaning" : "辞职",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi dimetto",
+        "tu" : "ti dimetti",
+        "lui/lei" : "si dimette",
+        "noi" : "ci dimettiamo",
+        "voi" : "vi dimettete",
+        "loro" : "si dimettono"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono dimesso/a",
+        "tu" : "ti sei dimesso/a",
+        "lui/lei" : "si è dimesso/a",
+        "noi" : "ci siamo dimesso/i/e",
+        "voi" : "vi siete dimesso/i/e",
+        "loro" : "si sono dimesso/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi dimettevo",
+        "tu" : "ti dimettevi",
+        "lui/lei" : "si dimetteva",
+        "noi" : "ci dimettevamo",
+        "voi" : "vi dimettevate",
+        "loro" : "si dimettevano"
+      },
+      "futuro" : {
+        "io" : "mi dimetterò",
+        "tu" : "ti dimetterai",
+        "lui/lei" : "si dimetterà",
+        "noi" : "ci dimetteremo",
+        "voi" : "vi dimetterete",
+        "loro" : "si dimetteranno"
+      },
+      "condizionale" : {
+        "io" : "mi dimetterei",
+        "tu" : "ti dimetteresti",
+        "lui/lei" : "si dimetterebbe",
+        "noi" : "ci dimetteremmo",
+        "voi" : "vi dimettereste",
+        "loro" : "si dimetterebbero"
+      }
+    }
+  }, {
+    "id" : 1374,
+    "word" : "pentirsi",
+    "pos" : "v.rifl.",
+    "meaning" : "后悔",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi pento",
+        "tu" : "ti penti",
+        "lui/lei" : "si pente",
+        "noi" : "ci pentiamo",
+        "voi" : "vi pentite",
+        "loro" : "si pentono"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono pentito/a",
+        "tu" : "ti sei pentito/a",
+        "lui/lei" : "si è pentito/a",
+        "noi" : "ci siamo pentito/i/e",
+        "voi" : "vi siete pentito/i/e",
+        "loro" : "si sono pentito/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi pentivo",
+        "tu" : "ti pentivi",
+        "lui/lei" : "si pentiva",
+        "noi" : "ci pentivamo",
+        "voi" : "vi pentivate",
+        "loro" : "si pentivano"
+      },
+      "futuro" : {
+        "io" : "mi pentirò",
+        "tu" : "ti pentirai",
+        "lui/lei" : "si pentirà",
+        "noi" : "ci pentiremo",
+        "voi" : "vi pentirete",
+        "loro" : "si pentiranno"
+      },
+      "condizionale" : {
+        "io" : "mi pentirei",
+        "tu" : "ti pentiresti",
+        "lui/lei" : "si pentirebbe",
+        "noi" : "ci pentiremmo",
+        "voi" : "vi pentireste",
+        "loro" : "si pentirebbero"
+      }
+    }
+  }, {
+    "id" : 1375,
+    "word" : "dedicarsi",
+    "pos" : "v.rifl.",
+    "meaning" : "专心于；投身于",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi dedico",
+        "tu" : "ti dedichi",
+        "lui/lei" : "si dedica",
+        "noi" : "ci dedichiamo",
+        "voi" : "vi dedicate",
+        "loro" : "si dedicano"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono dedicato/a",
+        "tu" : "ti sei dedicato/a",
+        "lui/lei" : "si è dedicato/a",
+        "noi" : "ci siamo dedicato/i/e",
+        "voi" : "vi siete dedicato/i/e",
+        "loro" : "si sono dedicato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi dedicavo",
+        "tu" : "ti dedicavi",
+        "lui/lei" : "si dedicava",
+        "noi" : "ci dedicavamo",
+        "voi" : "vi dedicavate",
+        "loro" : "si dedicavano"
+      },
+      "futuro" : {
+        "io" : "mi dedicherò",
+        "tu" : "ti dedicherai",
+        "lui/lei" : "si dedicherà",
+        "noi" : "ci dedicheremo",
+        "voi" : "vi dedicherete",
+        "loro" : "si dedicheranno"
+      },
+      "condizionale" : {
+        "io" : "mi dedicherei",
+        "tu" : "ti dedicheresti",
+        "lui/lei" : "si dedicherebbe",
+        "noi" : "ci dedicheremmo",
+        "voi" : "vi dedichereste",
+        "loro" : "si dedicherebbero"
+      }
+    }
+  }, {
+    "id" : 1376,
+    "word" : "concentrarsi",
+    "pos" : "v.rifl.",
+    "meaning" : "集中注意力",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi concentro",
+        "tu" : "ti concentri",
+        "lui/lei" : "si concentra",
+        "noi" : "ci concentriamo",
+        "voi" : "vi concentrate",
+        "loro" : "si concentrano"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono concentrato/a",
+        "tu" : "ti sei concentrato/a",
+        "lui/lei" : "si è concentrato/a",
+        "noi" : "ci siamo concentrato/i/e",
+        "voi" : "vi siete concentrato/i/e",
+        "loro" : "si sono concentrato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi concentravo",
+        "tu" : "ti concentravi",
+        "lui/lei" : "si concentrava",
+        "noi" : "ci concentravamo",
+        "voi" : "vi concentravate",
+        "loro" : "si concentravano"
+      },
+      "futuro" : {
+        "io" : "mi concentrerò",
+        "tu" : "ti concentrerai",
+        "lui/lei" : "si concentrerà",
+        "noi" : "ci concentreremo",
+        "voi" : "vi concentrerete",
+        "loro" : "si concentreranno"
+      },
+      "condizionale" : {
+        "io" : "mi concentrerei",
+        "tu" : "ti concentreresti",
+        "lui/lei" : "si concentrerebbe",
+        "noi" : "ci concentreremmo",
+        "voi" : "vi concentrereste",
+        "loro" : "si concentrerebbero"
+      }
+    }
+  }, {
+    "id" : 1377,
+    "word" : "rilassarsi",
+    "pos" : "v.rifl.",
+    "meaning" : "放松",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi rilasso",
+        "tu" : "ti rilassi",
+        "lui/lei" : "si rilassa",
+        "noi" : "ci rilassiamo",
+        "voi" : "vi rilassate",
+        "loro" : "si rilassano"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono rilassato/a",
+        "tu" : "ti sei rilassato/a",
+        "lui/lei" : "si è rilassato/a",
+        "noi" : "ci siamo rilassato/i/e",
+        "voi" : "vi siete rilassato/i/e",
+        "loro" : "si sono rilassato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi rilassavo",
+        "tu" : "ti rilassavi",
+        "lui/lei" : "si rilassava",
+        "noi" : "ci rilassavamo",
+        "voi" : "vi rilassavate",
+        "loro" : "si rilassavano"
+      },
+      "futuro" : {
+        "io" : "mi rilasserò",
+        "tu" : "ti rilasserai",
+        "lui/lei" : "si rilasserà",
+        "noi" : "ci rilasseremo",
+        "voi" : "vi rilasserete",
+        "loro" : "si rilasseranno"
+      },
+      "condizionale" : {
+        "io" : "mi rilasserei",
+        "tu" : "ti rilasseresti",
+        "lui/lei" : "si rilasserebbe",
+        "noi" : "ci rilasseremmo",
+        "voi" : "vi rilassereste",
+        "loro" : "si rilasserebbero"
+      }
+    }
+  }, {
+    "id" : 1378,
+    "word" : "abituarsi",
+    "pos" : "v.rifl.",
+    "meaning" : "习惯于",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi abituo",
+        "tu" : "ti abitui",
+        "lui/lei" : "si abitua",
+        "noi" : "ci abituiamo",
+        "voi" : "vi abituate",
+        "loro" : "si abituano"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono abituato/a",
+        "tu" : "ti sei abituato/a",
+        "lui/lei" : "si è abituato/a",
+        "noi" : "ci siamo abituato/i/e",
+        "voi" : "vi siete abituato/i/e",
+        "loro" : "si sono abituato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi abituavo",
+        "tu" : "ti abituavi",
+        "lui/lei" : "si abituava",
+        "noi" : "ci abituavamo",
+        "voi" : "vi abituavate",
+        "loro" : "si abituavano"
+      },
+      "futuro" : {
+        "io" : "mi abituerò",
+        "tu" : "ti abituerai",
+        "lui/lei" : "si abituerà",
+        "noi" : "ci abitueremo",
+        "voi" : "vi abituerete",
+        "loro" : "si abitueranno"
+      },
+      "condizionale" : {
+        "io" : "mi abituerei",
+        "tu" : "ti abitueresti",
+        "lui/lei" : "si abituerebbe",
+        "noi" : "ci abitueremmo",
+        "voi" : "vi abituereste",
+        "loro" : "si abituerebbero"
+      }
+    }
+  }, {
+    "id" : 1379,
+    "word" : "spostarsi",
+    "pos" : "v.rifl.",
+    "meaning" : "移动；出行",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "mi sposto",
+        "tu" : "ti sposti",
+        "lui/lei" : "si sposta",
+        "noi" : "ci spostiamo",
+        "voi" : "vi spostate",
+        "loro" : "si spostano"
+      },
+      "passatoProssimo" : {
+        "io" : "mi sono spostato/a",
+        "tu" : "ti sei spostato/a",
+        "lui/lei" : "si è spostato/a",
+        "noi" : "ci siamo spostato/i/e",
+        "voi" : "vi siete spostato/i/e",
+        "loro" : "si sono spostato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "mi spostavo",
+        "tu" : "ti spostavi",
+        "lui/lei" : "si spostava",
+        "noi" : "ci spostavamo",
+        "voi" : "vi spostavate",
+        "loro" : "si spostavano"
+      },
+      "futuro" : {
+        "io" : "mi sposterò",
+        "tu" : "ti sposterai",
+        "lui/lei" : "si sposterà",
+        "noi" : "ci sposteremo",
+        "voi" : "vi sposterete",
+        "loro" : "si sposteranno"
+      },
+      "condizionale" : {
+        "io" : "mi sposterei",
+        "tu" : "ti sposteresti",
+        "lui/lei" : "si sposterebbe",
+        "noi" : "ci sposteremmo",
+        "voi" : "vi spostereste",
+        "loro" : "si sposterebbero"
+      }
+    }
+  }, {
+    "id" : 1380,
+    "word" : "condividere",
+    "pos" : "v.",
+    "meaning" : "分享",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "condivido",
+        "tu" : "condividi",
+        "lui/lei" : "condivide",
+        "noi" : "condividiamo",
+        "voi" : "condividete",
+        "loro" : "condividono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho condiviso",
+        "tu" : "hai condiviso",
+        "lui/lei" : "ha condiviso",
+        "noi" : "abbiamo condiviso",
+        "voi" : "avete condiviso",
+        "loro" : "hanno condiviso"
+      },
+      "imperfetto" : {
+        "io" : "condividevo",
+        "tu" : "condividevi",
+        "lui/lei" : "condivideva",
+        "noi" : "condividevamo",
+        "voi" : "condividevate",
+        "loro" : "condividevano"
+      },
+      "futuro" : {
+        "io" : "condividerò",
+        "tu" : "condividerai",
+        "lui/lei" : "condividerà",
+        "noi" : "condivideremo",
+        "voi" : "condividerete",
+        "loro" : "condivideranno"
+      },
+      "condizionale" : {
+        "io" : "condividerei",
+        "tu" : "condivideresti",
+        "lui/lei" : "condividerebbe",
+        "noi" : "condivideremmo",
+        "voi" : "condividereste",
+        "loro" : "condividerebbero"
+      }
+    }
+  }, {
+    "id" : 1381,
+    "word" : "sorprendere",
+    "pos" : "v.",
+    "meaning" : "使惊讶",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "sorprendo",
+        "tu" : "sorprendi",
+        "lui/lei" : "sorprende",
+        "noi" : "sorprendiamo",
+        "voi" : "sorprendete",
+        "loro" : "sorprendono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho sorpreso",
+        "tu" : "hai sorpreso",
+        "lui/lei" : "ha sorpreso",
+        "noi" : "abbiamo sorpreso",
+        "voi" : "avete sorpreso",
+        "loro" : "hanno sorpreso"
+      },
+      "imperfetto" : {
+        "io" : "sorprendevo",
+        "tu" : "sorprendevi",
+        "lui/lei" : "sorprendeva",
+        "noi" : "sorprendevamo",
+        "voi" : "sorprendevate",
+        "loro" : "sorprendevano"
+      },
+      "futuro" : {
+        "io" : "sorprenderò",
+        "tu" : "sorprenderai",
+        "lui/lei" : "sorprenderà",
+        "noi" : "sorprenderemo",
+        "voi" : "sorprenderete",
+        "loro" : "sorprenderanno"
+      },
+      "condizionale" : {
+        "io" : "sorprenderei",
+        "tu" : "sorprenderesti",
+        "lui/lei" : "sorprenderebbe",
+        "noi" : "sorprenderemmo",
+        "voi" : "sorprendereste",
+        "loro" : "sorprenderebbero"
+      }
+    }
+  }, {
+    "id" : 1382,
+    "word" : "accettare",
+    "pos" : "v.",
+    "meaning" : "接受",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "accetto",
+        "tu" : "accetti",
+        "lui/lei" : "accetta",
+        "noi" : "accettiamo",
+        "voi" : "accettate",
+        "loro" : "accettano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho accettato",
+        "tu" : "hai accettato",
+        "lui/lei" : "ha accettato",
+        "noi" : "abbiamo accettato",
+        "voi" : "avete accettato",
+        "loro" : "hanno accettato"
+      },
+      "imperfetto" : {
+        "io" : "accettavo",
+        "tu" : "accettavi",
+        "lui/lei" : "accettava",
+        "noi" : "accettavamo",
+        "voi" : "accettavate",
+        "loro" : "accettavano"
+      },
+      "futuro" : {
+        "io" : "accetterò",
+        "tu" : "accetterai",
+        "lui/lei" : "accetterà",
+        "noi" : "accetteremo",
+        "voi" : "accetterete",
+        "loro" : "accetteranno"
+      },
+      "condizionale" : {
+        "io" : "accetterei",
+        "tu" : "accetteresti",
+        "lui/lei" : "accetterebbe",
+        "noi" : "accetteremmo",
+        "voi" : "accettereste",
+        "loro" : "accetterebbero"
+      }
+    }
+  }, {
+    "id" : 1383,
+    "word" : "rifiutare",
+    "pos" : "v.",
+    "meaning" : "拒绝",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "rifiuto",
+        "tu" : "rifiuti",
+        "lui/lei" : "rifiuta",
+        "noi" : "rifiutiamo",
+        "voi" : "rifiutate",
+        "loro" : "rifiutano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho rifiutato",
+        "tu" : "hai rifiutato",
+        "lui/lei" : "ha rifiutato",
+        "noi" : "abbiamo rifiutato",
+        "voi" : "avete rifiutato",
+        "loro" : "hanno rifiutato"
+      },
+      "imperfetto" : {
+        "io" : "rifiutavo",
+        "tu" : "rifiutavi",
+        "lui/lei" : "rifiutava",
+        "noi" : "rifiutavamo",
+        "voi" : "rifiutavate",
+        "loro" : "rifiutavano"
+      },
+      "futuro" : {
+        "io" : "rifiuterò",
+        "tu" : "rifiuterai",
+        "lui/lei" : "rifiuterà",
+        "noi" : "rifiuteremo",
+        "voi" : "rifiuterete",
+        "loro" : "rifiuteranno"
+      },
+      "condizionale" : {
+        "io" : "rifiuterei",
+        "tu" : "rifiuteresti",
+        "lui/lei" : "rifiuterebbe",
+        "noi" : "rifiuteremmo",
+        "voi" : "rifiutereste",
+        "loro" : "rifiuterebbero"
+      }
+    }
+  }, {
+    "id" : 1384,
+    "word" : "evitare",
+    "pos" : "v.",
+    "meaning" : "避免",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "evito",
+        "tu" : "eviti",
+        "lui/lei" : "evita",
+        "noi" : "evitiamo",
+        "voi" : "evitate",
+        "loro" : "evitano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho evitato",
+        "tu" : "hai evitato",
+        "lui/lei" : "ha evitato",
+        "noi" : "abbiamo evitato",
+        "voi" : "avete evitato",
+        "loro" : "hanno evitato"
+      },
+      "imperfetto" : {
+        "io" : "evitavo",
+        "tu" : "evitavi",
+        "lui/lei" : "evitava",
+        "noi" : "evitavamo",
+        "voi" : "evitavate",
+        "loro" : "evitavano"
+      },
+      "futuro" : {
+        "io" : "eviterò",
+        "tu" : "eviterai",
+        "lui/lei" : "eviterà",
+        "noi" : "eviteremo",
+        "voi" : "eviterete",
+        "loro" : "eviteranno"
+      },
+      "condizionale" : {
+        "io" : "eviterei",
+        "tu" : "eviteresti",
+        "lui/lei" : "eviterebbe",
+        "noi" : "eviteremmo",
+        "voi" : "evitereste",
+        "loro" : "eviterebbero"
+      }
+    }
+  }, {
+    "id" : 1385,
+    "word" : "avvisare",
+    "pos" : "v.",
+    "meaning" : "提醒；告知",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "avviso",
+        "tu" : "avvisi",
+        "lui/lei" : "avvisa",
+        "noi" : "avvisiamo",
+        "voi" : "avvisate",
+        "loro" : "avvisano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho avvisato",
+        "tu" : "hai avvisato",
+        "lui/lei" : "ha avvisato",
+        "noi" : "abbiamo avvisato",
+        "voi" : "avete avvisato",
+        "loro" : "hanno avvisato"
+      },
+      "imperfetto" : {
+        "io" : "avvisavo",
+        "tu" : "avvisavi",
+        "lui/lei" : "avvisava",
+        "noi" : "avvisavamo",
+        "voi" : "avvisavate",
+        "loro" : "avvisavano"
+      },
+      "futuro" : {
+        "io" : "avviserò",
+        "tu" : "avviserai",
+        "lui/lei" : "avviserà",
+        "noi" : "avviseremo",
+        "voi" : "avviserete",
+        "loro" : "avviseranno"
+      },
+      "condizionale" : {
+        "io" : "avviserei",
+        "tu" : "avviseresti",
+        "lui/lei" : "avviserebbe",
+        "noi" : "avviseremmo",
+        "voi" : "avvisereste",
+        "loro" : "avviserebbero"
+      }
+    }
+  }, {
+    "id" : 1386,
+    "word" : "segnalare",
+    "pos" : "v.",
+    "meaning" : "反映；指出",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "segnalo",
+        "tu" : "segnali",
+        "lui/lei" : "segnala",
+        "noi" : "segnaliamo",
+        "voi" : "segnalate",
+        "loro" : "segnalano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho segnalato",
+        "tu" : "hai segnalato",
+        "lui/lei" : "ha segnalato",
+        "noi" : "abbiamo segnalato",
+        "voi" : "avete segnalato",
+        "loro" : "hanno segnalato"
+      },
+      "imperfetto" : {
+        "io" : "segnalavo",
+        "tu" : "segnalavi",
+        "lui/lei" : "segnalava",
+        "noi" : "segnalavamo",
+        "voi" : "segnalavate",
+        "loro" : "segnalavano"
+      },
+      "futuro" : {
+        "io" : "segnalerò",
+        "tu" : "segnalerai",
+        "lui/lei" : "segnalerà",
+        "noi" : "segnaleremo",
+        "voi" : "segnalerete",
+        "loro" : "segnaleranno"
+      },
+      "condizionale" : {
+        "io" : "segnalerei",
+        "tu" : "segnaleresti",
+        "lui/lei" : "segnalerebbe",
+        "noi" : "segnaleremmo",
+        "voi" : "segnalereste",
+        "loro" : "segnalerebbero"
+      }
+    }
+  }, {
+    "id" : 1387,
+    "word" : "ospitare",
+    "pos" : "v.",
+    "meaning" : "接待",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "ospito",
+        "tu" : "ospiti",
+        "lui/lei" : "ospita",
+        "noi" : "ospitiamo",
+        "voi" : "ospitate",
+        "loro" : "ospitano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho ospitato",
+        "tu" : "hai ospitato",
+        "lui/lei" : "ha ospitato",
+        "noi" : "abbiamo ospitato",
+        "voi" : "avete ospitato",
+        "loro" : "hanno ospitato"
+      },
+      "imperfetto" : {
+        "io" : "ospitavo",
+        "tu" : "ospitavi",
+        "lui/lei" : "ospitava",
+        "noi" : "ospitavamo",
+        "voi" : "ospitavate",
+        "loro" : "ospitavano"
+      },
+      "futuro" : {
+        "io" : "ospiterò",
+        "tu" : "ospiterai",
+        "lui/lei" : "ospiterà",
+        "noi" : "ospiteremo",
+        "voi" : "ospiterete",
+        "loro" : "ospiteranno"
+      },
+      "condizionale" : {
+        "io" : "ospiterei",
+        "tu" : "ospiteresti",
+        "lui/lei" : "ospiterebbe",
+        "noi" : "ospiteremmo",
+        "voi" : "ospitereste",
+        "loro" : "ospiterebbero"
+      }
+    }
+  }, {
+    "id" : 1388,
+    "word" : "migliorare",
+    "pos" : "v.",
+    "meaning" : "改善",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "miglioro",
+        "tu" : "migliori",
+        "lui/lei" : "migliora",
+        "noi" : "miglioriamo",
+        "voi" : "migliorate",
+        "loro" : "migliorano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho/sono migliorato/a",
+        "tu" : "hai/sei migliorato/a",
+        "lui/lei" : "ha/è migliorato/a",
+        "noi" : "abbiamo/siamo migliorato/i/e",
+        "voi" : "avete/siete migliorato/i/e",
+        "loro" : "hanno/sono migliorato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "miglioravo",
+        "tu" : "miglioravi",
+        "lui/lei" : "migliorava",
+        "noi" : "miglioravamo",
+        "voi" : "miglioravate",
+        "loro" : "miglioravano"
+      },
+      "futuro" : {
+        "io" : "migliorerò",
+        "tu" : "migliorerai",
+        "lui/lei" : "migliorerà",
+        "noi" : "miglioreremo",
+        "voi" : "migliorerete",
+        "loro" : "miglioreranno"
+      },
+      "condizionale" : {
+        "io" : "migliorerei",
+        "tu" : "miglioreresti",
+        "lui/lei" : "migliorerebbe",
+        "noi" : "miglioreremmo",
+        "voi" : "migliorereste",
+        "loro" : "migliorerebbero"
+      }
+    }
+  }, {
+    "id" : 1389,
+    "word" : "peggiorare",
+    "pos" : "v.",
+    "meaning" : "恶化",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "peggioro",
+        "tu" : "peggiori",
+        "lui/lei" : "peggiora",
+        "noi" : "peggioriamo",
+        "voi" : "peggiorate",
+        "loro" : "peggiorano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho/sono peggiorato/a",
+        "tu" : "hai/sei peggiorato/a",
+        "lui/lei" : "ha/è peggiorato/a",
+        "noi" : "abbiamo/siamo peggiorato/i/e",
+        "voi" : "avete/siete peggiorato/i/e",
+        "loro" : "hanno/sono peggiorato/i/e"
+      },
+      "imperfetto" : {
+        "io" : "peggioravo",
+        "tu" : "peggioravi",
+        "lui/lei" : "peggiorava",
+        "noi" : "peggioravamo",
+        "voi" : "peggioravate",
+        "loro" : "peggioravano"
+      },
+      "futuro" : {
+        "io" : "peggiorerò",
+        "tu" : "peggiorerai",
+        "lui/lei" : "peggiorerà",
+        "noi" : "peggioreremo",
+        "voi" : "peggiorerete",
+        "loro" : "peggioreranno"
+      },
+      "condizionale" : {
+        "io" : "peggiorerei",
+        "tu" : "peggioreresti",
+        "lui/lei" : "peggiorerebbe",
+        "noi" : "peggioreremmo",
+        "voi" : "peggiorereste",
+        "loro" : "peggiorerebbero"
+      }
+    }
+  }, {
+    "id" : 1390,
+    "word" : "dimagrire",
+    "pos" : "v.",
+    "meaning" : "变瘦",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "dimagro",
+        "tu" : "dimagri",
+        "lui/lei" : "dimagre",
+        "noi" : "dimagriamo",
+        "voi" : "dimagrite",
+        "loro" : "dimagrono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho/sono dimagrito/a",
+        "tu" : "hai/sei dimagrito/a",
+        "lui/lei" : "ha/è dimagrito/a",
+        "noi" : "abbiamo/siamo dimagrito/i/e",
+        "voi" : "avete/siete dimagrito/i/e",
+        "loro" : "hanno/sono dimagrito/i/e"
+      },
+      "imperfetto" : {
+        "io" : "dimagrivo",
+        "tu" : "dimagrivi",
+        "lui/lei" : "dimagriva",
+        "noi" : "dimagrivamo",
+        "voi" : "dimagrivate",
+        "loro" : "dimagrivano"
+      },
+      "futuro" : {
+        "io" : "dimagrirò",
+        "tu" : "dimagrirai",
+        "lui/lei" : "dimagrirà",
+        "noi" : "dimagriremo",
+        "voi" : "dimagrirete",
+        "loro" : "dimagriranno"
+      },
+      "condizionale" : {
+        "io" : "dimagrirei",
+        "tu" : "dimagriresti",
+        "lui/lei" : "dimagrirebbe",
+        "noi" : "dimagriremmo",
+        "voi" : "dimagrireste",
+        "loro" : "dimagrirebbero"
+      }
+    }
+  }, {
+    "id" : 1391,
+    "word" : "impedire",
+    "pos" : "v.",
+    "meaning" : "阻碍",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "impedisco",
+        "tu" : "impedisci",
+        "lui/lei" : "impedisce",
+        "noi" : "impediamo",
+        "voi" : "impedite",
+        "loro" : "impediscono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho impedito",
+        "tu" : "hai impedito",
+        "lui/lei" : "ha impedito",
+        "noi" : "abbiamo impedito",
+        "voi" : "avete impedito",
+        "loro" : "hanno impedito"
+      },
+      "imperfetto" : {
+        "io" : "impedivo",
+        "tu" : "impedivi",
+        "lui/lei" : "impediva",
+        "noi" : "impedivamo",
+        "voi" : "impedivate",
+        "loro" : "impedivano"
+      },
+      "futuro" : {
+        "io" : "impedirò",
+        "tu" : "impedirai",
+        "lui/lei" : "impedirà",
+        "noi" : "impediremo",
+        "voi" : "impedirete",
+        "loro" : "impediranno"
+      },
+      "condizionale" : {
+        "io" : "impedirei",
+        "tu" : "impediresti",
+        "lui/lei" : "impedirebbe",
+        "noi" : "impediremmo",
+        "voi" : "impedireste",
+        "loro" : "impedirebbero"
+      }
+    }
+  }, {
+    "id" : 1392,
+    "word" : "augurare",
+    "pos" : "v.",
+    "meaning" : "祝愿",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "auguro",
+        "tu" : "auguri",
+        "lui/lei" : "augura",
+        "noi" : "auguriamo",
+        "voi" : "augurate",
+        "loro" : "augurano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho augurato",
+        "tu" : "hai augurato",
+        "lui/lei" : "ha augurato",
+        "noi" : "abbiamo augurato",
+        "voi" : "avete augurato",
+        "loro" : "hanno augurato"
+      },
+      "imperfetto" : {
+        "io" : "auguravo",
+        "tu" : "auguravi",
+        "lui/lei" : "augurava",
+        "noi" : "auguravamo",
+        "voi" : "auguravate",
+        "loro" : "auguravano"
+      },
+      "futuro" : {
+        "io" : "augurerò",
+        "tu" : "augurerai",
+        "lui/lei" : "augurerà",
+        "noi" : "augureremo",
+        "voi" : "augurerete",
+        "loro" : "augureranno"
+      },
+      "condizionale" : {
+        "io" : "augurerei",
+        "tu" : "augureresti",
+        "lui/lei" : "augurerebbe",
+        "noi" : "augureremmo",
+        "voi" : "augurereste",
+        "loro" : "augurerebbero"
+      }
+    }
+  }, {
+    "id" : 1393,
+    "word" : "abbracciare",
+    "pos" : "v.",
+    "meaning" : "拥抱",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "abbraccio",
+        "tu" : "abbracci",
+        "lui/lei" : "abbraccia",
+        "noi" : "abbracciamo",
+        "voi" : "abbracciate",
+        "loro" : "abbracciano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho abbracciato",
+        "tu" : "hai abbracciato",
+        "lui/lei" : "ha abbracciato",
+        "noi" : "abbiamo abbracciato",
+        "voi" : "avete abbracciato",
+        "loro" : "hanno abbracciato"
+      },
+      "imperfetto" : {
+        "io" : "abbracciavo",
+        "tu" : "abbracciavi",
+        "lui/lei" : "abbracciava",
+        "noi" : "abbracciavamo",
+        "voi" : "abbracciavate",
+        "loro" : "abbracciavano"
+      },
+      "futuro" : {
+        "io" : "abbraccerò",
+        "tu" : "abbraccerai",
+        "lui/lei" : "abbraccerà",
+        "noi" : "abbracceremo",
+        "voi" : "abbraccerete",
+        "loro" : "abbracceranno"
+      },
+      "condizionale" : {
+        "io" : "abbraccerei",
+        "tu" : "abbracceresti",
+        "lui/lei" : "abbraccerebbe",
+        "noi" : "abbracceremmo",
+        "voi" : "abbraccereste",
+        "loro" : "abbraccerebbero"
+      }
+    }
+  }, {
+    "id" : 1394,
+    "word" : "baciare",
+    "pos" : "v.",
+    "meaning" : "亲吻",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "bacio",
+        "tu" : "baci",
+        "lui/lei" : "bacia",
+        "noi" : "baciamo",
+        "voi" : "baciate",
+        "loro" : "baciano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho baciato",
+        "tu" : "hai baciato",
+        "lui/lei" : "ha baciato",
+        "noi" : "abbiamo baciato",
+        "voi" : "avete baciato",
+        "loro" : "hanno baciato"
+      },
+      "imperfetto" : {
+        "io" : "baciavo",
+        "tu" : "baciavi",
+        "lui/lei" : "baciava",
+        "noi" : "baciavamo",
+        "voi" : "baciavate",
+        "loro" : "baciavano"
+      },
+      "futuro" : {
+        "io" : "bacerò",
+        "tu" : "bacerai",
+        "lui/lei" : "bacerà",
+        "noi" : "baceremo",
+        "voi" : "bacerete",
+        "loro" : "baceranno"
+      },
+      "condizionale" : {
+        "io" : "bacerei",
+        "tu" : "baceresti",
+        "lui/lei" : "bacerebbe",
+        "noi" : "baceremmo",
+        "voi" : "bacereste",
+        "loro" : "bacerebbero"
+      }
+    }
+  }, {
+    "id" : 1395,
+    "word" : "consigliare",
+    "pos" : "v.",
+    "meaning" : "建议",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "consiglio",
+        "tu" : "consigli",
+        "lui/lei" : "consiglia",
+        "noi" : "consigliamo",
+        "voi" : "consigliate",
+        "loro" : "consigliano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho consigliato",
+        "tu" : "hai consigliato",
+        "lui/lei" : "ha consigliato",
+        "noi" : "abbiamo consigliato",
+        "voi" : "avete consigliato",
+        "loro" : "hanno consigliato"
+      },
+      "imperfetto" : {
+        "io" : "consigliavo",
+        "tu" : "consigliavi",
+        "lui/lei" : "consigliava",
+        "noi" : "consigliavamo",
+        "voi" : "consigliavate",
+        "loro" : "consigliavano"
+      },
+      "futuro" : {
+        "io" : "consiglierò",
+        "tu" : "consiglierai",
+        "lui/lei" : "consiglierà",
+        "noi" : "consiglieremo",
+        "voi" : "consiglierete",
+        "loro" : "consiglieranno"
+      },
+      "condizionale" : {
+        "io" : "consiglierei",
+        "tu" : "consiglieresti",
+        "lui/lei" : "consiglierebbe",
+        "noi" : "consiglieremmo",
+        "voi" : "consigliereste",
+        "loro" : "consiglierebbero"
+      }
+    }
+  }, {
+    "id" : 1396,
+    "word" : "inquinare",
+    "pos" : "v.",
+    "meaning" : "污染",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "inquino",
+        "tu" : "inquini",
+        "lui/lei" : "inquina",
+        "noi" : "inquiniamo",
+        "voi" : "inquinate",
+        "loro" : "inquinano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho inquinato",
+        "tu" : "hai inquinato",
+        "lui/lei" : "ha inquinato",
+        "noi" : "abbiamo inquinato",
+        "voi" : "avete inquinato",
+        "loro" : "hanno inquinato"
+      },
+      "imperfetto" : {
+        "io" : "inquinavo",
+        "tu" : "inquinavi",
+        "lui/lei" : "inquinava",
+        "noi" : "inquinavamo",
+        "voi" : "inquinavate",
+        "loro" : "inquinavano"
+      },
+      "futuro" : {
+        "io" : "inquinerò",
+        "tu" : "inquinerai",
+        "lui/lei" : "inquinerà",
+        "noi" : "inquineremo",
+        "voi" : "inquinerete",
+        "loro" : "inquineranno"
+      },
+      "condizionale" : {
+        "io" : "inquinerei",
+        "tu" : "inquineresti",
+        "lui/lei" : "inquinerebbe",
+        "noi" : "inquineremmo",
+        "voi" : "inquinereste",
+        "loro" : "inquinerebbero"
+      }
+    }
+  }, {
+    "id" : 1397,
+    "word" : "affittare",
+    "pos" : "v.",
+    "meaning" : "出租",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "affitto",
+        "tu" : "affitti",
+        "lui/lei" : "affitta",
+        "noi" : "affittiamo",
+        "voi" : "affittate",
+        "loro" : "affittano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho affittato",
+        "tu" : "hai affittato",
+        "lui/lei" : "ha affittato",
+        "noi" : "abbiamo affittato",
+        "voi" : "avete affittato",
+        "loro" : "hanno affittato"
+      },
+      "imperfetto" : {
+        "io" : "affittavo",
+        "tu" : "affittavi",
+        "lui/lei" : "affittava",
+        "noi" : "affittavamo",
+        "voi" : "affittavate",
+        "loro" : "affittavano"
+      },
+      "futuro" : {
+        "io" : "affitterò",
+        "tu" : "affitterai",
+        "lui/lei" : "affitterà",
+        "noi" : "affitteremo",
+        "voi" : "affitterete",
+        "loro" : "affitteranno"
+      },
+      "condizionale" : {
+        "io" : "affitterei",
+        "tu" : "affitteresti",
+        "lui/lei" : "affitterebbe",
+        "noi" : "affitteremmo",
+        "voi" : "affittereste",
+        "loro" : "affitterebbero"
+      }
+    }
+  }, {
+    "id" : 1398,
+    "word" : "traslocare",
+    "pos" : "v.",
+    "meaning" : "搬家",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "trasloco",
+        "tu" : "traslochi",
+        "lui/lei" : "trasloca",
+        "noi" : "traslochiamo",
+        "voi" : "traslocate",
+        "loro" : "traslocano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho traslocato",
+        "tu" : "hai traslocato",
+        "lui/lei" : "ha traslocato",
+        "noi" : "abbiamo traslocato",
+        "voi" : "avete traslocato",
+        "loro" : "hanno traslocato"
+      },
+      "imperfetto" : {
+        "io" : "traslocavo",
+        "tu" : "traslocavi",
+        "lui/lei" : "traslocava",
+        "noi" : "traslocavamo",
+        "voi" : "traslocavate",
+        "loro" : "traslocavano"
+      },
+      "futuro" : {
+        "io" : "traslocherò",
+        "tu" : "traslocherai",
+        "lui/lei" : "traslocherà",
+        "noi" : "traslocheremo",
+        "voi" : "traslocherete",
+        "loro" : "traslocheranno"
+      },
+      "condizionale" : {
+        "io" : "traslocherei",
+        "tu" : "traslocheresti",
+        "lui/lei" : "traslocherebbe",
+        "noi" : "traslocheremmo",
+        "voi" : "traslochereste",
+        "loro" : "traslocherebbero"
+      }
+    }
+  }, {
+    "id" : 1399,
+    "word" : "sistemare",
+    "pos" : "v.",
+    "meaning" : "收拾；整理",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "sistemo",
+        "tu" : "sistemi",
+        "lui/lei" : "sistema",
+        "noi" : "sistemiamo",
+        "voi" : "sistemate",
+        "loro" : "sistemano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho sistemato",
+        "tu" : "hai sistemato",
+        "lui/lei" : "ha sistemato",
+        "noi" : "abbiamo sistemato",
+        "voi" : "avete sistemato",
+        "loro" : "hanno sistemato"
+      },
+      "imperfetto" : {
+        "io" : "sistemavo",
+        "tu" : "sistemavi",
+        "lui/lei" : "sistemava",
+        "noi" : "sistemavamo",
+        "voi" : "sistemavate",
+        "loro" : "sistemavano"
+      },
+      "futuro" : {
+        "io" : "sistemerò",
+        "tu" : "sistemerai",
+        "lui/lei" : "sistemerà",
+        "noi" : "sistemeremo",
+        "voi" : "sistemerete",
+        "loro" : "sistemeranno"
+      },
+      "condizionale" : {
+        "io" : "sistemerei",
+        "tu" : "sistemeresti",
+        "lui/lei" : "sistemerebbe",
+        "noi" : "sistemeremmo",
+        "voi" : "sistemereste",
+        "loro" : "sistemerebbero"
+      }
+    }
+  }, {
+    "id" : 1400,
+    "word" : "attaccare",
+    "pos" : "v.",
+    "meaning" : "贴；固定",
+    "category" : "动词",
+    "article" : "l'",
+    "conjugation" : {
+      "present" : {
+        "io" : "attacco",
+        "tu" : "attacchi",
+        "lui/lei" : "attacca",
+        "noi" : "attacchiamo",
+        "voi" : "attaccate",
+        "loro" : "attaccano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho attaccato",
+        "tu" : "hai attaccato",
+        "lui/lei" : "ha attaccato",
+        "noi" : "abbiamo attaccato",
+        "voi" : "avete attaccato",
+        "loro" : "hanno attaccato"
+      },
+      "imperfetto" : {
+        "io" : "attaccavo",
+        "tu" : "attaccavi",
+        "lui/lei" : "attaccava",
+        "noi" : "attaccavamo",
+        "voi" : "attaccavate",
+        "loro" : "attaccavano"
+      },
+      "futuro" : {
+        "io" : "attaccherò",
+        "tu" : "attaccherai",
+        "lui/lei" : "attaccherà",
+        "noi" : "attaccheremo",
+        "voi" : "attaccherete",
+        "loro" : "attaccheranno"
+      },
+      "condizionale" : {
+        "io" : "attaccherei",
+        "tu" : "attaccheresti",
+        "lui/lei" : "attaccherebbe",
+        "noi" : "attaccheremmo",
+        "voi" : "attacchereste",
+        "loro" : "attaccherebbero"
+      }
+    }
+  }, {
+    "id" : 1401,
+    "word" : "riciclare",
+    "pos" : "v.",
+    "meaning" : "回收",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "riciclo",
+        "tu" : "ricicli",
+        "lui/lei" : "ricicla",
+        "noi" : "ricicliamo",
+        "voi" : "riciclate",
+        "loro" : "riciclano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho riciclato",
+        "tu" : "hai riciclato",
+        "lui/lei" : "ha riciclato",
+        "noi" : "abbiamo riciclato",
+        "voi" : "avete riciclato",
+        "loro" : "hanno riciclato"
+      },
+      "imperfetto" : {
+        "io" : "riciclavo",
+        "tu" : "riciclavi",
+        "lui/lei" : "riciclava",
+        "noi" : "riciclavamo",
+        "voi" : "riciclavate",
+        "loro" : "riciclavano"
+      },
+      "futuro" : {
+        "io" : "riciclerò",
+        "tu" : "riciclerai",
+        "lui/lei" : "riciclerà",
+        "noi" : "ricicleremo",
+        "voi" : "riciclerete",
+        "loro" : "ricicleranno"
+      },
+      "condizionale" : {
+        "io" : "riciclerei",
+        "tu" : "ricicleresti",
+        "lui/lei" : "riciclerebbe",
+        "noi" : "ricicleremmo",
+        "voi" : "riciclereste",
+        "loro" : "riciclerebbero"
+      }
+    }
+  }, {
+    "id" : 1402,
+    "word" : "firmare",
+    "pos" : "v.",
+    "meaning" : "签字",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "firmo",
+        "tu" : "firmi",
+        "lui/lei" : "firma",
+        "noi" : "firmiamo",
+        "voi" : "firmate",
+        "loro" : "firmano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho firmato",
+        "tu" : "hai firmato",
+        "lui/lei" : "ha firmato",
+        "noi" : "abbiamo firmato",
+        "voi" : "avete firmato",
+        "loro" : "hanno firmato"
+      },
+      "imperfetto" : {
+        "io" : "firmavo",
+        "tu" : "firmavi",
+        "lui/lei" : "firmava",
+        "noi" : "firmavamo",
+        "voi" : "firmavate",
+        "loro" : "firmavano"
+      },
+      "futuro" : {
+        "io" : "firmerò",
+        "tu" : "firmerai",
+        "lui/lei" : "firmerà",
+        "noi" : "firmeremo",
+        "voi" : "firmerete",
+        "loro" : "firmeranno"
+      },
+      "condizionale" : {
+        "io" : "firmerei",
+        "tu" : "firmeresti",
+        "lui/lei" : "firmerebbe",
+        "noi" : "firmeremmo",
+        "voi" : "firmereste",
+        "loro" : "firmerebbero"
+      }
+    }
+  }, {
+    "id" : 1403,
+    "word" : "noleggiare",
+    "pos" : "v.",
+    "meaning" : "租（车等）",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "noleggio",
+        "tu" : "noleggi",
+        "lui/lei" : "noleggia",
+        "noi" : "noleggiamo",
+        "voi" : "noleggiate",
+        "loro" : "noleggiano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho noleggiato",
+        "tu" : "hai noleggiato",
+        "lui/lei" : "ha noleggiato",
+        "noi" : "abbiamo noleggiato",
+        "voi" : "avete noleggiato",
+        "loro" : "hanno noleggiato"
+      },
+      "imperfetto" : {
+        "io" : "noleggiavo",
+        "tu" : "noleggiavi",
+        "lui/lei" : "noleggiava",
+        "noi" : "noleggiavamo",
+        "voi" : "noleggiavate",
+        "loro" : "noleggiavano"
+      },
+      "futuro" : {
+        "io" : "noleggerò",
+        "tu" : "noleggerai",
+        "lui/lei" : "noleggerà",
+        "noi" : "noleggeremo",
+        "voi" : "noleggerete",
+        "loro" : "noleggeranno"
+      },
+      "condizionale" : {
+        "io" : "noleggerei",
+        "tu" : "noleggeresti",
+        "lui/lei" : "noleggerebbe",
+        "noi" : "noleggeremmo",
+        "voi" : "noleggereste",
+        "loro" : "noleggerebbero"
+      }
+    }
+  }, {
+    "id" : 1404,
+    "word" : "guarire",
+    "pos" : "v.",
+    "meaning" : "痊愈",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "guarisco",
+        "tu" : "guarisci",
+        "lui/lei" : "guarisce",
+        "noi" : "guariamo",
+        "voi" : "guarite",
+        "loro" : "guariscono"
+      },
+      "passatoProssimo" : {
+        "io" : "ho guarito",
+        "tu" : "hai guarito",
+        "lui/lei" : "ha guarito",
+        "noi" : "abbiamo guarito",
+        "voi" : "avete guarito",
+        "loro" : "hanno guarito"
+      },
+      "imperfetto" : {
+        "io" : "guarivo",
+        "tu" : "guarivi",
+        "lui/lei" : "guariva",
+        "noi" : "guarivamo",
+        "voi" : "guarivate",
+        "loro" : "guarivano"
+      },
+      "futuro" : {
+        "io" : "guarirò",
+        "tu" : "guarirai",
+        "lui/lei" : "guarirà",
+        "noi" : "guariremo",
+        "voi" : "guarirete",
+        "loro" : "guariranno"
+      },
+      "condizionale" : {
+        "io" : "guarirei",
+        "tu" : "guariresti",
+        "lui/lei" : "guarirebbe",
+        "noi" : "guariremmo",
+        "voi" : "guarireste",
+        "loro" : "guarirebbero"
+      }
+    }
+  }, {
+    "id" : 1405,
+    "word" : "respirare",
+    "pos" : "v.",
+    "meaning" : "呼吸",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "respiro",
+        "tu" : "respiri",
+        "lui/lei" : "respira",
+        "noi" : "respiriamo",
+        "voi" : "respirate",
+        "loro" : "respirano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho respirato",
+        "tu" : "hai respirato",
+        "lui/lei" : "ha respirato",
+        "noi" : "abbiamo respirato",
+        "voi" : "avete respirato",
+        "loro" : "hanno respirato"
+      },
+      "imperfetto" : {
+        "io" : "respiravo",
+        "tu" : "respiravi",
+        "lui/lei" : "respirava",
+        "noi" : "respiravamo",
+        "voi" : "respiravate",
+        "loro" : "respiravano"
+      },
+      "futuro" : {
+        "io" : "respirerò",
+        "tu" : "respirerai",
+        "lui/lei" : "respirerà",
+        "noi" : "respireremo",
+        "voi" : "respirerete",
+        "loro" : "respireranno"
+      },
+      "condizionale" : {
+        "io" : "respirerei",
+        "tu" : "respireresti",
+        "lui/lei" : "respirerebbe",
+        "noi" : "respireremmo",
+        "voi" : "respirereste",
+        "loro" : "respirerebbero"
+      }
+    }
+  }, {
+    "id" : 1406,
+    "word" : "sudare",
+    "pos" : "v.",
+    "meaning" : "出汗",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "sudo",
+        "tu" : "sudi",
+        "lui/lei" : "suda",
+        "noi" : "sudiamo",
+        "voi" : "sudate",
+        "loro" : "sudano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho sudato",
+        "tu" : "hai sudato",
+        "lui/lei" : "ha sudato",
+        "noi" : "abbiamo sudato",
+        "voi" : "avete sudato",
+        "loro" : "hanno sudato"
+      },
+      "imperfetto" : {
+        "io" : "sudavo",
+        "tu" : "sudavi",
+        "lui/lei" : "sudava",
+        "noi" : "sudavamo",
+        "voi" : "sudavate",
+        "loro" : "sudavano"
+      },
+      "futuro" : {
+        "io" : "suderò",
+        "tu" : "suderai",
+        "lui/lei" : "suderà",
+        "noi" : "suderemo",
+        "voi" : "suderete",
+        "loro" : "suderanno"
+      },
+      "condizionale" : {
+        "io" : "suderei",
+        "tu" : "suderesti",
+        "lui/lei" : "suderebbe",
+        "noi" : "suderemmo",
+        "voi" : "sudereste",
+        "loro" : "suderebbero"
+      }
+    }
+  }, {
+    "id" : 1407,
+    "word" : "riscaldare",
+    "pos" : "v.",
+    "meaning" : "加热",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "riscaldo",
+        "tu" : "riscaldi",
+        "lui/lei" : "riscalda",
+        "noi" : "riscaldiamo",
+        "voi" : "riscaldate",
+        "loro" : "riscaldano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho riscaldato",
+        "tu" : "hai riscaldato",
+        "lui/lei" : "ha riscaldato",
+        "noi" : "abbiamo riscaldato",
+        "voi" : "avete riscaldato",
+        "loro" : "hanno riscaldato"
+      },
+      "imperfetto" : {
+        "io" : "riscaldavo",
+        "tu" : "riscaldavi",
+        "lui/lei" : "riscaldava",
+        "noi" : "riscaldavamo",
+        "voi" : "riscaldavate",
+        "loro" : "riscaldavano"
+      },
+      "futuro" : {
+        "io" : "riscalderò",
+        "tu" : "riscalderai",
+        "lui/lei" : "riscalderà",
+        "noi" : "riscalderemo",
+        "voi" : "riscalderete",
+        "loro" : "riscalderanno"
+      },
+      "condizionale" : {
+        "io" : "riscalderei",
+        "tu" : "riscalderesti",
+        "lui/lei" : "riscalderebbe",
+        "noi" : "riscalderemmo",
+        "voi" : "riscaldereste",
+        "loro" : "riscalderebbero"
+      }
+    }
+  }, {
+    "id" : 1408,
+    "word" : "consegnare",
+    "pos" : "v.",
+    "meaning" : "递交；配送",
+    "category" : "动词",
+    "conjugation" : {
+      "present" : {
+        "io" : "consegno",
+        "tu" : "consegni",
+        "lui/lei" : "consegna",
+        "noi" : "consegniamo",
+        "voi" : "consegnate",
+        "loro" : "consegnano"
+      },
+      "passatoProssimo" : {
+        "io" : "ho consegnato",
+        "tu" : "hai consegnato",
+        "lui/lei" : "ha consegnato",
+        "noi" : "abbiamo consegnato",
+        "voi" : "avete consegnato",
+        "loro" : "hanno consegnato"
+      },
+      "imperfetto" : {
+        "io" : "consegnavo",
+        "tu" : "consegnavi",
+        "lui/lei" : "consegnava",
+        "noi" : "consegnavamo",
+        "voi" : "consegnavate",
+        "loro" : "consegnavano"
+      },
+      "futuro" : {
+        "io" : "consegnerò",
+        "tu" : "consegnerai",
+        "lui/lei" : "consegnerà",
+        "noi" : "consegneremo",
+        "voi" : "consegnerete",
+        "loro" : "consegneranno"
+      },
+      "condizionale" : {
+        "io" : "consegnerei",
+        "tu" : "consegneresti",
+        "lui/lei" : "consegnerebbe",
+        "noi" : "consegneremmo",
+        "voi" : "consegnereste",
+        "loro" : "consegnerebbero"
+      }
+    }
   } ]
 }

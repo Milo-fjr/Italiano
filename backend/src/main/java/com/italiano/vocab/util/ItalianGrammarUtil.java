@@ -50,6 +50,13 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PRESENT.put("sedere", new String[]{"siedo", "siedi", "siede", "sediamo", "sedete", "siedono"});
         IRREGULAR_PRESENT.put("tenere", new String[]{"tengo", "tieni", "tiene", "teniamo", "tenete", "tengono"});
         IRREGULAR_PRESENT.put("raccogliere", new String[]{"raccolgo", "raccogli", "raccoglie", "raccogliamo", "raccogliete", "raccolgono"});
+        // -urre/-olgere/-uolo 型（2026-10 B1 词库扩充新增动词；规则推导会产出 trado/riconoscuto 等错误形式）
+        IRREGULAR_PRESENT.put("tradurre", new String[]{"traduco", "traduci", "traduce", "traduciamo", "traducete", "traducono"});
+        IRREGULAR_PRESENT.put("produrre", new String[]{"produco", "produci", "produce", "produciamo", "producete", "producono"});
+        IRREGULAR_PRESENT.put("togliere", new String[]{"toglio", "togli", "toglie", "togliamo", "togliete", "togliono"});
+        IRREGULAR_PRESENT.put("svolgere", new String[]{"svolgo", "svolgi", "svolge", "svolgiamo", "svolgete", "svolgono"});
+        IRREGULAR_PRESENT.put("risolvere", new String[]{"risolvo", "risolvi", "risolve", "risolviamo", "risolvete", "risolvono"});
+        IRREGULAR_PRESENT.put("accorgere", new String[]{"accorgo", "accorgi", "accorge", "accorgiamo", "accorgete", "accorgono"});
         // -iare 重音在 i 上：tu 保留双 i（ringrazii/scii），通用规则会错误地去掉
         IRREGULAR_PRESENT.put("ringraziare", new String[]{"ringrazio", "ringrazii", "ringrazia", "ringraziamo", "ringraziate", "ringraziano"});
         IRREGULAR_PRESENT.put("sciare", new String[]{"scio", "scii", "scia", "sciamo", "sciate", "sciano"});
@@ -57,7 +64,8 @@ public final class ItalianGrammarUtil {
 
     /** -isc 型 -ire 动词（第一人称 -isco：capire → capisco；trasferire 同型，全表排查补录） */
     private static final Set<String> ISC_VERBS = Set.of(
-            "capire", "finire", "preferire", "pulire", "spedire", "costruire", "trasferire");
+            "capire", "finire", "preferire", "pulire", "spedire", "costruire", "trasferire",
+            "guarire", "impedire", "gestire", "inserire");
 
     /** 不规则过去分词（规则：-are→ato / -ere→uto / -ire→ito） */
     private static final Map<String, String> IRREGULAR_PP = new LinkedHashMap<>();
@@ -108,6 +116,17 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PP.put("raccogliere", "raccolto");
         IRREGULAR_PP.put("smettere", "smesso");
         IRREGULAR_PP.put("sorridere", "sorriso");
+        // B1 词库扩充新增（iscrivere/dimettere 经反身还原 iscriversi/dimettersi 查此表）
+        IRREGULAR_PP.put("iscrivere", "iscritto");
+        IRREGULAR_PP.put("dimettere", "dimesso");
+        IRREGULAR_PP.put("tradurre", "tradotto");
+        IRREGULAR_PP.put("produrre", "prodotto");
+        IRREGULAR_PP.put("togliere", "tolto");
+        IRREGULAR_PP.put("svolgere", "svolto");
+        IRREGULAR_PP.put("risolvere", "risolto");
+        IRREGULAR_PP.put("accorgere", "accorto");
+        IRREGULAR_PP.put("sorprendere", "sorpreso");
+        IRREGULAR_PP.put("condividere", "condiviso");
     }
 
     /** 用 essere 作助动词的不及物动词（其余用 avere；反身动词一律 essere） */
@@ -135,6 +154,9 @@ public final class ItalianGrammarUtil {
         IRREGULAR_IMPERFETTO.put("fare", new String[]{"facevo", "facevi", "faceva", "facevamo", "facevate", "facevano"});
         IRREGULAR_IMPERFETTO.put("dire", new String[]{"dicevo", "dicevi", "diceva", "dicevamo", "dicevate", "dicevano"});
         IRREGULAR_IMPERFETTO.put("bere", new String[]{"bevevo", "bevevi", "beveva", "bevevamo", "bevevate", "bevevano"});
+        // -urre 型未完成时词干为 -ucevo/-ucevi（规则推导产出 traduvo 错误值）
+        IRREGULAR_IMPERFETTO.put("tradurre", new String[]{"traducevo", "traducevi", "traduceva", "traducevamo", "traducevate", "traducevano"});
+        IRREGULAR_IMPERFETTO.put("produrre", new String[]{"producevo", "producevi", "produceva", "producevamo", "producevate", "producevano"});
     }
 
     /** 不规则简单将来时词干（规则：-are→erò / -ere→erò / -ire→irò） */
@@ -160,6 +182,9 @@ public final class ItalianGrammarUtil {
         IRREGULAR_FUTURO_STEM.put("tenere", "terr");
         // -sciare 动词保留 i 维持 /ʃ/ 音（scierò），通用 -ciare 去音规则会错成 scerò
         IRREGULAR_FUTURO_STEM.put("sciare", "scier");
+        // -urre 型（tradurrò/produrrò，通用 -ere 规则产出 tradurò 错误值）
+        IRREGULAR_FUTURO_STEM.put("tradurre", "tradurr");
+        IRREGULAR_FUTURO_STEM.put("produrre", "produrr");
     }
 
     /** 不规则名词复数（-co/-go 重音不可知无法推导、-a 型复数等，全部显式收录） */
@@ -206,6 +231,7 @@ public final class ItalianGrammarUtil {
         IRREGULAR_PLURAL.put("pigiama", "pigiami");
         IRREGULAR_PLURAL.put("pilota", "piloti/pilote");
         IRREGULAR_PLURAL.put("lenzuolo", "lenzuola");
+        IRREGULAR_PLURAL.put("luogo", "luoghi"); // 软音 -go 著名例外（B1 扩充新增）
     }
 
     /** 月份：复数不变且性别统一为阳性（il gennaio...），无记忆价值，不标「性别需记」 */
@@ -220,7 +246,9 @@ public final class ItalianGrammarUtil {
             "autobus", "bar", "computer", "email", "film", "hobby", "internet",
             "menu", "password", "sport", "tram", "weekend", "yogurt",
             "cinema", "garage", "mouse", "video", "euro",
-            "foto", "bici", "auto");
+            "foto", "bici", "auto",
+            "software", "hardware", "app", "file", "account", "link", "bug",
+            "curriculum", "bancomat", "caricabatterie", "microonde");
 
     /** 不可数名词（按词库词义无复数形式）：fame/sete/sangue 等，复数留空 */
     private static final Set<String> UNCOUNTABLE_NOUNS = Set.of(
@@ -235,7 +263,8 @@ public final class ItalianGrammarUtil {
 
     /** 复数不加 h 的 -co/-go 形容词（软音：simpatico→simpatici/simpatiche） */
     private static final Set<String> ADJ_SOFT = Set.of(
-            "antipatico", "economico", "simpatico");
+            "antipatico", "economico", "simpatico",
+            "pubblico", "tecnico", "elettronico", "informatico");
 
     /** 不变形容词（性数不变，无变化形式；qualche/nessuno 无复数形式） */
     private static final Set<String> ADJ_INVARIANT = Set.of(
@@ -485,9 +514,13 @@ public final class ItalianGrammarUtil {
             forms.put("fp", stem + "ie");
         } else if (w.endsWith("o")) {
             String stem = w.substring(0, w.length() - 1);
-            // -co/-go 形容词：硬音复数加 h（antichi/antiche），软音不加（simpatici/simpatiche）
+            // -co/-go 形容词：硬音复数加 h（antichi/antiche），软音不加（simpatici/simpatiche）；
+            // 阴性复数一律加 h（c 在 e 前会变软音）。表外 -co/-go 重音不可知，不猜测，留空手动编辑
             boolean hard = ADJ_HARD.contains(w);
             boolean soft = ADJ_SOFT.contains(w);
+            if ((w.endsWith("co") || w.endsWith("go")) && !hard && !soft) {
+                return null;
+            }
             forms.put("ms", w);
             forms.put("fs", stem + "a");
             forms.put("mp", hard ? stem + "hi" : stem + "i");
