@@ -31,8 +31,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WordService {
 
-    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/3/5/10/20 天）；拼写/听写盒子复用同一间隔表 */
-    public static final int[] REVIEW_INTERVALS = {1, 3, 5, 10, 20};
+    /** Leitner 盒子升级后的复习间隔天数（box 1-5 级对应 1/3/5/10/60 天）；拼写/听写盒子复用同一间隔表。
+     * box 5 即毕业级：答对留在 box 5 并按末位间隔（60 天）循环回访——词汇量越大永续维持负荷越重，
+     * 2026-10 从 20 天拉长到 60 天（920 已学词的维持复习从 ~46/天降到 ~15/天，三套盒同享）。 */
+    public static final int[] REVIEW_INTERVALS = {1, 3, 5, 10, 60};
 
     private final WordMapper wordMapper;
     private final WordProgressMapper progressMapper;
